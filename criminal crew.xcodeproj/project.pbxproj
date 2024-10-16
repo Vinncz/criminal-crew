@@ -6,6 +6,10 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		202DA80B2CBE761D009932F5 /* GamePantry in Frameworks */ = {isa = PBXBuildFile; productRef = 202DA80A2CBE761D009932F5 /* GamePantry */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXContainerItemProxy section */
 		202DA7EC2CBE75D3009932F5 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -65,6 +69,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				202DA80B2CBE761D009932F5 /* GamePantry in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -125,6 +130,7 @@
 			);
 			name = "criminal crew";
 			packageProductDependencies = (
+				202DA80A2CBE761D009932F5 /* GamePantry */,
 			);
 			productName = "criminal crew";
 			productReference = 202DA7D52CBE75D2009932F5 /* criminal crew.app */;
@@ -208,6 +214,9 @@
 			);
 			mainGroup = 202DA7CC2CBE75D1009932F5;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				202DA8092CBE761D009932F5 /* XCLocalSwiftPackageReference "../GamePantry" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 202DA7D62CBE75D2009932F5 /* Products */;
 			projectDirPath = "";
@@ -294,7 +303,6 @@
 				INFOPLIST_FILE = "criminal crew/Info.plist";
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
-				INFOPLIST_KEY_UIMainStoryboardFile = Main;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -322,7 +330,6 @@
 				INFOPLIST_FILE = "criminal crew/Info.plist";
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
-				INFOPLIST_KEY_UIMainStoryboardFile = Main;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -569,6 +576,20 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCLocalSwiftPackageReference section */
+		202DA8092CBE761D009932F5 /* XCLocalSwiftPackageReference "../GamePantry" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = ../GamePantry;
+		};
+/* End XCLocalSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		202DA80A2CBE761D009932F5 /* GamePantry */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = GamePantry;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 202DA7CD2CBE75D1009932F5 /* Project object */;
 }
