@@ -7,7 +7,10 @@
 
 import UIKit
 
-class SwitchButton: UIButton {
+internal class SwitchButton: UIButton, ToggleButtonState {
+    
+    internal var buttonState: ButtonState = .off
+    
     init(firstLabel: String, secondLabel: String) {
         super.init(frame: .zero)
         setupButton(firstLabel, secondLabel)
@@ -25,16 +28,18 @@ class SwitchButton: UIButton {
         imageView?.contentMode = .scaleAspectFit
         backgroundColor = .clear
         accessibilityLabel = "\(firstLabel) \(secondLabel)"
-        tag = 0
     }
     
-    func toggleState() {
-        if tag == 0 {
-            setImage(UIImage(named: "Switch On")?.withRenderingMode(.alwaysOriginal), for: .normal)
-            tag = 1
-        } else {
-            setImage(UIImage(named: "Switch Off")?.withRenderingMode(.alwaysOriginal), for: .normal)
-            tag = 0
+    internal func toggleButtonState() {
+        switch buttonState {
+            case .off:
+                setImage(UIImage(named: "Switch On")?.withRenderingMode(.alwaysOriginal), for: .normal)
+                buttonState = .on
+            case .on:
+                setImage(UIImage(named: "Switch Off")?.withRenderingMode(.alwaysOriginal), for: .normal)
+                buttonState = .off
         }
     }
+    
 }
+

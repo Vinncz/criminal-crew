@@ -9,46 +9,145 @@ import Foundation
 import Combine
 
 protocol ValidateGameUseCaseProtocol {
-    func validateGameLogic(pressedButtons: [String]) -> Bool
-    func validateGameLogic(pressedButtons: [[String]]) -> Bool
+    
+    func validateGameLogic(pressedButtons: [String]) -> AnyPublisher<String?, Error>
+    func validateGameLogic(pressedButtons: [[String]]) -> AnyPublisher<String?, Error>
+    
 }
 
-class SwitchGameUseCase {
-    private let taskRepository: TaskRepository
-    var newTask: NewTask
-    var taskDone: TaskDone
+protocol GetTaskUseCaseProtocol {
     
-    init(taskRepository: TaskRepository) {
+    func getTask(_ newTask: NewTask)
+    
+}
+
+protocol GetPromptUseCaseProtocol {
+    
+    func getPrompt(_ newPrompt: NewPrompt)
+    func promptPublisher() -> AnyPublisher<String, Never>
+    
+}
+
+internal class SwitchGameUseCase {
+    
+    private var cancellables: Set<AnyCancellable> = Set<AnyCancellable>()
+    
+    private var promptSubject: PassthroughSubject<String, Never> = PassthroughSubject<String, Never>()
+    
+    private let taskRepository: MultipeerTaskRepository
+    private var newTask: [NewTask] = []
+    
+    init(taskRepository: MultipeerTaskRepository) {
+        newTask.append(NewTask(taskId: "1", taskToBeDone: ["Red", "Quantum Encryption", "Pseudo AIIDS"]))
         self.taskRepository = taskRepository
-        newTask = NewTask(payload: ["taskId": "1", "TaskToBeDone": ["Quantum Encryption", "Pseudo AIIDS"]])
-        taskDone = TaskDone(payload: [:])
+        taskRepository.taskPublisher()
+            .sink { [weak self] task in
+                self?.getTask(task)
+            }
+            .store(in: &cancellables)
+        taskRepository.promptPublisher()
+            .sink { [weak self] prompt in
+                self?.getPrompt(prompt)
+            }
+            .store(in: &cancellables)
     }
     
-    func completeTask(completion: @escaping (Bool) -> Void) {
-        let updatedTaskDone = updatedPayloadTaskDone(
-            newPayload: [
-                "taskId": newTask.payload["taskId"] ?? "",
-                "isCompleted": true,
-                "id": taskDone.id,
-                "instanciatedOn": newTask.instanciatedOn
-            ]
-        )
-        taskRepository.sendTaskDataToPeer(taskDone: updatedTaskDone) { isSuccess in
-            completion(isSuccess)
+    internal func removeTask(with taskId: String) {
+        if let index = newTask.firstIndex(where: { $0.taskId == taskId }) {
+            newTask.remove(at: index)
+            print("Removed task with taskId \(taskId). Remaining tasks: \(newTask)")
+        } else {
+            print("No task found with taskId \(taskId)")
         }
     }
     
-    func updatedPayloadTaskDone(newPayload: [String: Any]) -> TaskDone {
+    internal func completeTask() -> AnyPublisher<Bool, Error> {
+        Future { [weak self] promise in
+            guard let self = self else { return }
+            let updatedTaskDone = self.updatedPayloadTaskDone(
+                newPayload: [
+                    "taskId": newTask[0].taskId,
+                    "isCompleted": true,
+                    "id": "SentTaskReport",
+                    "instanciatedOn": newTask[0].instanciatedOn
+                ]
+            )
+            
+            self.taskRepository.sendTaskDataToPeer(taskDone: updatedTaskDone)
+                .sink(receiveCompletion: { completion in
+                    switch completion {
+                        case .finished:
+                            break
+                        case .failure(let error):
+                            promise(.failure(error))
+                    }
+                }, receiveValue: { success in
+                    promise(.success(success))
+                })
+                .store(in: &cancellables)
+            }
+            .eraseToAnyPublisher()
+    }
+    
+    private func updatedPayloadTaskDone(newPayload: [String: Any]) -> TaskDone {
         return TaskDone.construct(from: newPayload)!
     }
+    
+    deinit {
+        cancellables.forEach { cancellable in
+            cancellable.cancel()
+        }
+    }
+    
 }
 
 extension SwitchGameUseCase: ValidateGameUseCaseProtocol {
-    func validateGameLogic(pressedButtons: [String]) -> Bool {
-        return newTask == pressedButtons
+    
+    internal func validateGameLogic(pressedButtons: [String]) -> AnyPublisher<String?, Error> {
+        return Future { [weak self] promise in
+            guard let self = self else { return }
+            print("pressed Button now \(pressedButtons)")
+            if let matchingTask = self.newTask.first(where: { $0 == pressedButtons }) {
+                promise(.success(matchingTask.taskId))
+            } else {
+                promise(.success(nil))
+            }
+        }
+        .eraseToAnyPublisher()
     }
     
-    func validateGameLogic(pressedButtons: [[String]]) -> Bool {
-        return newTask == pressedButtons
+    internal func validateGameLogic(pressedButtons: [[String]]) -> AnyPublisher<String?, Error> {
+        return Future { [weak self] promise in
+            guard let self = self else { return }
+            if let matchingTask = self.newTask.first(where: { $0 == pressedButtons }) {
+                promise(.success(matchingTask.taskId))
+            } else {
+                promise(.success(nil))
+            }
+        }
+        .eraseToAnyPublisher()
     }
+    
+}
+
+extension SwitchGameUseCase: GetTaskUseCaseProtocol {
+    
+    internal func getTask(_ task: NewTask) {
+        newTask.append(task)
+        print("new task data Now : \(newTask)")
+    }
+    
+}
+
+extension SwitchGameUseCase: GetPromptUseCaseProtocol {
+    
+    internal func getPrompt(_ newPrompt: NewPrompt) {
+        let prompt = newPrompt.promptToBeDone.joined(separator: ", ")
+        promptSubject.send(prompt)
+    }
+    
+    internal func promptPublisher() -> AnyPublisher<String, Never> {
+        return promptSubject.eraseToAnyPublisher()
+    }
+    
 }

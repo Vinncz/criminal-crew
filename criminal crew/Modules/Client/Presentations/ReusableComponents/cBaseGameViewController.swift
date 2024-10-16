@@ -9,26 +9,15 @@ import UIKit
 
 open class BaseGameViewController: UIViewController {
     
-    var contentProvider: GameContentProvider?
+    public var contentProvider: GameContentProvider?
     
     private let firstPanelView = UIView()
     private let secondPanelView = UIView()
-    private let promptView = UIView()
+    private var promptView = UIView()
     
-    public let mainStackView: UIStackView = {
-        let stackView = UIStackView()
-        stackView.axis = .horizontal
-        stackView.spacing = 10
-        stackView.translatesAutoresizingMaskIntoConstraints = false
-        return stackView
-    }()
-    
-    public let rightStackView: UIStackView = {
-        let stackView = UIStackView()
-        stackView.axis = .vertical
-        stackView.spacing = 10
-        return stackView
-    }()
+    public let mainStackView: UIStackView = UIStackView()
+    public let rightStackView: UIStackView = UIStackView()
+    public var promptStackView: PromptStackView?
     
     override init(nibName nibNameOrNil: String?, bundle nibBundleOrNil: Bundle?) {
         super.init(nibName: nil, bundle: nil)
@@ -40,28 +29,19 @@ open class BaseGameViewController: UIViewController {
     
     open override func viewDidLoad() {
         super.viewDidLoad()
-        forceLandscapeOrientation()
         setupView()
+        setupGameContent()
         
         if let contentProvider = contentProvider {
             addContentToFirstPanelView(contentProvider.createFirstPanelView())
             addContentToSecondPanelView(contentProvider.createSecondPanelView())
-            addContentToPromptView(contentProvider.createPromptView())
         }
-        
-        setupGameContent()
-    }
-    
-    private func forceLandscapeOrientation() {
-        // let value = UIInterfaceOrientation.landscapeLeft.rawValue
-        // UIDevice.current.setValue(value, forKey: "orientation")
-    }
-    
-    open override var shouldAutorotate: Bool {
-        return true
     }
     
     private func setupView() {
+        mainStackView.axis = .horizontal
+        mainStackView.translatesAutoresizingMaskIntoConstraints = false
+        rightStackView.axis = .vertical
         view.backgroundColor = .systemBackground
         view.addSubview(mainStackView)
         
@@ -75,19 +55,23 @@ open class BaseGameViewController: UIViewController {
         mainStackView.addArrangedSubview(firstPanelView)
         mainStackView.addArrangedSubview(rightStackView)
         
+        addContentToPromptView()
+        
         rightStackView.addArrangedSubview(promptView)
         rightStackView.addArrangedSubview(secondPanelView)
         
-        // NSLayoutConstraint.activate([
-        //     firstPanelView.widthAnchor.constraint(equalTo: mainStackView.widthAnchor, multiplier: 0.4),
-        //     rightStackView.widthAnchor.constraint(equalTo: mainStackView.widthAnchor, multiplier: 0.6),
-        //     promptView.heightAnchor.constraint(equalTo: rightStackView.heightAnchor, multiplier: 0.4),
-        //     secondPanelView.heightAnchor.constraint(equalTo: rightStackView.heightAnchor, multiplier: 0.6)
-        // ])
+        NSLayoutConstraint.activate([
+            firstPanelView.widthAnchor.constraint(equalTo: mainStackView.widthAnchor, multiplier: 0.4),
+            rightStackView.widthAnchor.constraint(equalTo: mainStackView.widthAnchor, multiplier: 0.6),
+            promptView.heightAnchor.constraint(equalTo: rightStackView.heightAnchor, multiplier: 0.4),
+            promptView.widthAnchor.constraint(equalTo: rightStackView.widthAnchor ),
+            secondPanelView.heightAnchor.constraint(equalTo: rightStackView.heightAnchor, multiplier: 0.6),
+            secondPanelView.widthAnchor.constraint(equalTo: rightStackView.widthAnchor)
+        ])
     }
     
     open func setupGameContent() {
-        // for subclass to override
+        /// for subclass to override to fill their game settings
     }
     
     public func addContentToFirstPanelView(_ view: UIView) {
@@ -112,7 +96,9 @@ open class BaseGameViewController: UIViewController {
         ])
     }
     
-    public func addContentToPromptView(_ view: UIView) {
+    private func addContentToPromptView() {
+        let view = createPromptView()
+        
         promptView.addSubview(view)
         view.translatesAutoresizingMaskIntoConstraints = false
         NSLayoutConstraint.activate([
@@ -123,11 +109,16 @@ open class BaseGameViewController: UIViewController {
         ])
     }
     
-    public func addBackgroundImageView(_ imageName: String) -> UIImageView {
-        let backgroundImageView = UIImageView()
-        backgroundImageView.image = UIImage(named: imageName)
-        backgroundImageView.translatesAutoresizingMaskIntoConstraints = false
-        return backgroundImageView
+    private func createPromptView() -> UIStackView {
+        promptStackView = PromptStackView()
+        
+        if let promptStackView = promptStackView {
+            promptStackView.promptView.promptLabel.text = "Red, Quantum Encryption, Pseudo AIIDS"
+            return promptStackView
+        } else {
+            print("Prompt View failed to load!!!")
+            return UIStackView()
+        }
     }
     
 }

@@ -8,39 +8,54 @@
 import Foundation
 import GamePantry
 
-struct NewTask: GPEvent {
-    var id: String = "NewTask"
+internal struct NewTask: GPEvent {
+    
+    internal var id: String = "NewTask"
 
-    let purpose: String = "Get a New Task"
+    internal let purpose: String = "Get a New Task"
     
-    var instanciatedOn: Date = .now
+    internal var instanciatedOn: Date = .now
     
-    var payload: [ String : Any ]
+    internal var taskToBeDone: Any
     
-    init(payload: [String : Any]) {
-        self.payload = payload
+    internal var taskId: String
+    
+    init(taskId: String, taskToBeDone: Any) {
+        self.taskId = taskId
+        self.taskToBeDone = taskToBeDone
     }
     
-    static func == (lhs: NewTask, rhs: [String]) -> Bool {
-        guard let lhsTask = lhs.payload["TaskToBeDone"] as? [String] else {
+    internal static func == (lhs: NewTask, rhs: [String]) -> Bool {
+        guard let lhsTask = lhs.taskToBeDone as? [String] else {
             return false
         }
         
         return Set(lhsTask) == Set(rhs)
     }
     
-    static func == (lhs: NewTask, rhs: [[String]]) -> Bool {
-        guard let lhsTask = lhs.payload["TaskToBeDone"] as? [[String]] else {
+    internal static func == (lhs: NewTask, rhs: [[String]]) -> Bool {
+        guard let lhsTask = lhs.taskToBeDone as? [[String]] else {
             return false
         }
         
         return lhsTask == rhs
     }
+    
 }
 
-extension NewTask: GPReceivableEvent {
-    static func construct(from payload: [String : Any]) -> NewTask? {
-        guard let _ = payload["TaskToBeDone"] as? [String] else { return nil }
-        return .init(payload: payload)
+//extension NewTask: GPReceivableEvent {
+//
+//    internal static func construct(from payload: [String : Any]) -> NewTask? {
+//        guard let _ = payload["TaskToBeDone"] as? [String] else { return nil }
+//        return .init(payload: payload)
+//    }
+//
+//}
+
+extension NewTask {
+    
+    internal static func construct(from taskId: String, taskToBeDone: Any) -> NewTask {
+        return .init(taskId: taskId, taskToBeDone: taskToBeDone)
     }
+    
 }
