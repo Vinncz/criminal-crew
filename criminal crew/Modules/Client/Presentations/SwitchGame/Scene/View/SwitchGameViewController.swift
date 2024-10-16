@@ -14,7 +14,7 @@ internal class SwitchGameViewController: BaseGameViewController, GameContentProv
     internal var viewModel: SwitchGameViewModel?
     internal var coordinator: RootCoordinator?
     
-    private var leverView: LeverView?
+    private var leverView: LeversView?
     private var switchStackView: SwitchStackView?
     
     private let didPressedButton: PassthroughSubject = PassthroughSubject<String, Never>()
@@ -25,7 +25,7 @@ internal class SwitchGameViewController: BaseGameViewController, GameContentProv
         let portraitBackgroundImage = ViewFactory.addBackgroundImageView("BG Portrait")
         firstPanelContainerView.addSubview(portraitBackgroundImage)
         
-        leverView = LeverView()
+        leverView = LeversView()
         
         if let leverView = leverView {
             firstPanelContainerView.addSubview(leverView)

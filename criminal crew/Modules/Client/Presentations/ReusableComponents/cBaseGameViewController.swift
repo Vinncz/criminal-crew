@@ -29,7 +29,6 @@ open class BaseGameViewController: UIViewController {
     
     open override func viewDidLoad() {
         super.viewDidLoad()
-        forceLandscapeOrientation()
         setupView()
         setupGameContent()
         
@@ -37,16 +36,6 @@ open class BaseGameViewController: UIViewController {
             addContentToFirstPanelView(contentProvider.createFirstPanelView())
             addContentToSecondPanelView(contentProvider.createSecondPanelView())
         }
-        
-    }
-    
-    private func forceLandscapeOrientation() {
-        let value = UIInterfaceOrientation.landscapeLeft.rawValue
-        UIDevice.current.setValue(value, forKey: "orientation")
-    }
-    
-    open override var shouldAutorotate: Bool {
-        return true
     }
     
     private func setupView() {

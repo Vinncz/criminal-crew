@@ -7,7 +7,7 @@
 
 import UIKit
 
-internal class LeverView: UIView {
+internal class LeversView: UIView {
     
     internal var leverIndicatorView: [LeverIndicatorView] = []
     internal var leverPanelView: LeverPanelView?
