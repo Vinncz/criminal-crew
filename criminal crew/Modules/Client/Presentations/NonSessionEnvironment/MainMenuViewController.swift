@@ -4,10 +4,13 @@ import GamePantry
 
 class MainMenuViewController: UIViewController, UsesDependenciesInjector {
     
+    let lGameName    : UILabel
     let bBrowseRooms : UIButton
     let bHostRoom    : UIButton
     
     override init ( nibName nibNameOrNil: String?, bundle nibBundleOrNil: Bundle? ) {
+        self.lGameName    = Self.makeLabel("Criminal Crew")
+        
         self.bBrowseRooms = UIButton().titled("Browse Rooms").styled(.borderedProminent).tagged(Self.browseRoomButtonId)
         self.bHostRoom    = UIButton().titled("Host Room").styled(.secondary).tagged(Self.hostRoomButtonId)
         
@@ -24,6 +27,7 @@ class MainMenuViewController: UIViewController, UsesDependenciesInjector {
         var admitTheHost        : () -> Void
         var navigateTo          : (UIViewController) -> Void
         var communicateToServer : (Data) throws -> Void
+        var sendMockDataFromServer : () -> Void
     }
     
 }
@@ -31,12 +35,15 @@ class MainMenuViewController: UIViewController, UsesDependenciesInjector {
 
 /// Extension for behavior
 extension MainMenuViewController {
+    @objc func sendMockData () -> Void {
+        self.relay?.sendMockDataFromServer()
+    }
     
     override func viewDidLoad () {
         _ = bBrowseRooms.executes(self, action: #selector(cueToNavigate(sender:)), for: .touchUpInside)
         _ = bHostRoom.executes(self, action: #selector(cueToNavigate(sender:)), for: .touchUpInside)
-        
-        let vstack = Self.makeStack(direction: .vertical, distribution: .fill).thatHolds(bBrowseRooms, bHostRoom)
+        let a = UIButton().titled("Send mock data").executes(self, action: #selector(sendMockData), for: .touchUpInside)
+        let vstack = Self.makeStack(direction: .vertical, distribution: .fill).thatHolds(lGameName, a, bBrowseRooms, bHostRoom)
 //        
 //        let emergencyMainMenuReplacer = UIHostingConfiguration {
 //            MainMenuView(relay: .init(

@@ -1,5 +1,6 @@
 import GamePantry
 import UIKit
+import SwiftUI
 
 public class ClientComposer : UsesDependenciesInjector {
     
@@ -24,6 +25,7 @@ public class ClientComposer : UsesDependenciesInjector {
     public struct Relay : CommunicationPortal {
         var makeServerVisible : ([String: String]) -> Void
         var admitTheHost      : (MCPeerID) -> Void
+        var sendMockDataFromServer : () -> Void
     }
 
     init ( navigationController: UINavigationController ) {
@@ -57,6 +59,8 @@ extension ClientComposer {
         
     }
     
+
+    
     private func placeInitialView () -> Void {
         let mmvc = MainMenuViewController(nibName: "MainMenuView", bundle: nil)
         mmvc.relay = MainMenuViewController.Relay (
@@ -79,14 +83,17 @@ extension ClientComposer {
                 } catch {
                     debug("unable to make broadcast to server: \(error)")
                 }
+            },
+            sendMockDataFromServer : { [weak self] in
+                self?.relay?.sendMockDataFromServer()
             }
         )
         
         let cablesGame = BaseGameViewController()
         cablesGame.contentProvider = ClockGameViewController()
         
-        navigationController.pushViewController(cablesGame, animated: true)
-//        navigationController.pushViewController(mmvc, animated: true)
+//        navigationController.pushViewController(cablesGame, animated: true)
+        navigationController.pushViewController(mmvc, animated: true)
     }
     
 }

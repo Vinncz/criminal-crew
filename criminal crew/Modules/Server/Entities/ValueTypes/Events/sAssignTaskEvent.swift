@@ -24,7 +24,11 @@ extension AssignTaskEvent {
     public enum PayloadKeys : String, CaseIterable {
         case eventId   = "eventId",
              recipient = "recipient",
-             subject   = "subject"
+             subject   = "subject",
+             taskId    = "taskId",
+             prompt    = "prompt",
+             completionCriteria = "completionCriteria",
+             duration  = "duration"
     }
     
     public func value ( for key: PayloadKeys ) -> Any? {
@@ -40,7 +44,11 @@ extension AssignTaskEvent {
             [
                 PayloadKeys.eventId.rawValue   : self.id,
                 PayloadKeys.recipient.rawValue : self.associatedTask.id.uuidString,
-                PayloadKeys.subject.rawValue   : self.recipient.displayName
+                PayloadKeys.subject.rawValue   : self.recipient.displayName,
+                PayloadKeys.taskId.rawValue    : self.associatedTask.id.uuidString,
+                PayloadKeys.prompt.rawValue    : self.associatedTask.prompt,
+                PayloadKeys.completionCriteria.rawValue : self.associatedTask.completionCriteria.joined(separator: "¬Ω"),
+                PayloadKeys.duration.rawValue  : self.associatedTask.duration.description
             ]
         } ?? Data()
     }

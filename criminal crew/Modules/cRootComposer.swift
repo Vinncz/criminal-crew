@@ -38,7 +38,16 @@ import UIKit
                     }
                     
                     self.serverComposer.networkManager.eventBroadcaster.approve(requestOfHost.resolve(to: .admit))
-                    debug("[S-ADV] Admitted the host")                    
+                    debug("[S-ADV] Admitted the host: \(requestOfHost.requestee.displayName)")                    
+                }
+            },
+            sendMockDataFromServer: { [weak self] in
+                guard let self else { return }
+                do {
+                    try self.serverComposer.networkManager.eventBroadcaster.broadcast("Hello".data(using: .utf8)!, to: self.serverComposer.networkManager.eventBroadcaster.getPeers())
+                    debug("Prompted to send data to client")
+                } catch {
+                    debug("\(error)")
                 }
             }
         )

@@ -27,6 +27,7 @@ public class ClientNetworkEventListener : GPGameEventListener {
     }
     
     public func heardData ( from peer: MCPeerID, _ data: Data ) {
+        GPTerminatedEvent.construct(from: fromData(data: data)!)
         if let parsedData = EventParser.parse(data) {
             if !emit(parsedData) {
                 debug("\(consoleIdentifier) Events on the network are received but not shared via the event router")
