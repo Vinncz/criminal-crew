@@ -14,6 +14,8 @@ public class CableGameViewController: BaseGameViewController, GameContentProvide
     public var secondStartPointIDs: [UIView: String] = [:]
     public var secondEndPointIDs: [UIView: String] = [:]
     
+    public var containerView: UIView?
+    
     private var timeLabel: UILabel = createLabel(text: "20")
     private var promptLabel: UILabel = createLabel(text: "Quantum Encryption, Pseudo AIIDS")
     
@@ -26,14 +28,18 @@ public class CableGameViewController: BaseGameViewController, GameContentProvide
     // }
     
     public func createFirstPanelView() -> UIView {
-        let containerView = UIView()
-        setupViewsForFirstPanel()
-        view.addSubview(containerView)
-        randomizePositions(for: containerView)
+        containerView = UIView()
+        containerView?.translatesAutoresizingMaskIntoConstraints = false
+        guard let containerView else {
+            return UIView()
+        }
         
         let portraitBackgroundImage = ViewFactory.addBackgroundImageView("client.panels.cables-panel.panel-background-left")
+        portraitBackgroundImage.translatesAutoresizingMaskIntoConstraints = false
+        containerView.addSubview(portraitBackgroundImage)
         
-        containerView.insertSubview(portraitBackgroundImage, at: 0)
+        setupViewsForFirstPanel()
+        randomizePositions(for: containerView)
         
         NSLayoutConstraint.activate([
             portraitBackgroundImage.topAnchor.constraint(equalTo: containerView.topAnchor),
@@ -101,7 +107,9 @@ public class CableGameViewController: BaseGameViewController, GameContentProvide
          CableManager.shared.cableGreenHead].forEach {
             $0.contentMode = .scaleAspectFit
             $0.translatesAutoresizingMaskIntoConstraints = false
-            view.addSubview($0)
+            if let containerView = containerView {
+                containerView.addSubview($0)
+            }
         }
     }
     

@@ -1,4 +1,5 @@
 import UIKit
+import SwiftUI
 import GamePantry
 
 class MainMenuViewController: UIViewController, UsesDependenciesInjector {
@@ -7,8 +8,8 @@ class MainMenuViewController: UIViewController, UsesDependenciesInjector {
     let bHostRoom    : UIButton
     
     override init ( nibName nibNameOrNil: String?, bundle nibBundleOrNil: Bundle? ) {
-        self.bBrowseRooms = UIButton().titled("Browse Rooms").styled(.text).tagged(Self.browseRoomButtonId)
-        self.bHostRoom    = UIButton().titled("Host Room").styled(.text).tagged(Self.hostRoomButtonId)
+        self.bBrowseRooms = UIButton().titled("Browse Rooms").styled(.borderedProminent).tagged(Self.browseRoomButtonId)
+        self.bHostRoom    = UIButton().titled("Host Room").styled(.secondary).tagged(Self.hostRoomButtonId)
         
         super.init(nibName: nil, bundle: nil)
     }
@@ -35,14 +36,28 @@ extension MainMenuViewController {
         _ = bBrowseRooms.executes(self, action: #selector(cueToNavigate(sender:)), for: .touchUpInside)
         _ = bHostRoom.executes(self, action: #selector(cueToNavigate(sender:)), for: .touchUpInside)
         
-        let vstack = Self.makeStack(direction: .vertical, distribution: .fillProportionally).thatHolds(bBrowseRooms, bHostRoom)
-        
+        let vstack = Self.makeStack(direction: .vertical, distribution: .fill).thatHolds(bBrowseRooms, bHostRoom)
+//        
+//        let emergencyMainMenuReplacer = UIHostingConfiguration {
+//            MainMenuView(relay: .init(
+//                    makeServerVisible: { [weak self] advContent in
+//                        self?.relay?.makeServerVisible(advContent)
+//                    }, admitTheHost: { [weak self] in
+//                        self?.relay?.admitTheHost()
+//                    }, navigateTo: { [weak self] destination in
+//                        self?.relay?.navigateTo(destination)
+//                    }, communicateToServer: { [weak self] data in
+//                        try? self?.relay?.communicateToServer(data)
+//                    }
+//                )
+//            )
+//        }
         view.addSubview(vstack)
+//        vstack.addArrangedSubview(emergencyMainMenuReplacer.makeContentView())
         
         NSLayoutConstraint.activate([
-            vstack.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
-            vstack.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor),
-            vstack.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor)
+            vstack.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor),
+            vstack.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor)
         ])
     }
     

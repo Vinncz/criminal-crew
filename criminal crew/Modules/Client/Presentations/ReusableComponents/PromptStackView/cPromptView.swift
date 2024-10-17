@@ -32,17 +32,17 @@ open class PromptView: UIView {
         addSubview(promptLabel)
         
         NSLayoutConstraint.activate([
-//            promptBackground.topAnchor.constraint(equalTo: topAnchor, constant: 8),
-//            promptBackground.leadingAnchor.constraint(equalTo: leadingAnchor),
-//            promptBackground.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -8),
-//            promptBackground.bottomAnchor.constraint(equalTo: bottomAnchor, constant: -8),
-//            
-//            promptLabel.topAnchor.constraint(equalTo: topAnchor, constant: 8),
-//            promptLabel.bottomAnchor.constraint(equalTo: bottomAnchor, constant: -8),
-//            promptLabel.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 16),
-//            promptLabel.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -16),
-//            promptLabel.centerXAnchor.constraint(equalTo: centerXAnchor),
-//            promptLabel.centerYAnchor.constraint(equalTo: centerYAnchor)
+            promptBackground.topAnchor.constraint(equalTo: topAnchor, constant: 8),
+            promptBackground.leadingAnchor.constraint(equalTo: leadingAnchor),
+            promptBackground.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -8),
+            promptBackground.bottomAnchor.constraint(equalTo: bottomAnchor, constant: -8),
+            
+            promptLabel.topAnchor.constraint(equalTo: topAnchor, constant: 8),
+            promptLabel.bottomAnchor.constraint(equalTo: bottomAnchor, constant: -8),
+            promptLabel.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 16),
+            promptLabel.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -16),
+            promptLabel.centerXAnchor.constraint(equalTo: centerXAnchor),
+            promptLabel.centerYAnchor.constraint(equalTo: centerYAnchor)
         ])
     }
     

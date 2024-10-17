@@ -1,10 +1,23 @@
 import UIKit
 import GamePantry
+import SwiftUI
+
+struct PlayerRequests : View {
+    @State var joinRequests : [GPGameJoinRequest]
+    
+    var body : some View {
+        List (joinRequests, id: \.self) { jr in
+            Text("\(jr.requestee.displayName)")
+        }
+    }
+}
 
 class RoomHostViewController : UIViewController, UsesDependenciesInjector {
     
     let tRoomName    : UITextField
     let bExposeRoom  : UIButton
+    
+    
     
     let bSendMessage : UIButton
     
@@ -12,6 +25,9 @@ class RoomHostViewController : UIViewController, UsesDependenciesInjector {
         self.tRoomName    = UITextField()
         self.bExposeRoom  = UIButton().titled("Open room").styled(.text).tagged(Self.openRoom)
         self.bSendMessage = UIButton().titled("Say HI!").styled(.text).tagged(Self.sendMessage)
+//        let playerRequests = UIHostingConfiguration {
+//            PlayerRequests()
+//        }.makeContentView()
         
         super.init(nibName: nil, bundle: nil)
     }

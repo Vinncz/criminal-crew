@@ -15,7 +15,6 @@ extension UIButton {
     public enum Style {
         case borderedProminent,
              secondary,
-             tetriary,
              link,
              text
     }
@@ -26,8 +25,24 @@ extension UIButton {
     }
     
     public func styled ( _ style: Style ) -> Self {
-        self.layer.backgroundColor = UIColor.blue.cgColor
-        self.layer.cornerRadius = UIViewConstants.CornerRadiuses.normal
+        switch style {
+            case .borderedProminent:
+                self.backgroundColor = .systemBlue
+                self.layer.cornerRadius = UIViewConstants.CornerRadiuses.normal
+                self.setTitleColor(.white, for: .normal)
+//                guard let titleLabel else { return self }
+                self.configuration?.contentInsets = NSDirectionalEdgeInsets(top: 99, leading: UIViewConstants.Paddings.huge, bottom:99, trailing: UIViewConstants.Paddings.huge)
+//                self.titleLabel?.layoutMargins = .init(top: UIViewConstants.Paddings.normal, left: UIViewConstants.Paddings.huge, bottom: UIViewConstants.Paddings.normal, right: UIViewConstants.Paddings.huge)
+            case .secondary:
+                self.backgroundColor = .systemBlue.withAlphaComponent(0.4)
+                self.layer.cornerRadius = UIViewConstants.CornerRadiuses.normal
+                self.setTitleColor(.systemBlue, for: .normal)
+            case .link:
+                self.setTitleColor(.systemBlue, for: .normal)
+            case .text:
+                break
+        }
+        
         return self
     }
     
