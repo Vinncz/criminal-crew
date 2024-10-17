@@ -14,7 +14,6 @@ public class CableGameViewController: BaseGameViewController, GameContentProvide
     public var secondStartPointIDs: [UIView: String] = [:]
     public var secondEndPointIDs: [UIView: String] = [:]
     
-    private let promptStackView: UIStackView = createHorizontalStackView()
     private var timeLabel: UILabel = createLabel(text: "20")
     private var promptLabel: UILabel = createLabel(text: "Quantum Encryption, Pseudo AIIDS")
     
@@ -26,13 +25,13 @@ public class CableGameViewController: BaseGameViewController, GameContentProvide
     //     view.addSubview(leftPanel)
     // }
     
-    func createFirstPanelView() -> UIView {
+    public func createFirstPanelView() -> UIView {
         let containerView = UIView()
         setupViewsForFirstPanel()
         view.addSubview(containerView)
         randomizePositions(for: containerView)
         
-        let portraitBackgroundImage = addBackgroundImageView("BG Cable Potrait")
+        let portraitBackgroundImage = ViewFactory.addBackgroundImageView("client.panels.cables-panel.panel-background-left")
         
         containerView.insertSubview(portraitBackgroundImage, at: 0)
         
@@ -46,13 +45,13 @@ public class CableGameViewController: BaseGameViewController, GameContentProvide
         return containerView
     }
     
-    func createSecondPanelView() -> UIView {
+    public func createSecondPanelView() -> UIView {
         let landscapeContainerView = UIView()
         setupViewsForSecondPanel()
         view.addSubview(landscapeContainerView)
         randomizePositionsForSecondPanel(for: landscapeContainerView)
         
-        let landscapeBackgroundImage = addBackgroundImageView("BG Cable Landscape")
+        let landscapeBackgroundImage = ViewFactory.addBackgroundImageView("client.panels.cables-panel.panel-background-center")
         landscapeContainerView.insertSubview(landscapeBackgroundImage, at: 0)
 
         NSLayoutConstraint.activate([
@@ -65,11 +64,6 @@ public class CableGameViewController: BaseGameViewController, GameContentProvide
         return landscapeContainerView
     }
     
-    func createPromptView() -> UIView {
-        setupPromptView()
-        return promptStackView
-    }
-    
     public override func setupGameContent() {
         contentProvider = self
         setupGestureRecognizers()
@@ -77,50 +71,21 @@ public class CableGameViewController: BaseGameViewController, GameContentProvide
         
     }
     
-    private func setupPromptView() {
-        let promptBackground = UIImageView(image: UIImage(named: "Prompt"))
-        promptBackground.contentMode = .scaleToFill
-        
-        let promptContainerView = UIView()
-        promptContainerView.addSubview(promptBackground)
-        promptContainerView.addSubview(promptLabel)
-        
-        promptStackView.addArrangedSubview(promptContainerView)
-        promptStackView.addArrangedSubview(timeLabel)
-        
-        promptBackground.translatesAutoresizingMaskIntoConstraints = false
-        promptLabel.translatesAutoresizingMaskIntoConstraints = false
-        promptContainerView.translatesAutoresizingMaskIntoConstraints = false
-        
-        NSLayoutConstraint.activate([
-            promptContainerView.widthAnchor.constraint(equalTo: promptStackView.widthAnchor, multiplier: 0.9),
-            timeLabel.widthAnchor.constraint(equalTo: promptStackView.widthAnchor, multiplier: 0.1),
-            
-            promptBackground.topAnchor.constraint(equalTo: promptContainerView.topAnchor, constant: 8),
-            promptBackground.leadingAnchor.constraint(equalTo: promptContainerView.leadingAnchor),
-            promptBackground.trailingAnchor.constraint(equalTo: promptContainerView.trailingAnchor, constant: -8),
-            promptBackground.bottomAnchor.constraint(equalTo: promptContainerView.bottomAnchor, constant: -8),
-            
-            promptLabel.centerXAnchor.constraint(equalTo: promptContainerView.centerXAnchor),
-            promptLabel.centerYAnchor.constraint(equalTo: promptContainerView.centerYAnchor)
-        ])
-    }
-    
     func setupViewsForFirstPanel() {
-        CableManager.shared.cableRedStart.image = UIImage(named: "cableRed")
-        CableManager.shared.cableBlueStart.image = UIImage(named: "cableBlue")
-        CableManager.shared.cableYellowStart.image = UIImage(named: "cableYellow")
-        CableManager.shared.cableGreenStart.image = UIImage(named: "cableGreen")
+        CableManager.shared.cableRedStart.image = UIImage(named: "client.panels.cables-panel.red-cable-vertical")
+        CableManager.shared.cableBlueStart.image = UIImage(named: "client.panels.cables-panel.blue-cable-vertical")
+        CableManager.shared.cableYellowStart.image = UIImage(named: "client.panels.cables-panel.yellow-cable-vertical")
+        CableManager.shared.cableGreenStart.image = UIImage(named: "client.panels.cables-panel.green-cable-vertical")
         
-        CableManager.shared.cableRedEnd.image = UIImage(named: "cableRed")
-        CableManager.shared.cableBlueEnd.image = UIImage(named: "cableBlue")
-        CableManager.shared.cableYellowEnd.image = UIImage(named: "cableYellow")
-        CableManager.shared.cableGreenEnd.image = UIImage(named: "cableGreen")
+        CableManager.shared.cableRedEnd.image = UIImage(named: "client.panels.cables-panel.red-cable-vertical")
+        CableManager.shared.cableBlueEnd.image = UIImage(named: "client.panels.cables-panel.blue-cable-vertical")
+        CableManager.shared.cableYellowEnd.image = UIImage(named: "client.panels.cables-panel.yellow-cable-vertical")
+        CableManager.shared.cableGreenEnd.image = UIImage(named: "client.panels.cables-panel.green-cable-vertical")
         
-        CableManager.shared.cableRedHead.image = UIImage(named: "cableHead")
-        CableManager.shared.cableBlueHead.image = UIImage(named: "cableHead")
-        CableManager.shared.cableYellowHead.image = UIImage(named: "cableHead")
-        CableManager.shared.cableGreenHead.image = UIImage(named: "cableHead")
+        CableManager.shared.cableRedHead.image = UIImage(named: "client.panels.cables-panel.cable-head.vertical")
+        CableManager.shared.cableBlueHead.image = UIImage(named: "client.panels.cables-panel.cable-head.vertical")
+        CableManager.shared.cableYellowHead.image = UIImage(named: "client.panels.cables-panel.cable-head.vertical")
+        CableManager.shared.cableGreenHead.image = UIImage(named: "client.panels.cables-panel.cable-head.vertical")
         
         [CableManager.shared.cableRedStart,
          CableManager.shared.cableBlueStart,
@@ -141,20 +106,20 @@ public class CableGameViewController: BaseGameViewController, GameContentProvide
     }
     
     func setupViewsForSecondPanel() {
-        CableManager.shared.secondCableRedStart.image = UIImage(named: "cableRed")
-        CableManager.shared.secondCableBlueStart.image = UIImage(named: "cableBlue")
-        CableManager.shared.secondCableYellowStart.image = UIImage(named: "cableYellow")
-        CableManager.shared.secondCableGreenStart.image = UIImage(named: "cableGreen")
+        CableManager.shared.secondCableRedStart.image = UIImage(named: "client.panels.cables-panel.red-cable-vertical")
+        CableManager.shared.secondCableBlueStart.image = UIImage(named: "client.panels.cables-panel.blue-cable-vertical")
+        CableManager.shared.secondCableYellowStart.image = UIImage(named: "client.panels.cables-panel.yellow-cable-vertical")
+        CableManager.shared.secondCableGreenStart.image = UIImage(named: "client.panels.cables-panel.green-cable-vertical")
         
-        CableManager.shared.secondCableRedEnd.image = UIImage(named: "endPointStar")
-        CableManager.shared.secondCableBlueEnd.image = UIImage(named: "endPointSquare")
-        CableManager.shared.secondCableYellowEnd.image = UIImage(named: "endPointCircle")
-        CableManager.shared.secondCableGreenEnd.image = UIImage(named: "endPointTriangle")
+        CableManager.shared.secondCableRedEnd.image = UIImage(named: "client.panels.cables-panel.star-peg")
+        CableManager.shared.secondCableBlueEnd.image = UIImage(named: "client.panels.cables-panel.square-peg")
+        CableManager.shared.secondCableYellowEnd.image = UIImage(named: "client.panels.cables-panel.circle-peg")
+        CableManager.shared.secondCableGreenEnd.image = UIImage(named: "client.panels.cables-panel.triangle-peg")
         
-        CableManager.shared.secondCableRedHead.image = UIImage(named: "cableHeadLandscape")
-        CableManager.shared.secondCableBlueHead.image = UIImage(named: "cableHeadLandscape")
-        CableManager.shared.secondCableYellowHead.image = UIImage(named: "cableHeadLandscape")
-        CableManager.shared.secondCableGreenHead.image = UIImage(named: "cableHeadLandscape")
+        CableManager.shared.secondCableRedHead.image = UIImage(named: "client.panels.cables-panel.cable-head.horizontal")
+        CableManager.shared.secondCableBlueHead.image = UIImage(named: "client.panels.cables-panel.cable-head.horizontal")
+        CableManager.shared.secondCableYellowHead.image = UIImage(named: "client.panels.cables-panel.cable-head.horizontal")
+        CableManager.shared.secondCableGreenHead.image = UIImage(named: "client.panels.cables-panel.cable-head.horizontal")
         
         [CableManager.shared.secondCableRedStart,
          CableManager.shared.secondCableBlueStart,

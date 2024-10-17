@@ -12,7 +12,7 @@ internal class SwitchGameViewController: BaseGameViewController, GameContentProv
     
     private var cancellables: Set<AnyCancellable> = Set<AnyCancellable>()
     internal var viewModel: SwitchGameViewModel?
-    internal var coordinator: RootCoordinator?
+//    internal var coordinator: RootCoordinator?
     
     private var leverView: LeversView?
     private var switchStackView: SwitchStackView?
@@ -119,7 +119,7 @@ internal class SwitchGameViewController: BaseGameViewController, GameContentProv
     }
     
     @objc private func didCompleteQuickTimeEvent() {
-        coordinator?.handleTaskCompletion()
+//        coordinator?.handleTaskCompletion()
     }
 
     private func showTaskAlert(isSuccess: Bool) {

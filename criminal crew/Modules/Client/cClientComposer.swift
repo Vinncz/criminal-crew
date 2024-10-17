@@ -83,6 +83,7 @@ extension ClientComposer {
         )
         
         let cablesGame = BaseGameViewController()
+        cablesGame.contentProvider = ClockGameViewController()
         
         navigationController.pushViewController(cablesGame, animated: true)
     }
