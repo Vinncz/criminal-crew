@@ -41,7 +41,7 @@ public class ClientComposer : UsesDependenciesInjector {
         self.networkManager = networkManager
         self.localStorage   = localStorage
         
-        placeInitialView()
+        router.openChannel(for: GPTaskReceivedEvent.self)
         
         self.networkManager.browser.startBrowsing(self.networkManager.browser)
         self.networkManager.browser.$discoveredServers.sink { discoveredServers in
@@ -53,6 +53,7 @@ public class ClientComposer : UsesDependenciesInjector {
         }.store(in: &cancellables)
         
         
+        placeInitialView()
     }
     
 }
@@ -94,7 +95,6 @@ extension ClientComposer {
         )
         
         switchRepository.relay = MultipeerTaskRepository.Relay (
-            
             communicateToServer: { [weak self] data in
                 do {
                     try self?.networkManager.eventBroadcaster.broadcast(data, to: self!.networkManager.eventBroadcaster.getPeers())
@@ -103,8 +103,9 @@ extension ClientComposer {
                     debug("unable to make broadcast to server: \(error)")
                     return false
                 }
-            }
+            }, eventRouter: self.router
         )
+        switchRepository.placeSubscription(on: GPTaskReceivedEvent.self)
         let cablesGame = SwitchGameViewController()
         
 //        navigationController.pushViewController(cablesGame, animated: true)

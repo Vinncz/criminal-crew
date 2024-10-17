@@ -42,7 +42,7 @@ extension MainMenuViewController {
     override func viewDidLoad () {
         _ = bBrowseRooms.executes(self, action: #selector(cueToNavigate(sender:)), for: .touchUpInside)
         _ = bHostRoom.executes(self, action: #selector(cueToNavigate(sender:)), for: .touchUpInside)
-        let a = UIButton().titled("Send mock data").executes(self, action: #selector(sendMockData), for: .touchUpInside)
+        let a = UIButton().titled("Send mock data").styled(.link).executes(self, action: #selector(sendMockData), for: .touchUpInside)
         let vstack = Self.makeStack(direction: .vertical, distribution: .fill).thatHolds(lGameName, a, bBrowseRooms, bHostRoom)
 //        
 //        let emergencyMainMenuReplacer = UIHostingConfiguration {

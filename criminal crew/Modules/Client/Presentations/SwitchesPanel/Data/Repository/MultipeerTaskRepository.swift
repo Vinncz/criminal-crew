@@ -25,11 +25,17 @@ public struct GPTaskReceivedEvent : GPEvent, GPReceivableEvent {
             let prompt = payload["prompt"] as? String,
             let taskId = payload["taskId"] as? String,
             let completionCriteria = payload["completionCriteria"] as? String,
-            let duration = payload["duration"] as? Int
-        else { return nil }
+            let duration = payload["duration"] as? String,
+            let duraDouble = Double(duration)
+        else { 
+            debug("Did fail to parse GPTaskReceivedEvent")
+            return nil
+        }
         
-        let constructed = completionCriteria.split(separator: "¬Ω").map(String.init)
-        return GPTaskReceivedEvent(prompt: prompt, completionCriteria: constructed, duration: duration, taskId: taskId)
+        let durationInt = Int(duraDouble)
+        let joined = completionCriteria.split(separator: "¬Ω").map(String.init)
+        
+        return GPTaskReceivedEvent(prompt: prompt, completionCriteria: joined, duration: durationInt, taskId: taskId)
     }
     
 }
@@ -63,9 +69,7 @@ public class MultipeerTaskRepository: UsesDependenciesInjector, GPHandlesEvents 
     private func handle(_ event: GPEvent) {
         switch (event) {
             case let event as GPTaskReceivedEvent:
-//                guard let taskToBeDone = newEvent.payload["taskToBeDone"],
-//                        let taskId = newEvent.payload["taskId"] as? String
-//                else { return print("error: taskToBeDone tidak ditemukan") }\
+                debug("Event is recognized as GPTaskReceivedEvent")
                 let prompt = event.prompt
                 let completionCriteria = event.completionCriteria
                 let taskId = event.taskId

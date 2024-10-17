@@ -23,8 +23,8 @@ class RoomHostViewController : UIViewController, UsesDependenciesInjector {
     
     override init ( nibName nibNameOrNil: String?, bundle nibBundleOrNil: Bundle? ) {
         self.tRoomName    = UITextField()
-        self.bExposeRoom  = UIButton().titled("Open room").styled(.text).tagged(Self.openRoom)
-        self.bSendMessage = UIButton().titled("Say HI!").styled(.text).tagged(Self.sendMessage)
+        self.bExposeRoom  = UIButton().titled("Open room").styled(.borderedProminent).tagged(Self.openRoom)
+        self.bSendMessage = UIButton().titled("Say HI!").styled(.secondary).tagged(Self.sendMessage)
 //        let playerRequests = UIHostingConfiguration {
 //            PlayerRequests()
 //        }.makeContentView()
@@ -85,7 +85,7 @@ extension RoomHostViewController {
             // TODO: Replace with actual data
             TaskReportEvent(submittedBy: "Client", taskIdentifier: "Nope", isAccomplished: true).representedAsData()
         )
-        print("tried said hi!")
+        print("Sent a message to server as Client")
     }
     
 }
