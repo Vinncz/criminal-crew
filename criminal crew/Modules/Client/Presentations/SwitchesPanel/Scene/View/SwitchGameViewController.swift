@@ -83,8 +83,7 @@ internal class SwitchGameViewController: BaseGameViewController, GameContentProv
     
     override open func setupGameContent() {
         contentProvider = self
-        let networkManager = NetworkManager()
-        let repository = MultipeerTaskRepository(networkManager: networkManager)
+        let repository = MultipeerTaskRepository()
         let useCase = SwitchGameUseCase(taskRepository: repository)
         self.viewModel = SwitchGameViewModel(switchGameUseCase: useCase)
         
