@@ -13,6 +13,8 @@ public class ClientComposer : UsesDependenciesInjector {
     
     public let navigationController : UINavigationController
     
+    public let switchRepository: MultipeerTaskRepository = MultipeerTaskRepository()
+    
     public var relay          : Relay?
     
     public let router         : GamePantry.GPEventRouter
@@ -47,6 +49,8 @@ public class ClientComposer : UsesDependenciesInjector {
                 )
             }
         }.store(in: &cancellables)
+        
+        
     }
     
 }
@@ -82,11 +86,22 @@ extension ClientComposer {
             }
         )
         
-        let cablesGame = BaseGameViewController()
-        cablesGame.contentProvider = ClockGameViewController()
+        switchRepository.relay = MultipeerTaskRepository.Relay (
+            
+            communicateToServer: { [weak self] data in
+                do {
+                    try self?.networkManager.eventBroadcaster.broadcast(data, to: self!.networkManager.eventBroadcaster.getPeers())
+                    return true
+                } catch {
+                    debug("unable to make broadcast to server: \(error)")
+                    return false
+                }
+            }
+        )
+        let cablesGame = SwitchGameViewController()
         
-        navigationController.pushViewController(cablesGame, animated: true)
-//        navigationController.pushViewController(mmvc, animated: true)
+//        navigationController.pushViewController(cablesGame, animated: true)
+        navigationController.pushViewController(mmvc, animated: true)
     }
     
 }
