@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		202DA80B2CBE761D009932F5 /* GamePantry in Frameworks */ = {isa = PBXBuildFile; productRef = 202DA80A2CBE761D009932F5 /* GamePantry */; };
+		20F3C0B92CC0F64600D83F35 /* GamePantry in Frameworks */ = {isa = PBXBuildFile; productRef = 20F3C0B82CC0F64600D83F35 /* GamePantry */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -69,6 +70,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				20F3C0B92CC0F64600D83F35 /* GamePantry in Frameworks */,
 				202DA80B2CBE761D009932F5 /* GamePantry in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -131,6 +133,7 @@
 			name = "criminal crew";
 			packageProductDependencies = (
 				202DA80A2CBE761D009932F5 /* GamePantry */,
+				20F3C0B82CC0F64600D83F35 /* GamePantry */,
 			);
 			productName = "criminal crew";
 			productReference = 202DA7D52CBE75D2009932F5 /* criminal crew.app */;
@@ -215,7 +218,7 @@
 			mainGroup = 202DA7CC2CBE75D1009932F5;
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
-				202DA8092CBE761D009932F5 /* XCLocalSwiftPackageReference "../GamePantry" */,
+				20F3C0B72CC0F64600D83F35 /* XCRemoteSwiftPackageReference "GamePantry" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 202DA7D62CBE75D2009932F5 /* Products */;
@@ -585,16 +588,25 @@
 		};
 /* End XCConfigurationList section */
 
-/* Begin XCLocalSwiftPackageReference section */
-		202DA8092CBE761D009932F5 /* XCLocalSwiftPackageReference "../GamePantry" */ = {
-			isa = XCLocalSwiftPackageReference;
-			relativePath = ../GamePantry;
+/* Begin XCRemoteSwiftPackageReference section */
+		20F3C0B72CC0F64600D83F35 /* XCRemoteSwiftPackageReference "GamePantry" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/Vinncz/GamePantry";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 0.2.5;
+			};
 		};
-/* End XCLocalSwiftPackageReference section */
+/* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
 		202DA80A2CBE761D009932F5 /* GamePantry */ = {
 			isa = XCSwiftPackageProductDependency;
+			productName = GamePantry;
+		};
+		20F3C0B82CC0F64600D83F35 /* GamePantry */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 20F3C0B72CC0F64600D83F35 /* XCRemoteSwiftPackageReference "GamePantry" */;
 			productName = GamePantry;
 		};
 /* End XCSwiftPackageProductDependency section */
