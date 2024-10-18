@@ -5,4 +5,12 @@
 package.resolved
 .swiftpm
 *xcodeproj
-.pbxproj
+project.pbxproj
+.xcuiprofile
+DerivedData/
+*.xccheckout
+*.xcuserstate
+*.xcscmblueprint
+*.xcuserdatad
+*.xcscmblueprint
+*.xccheckout
