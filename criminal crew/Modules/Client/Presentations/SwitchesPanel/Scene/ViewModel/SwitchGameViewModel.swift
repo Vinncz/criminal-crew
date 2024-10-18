@@ -16,12 +16,18 @@ internal class SwitchGameViewModel {
     private var pressedButton: [String] = []
     internal var taskCompletionStatus: PassthroughSubject<Bool, Never> = PassthroughSubject<Bool, Never>()
     internal var changePrompt: PassthroughSubject<String, Never> = PassthroughSubject<String, Never>()
+    internal var finishGameAlert: PassthroughSubject<String, Never> = PassthroughSubject<String, Never>()
     
     init(switchGameUseCase: SwitchGameUseCase) {
         self.switchGameUseCase = switchGameUseCase
         switchGameUseCase.promptPublisher()
             .sink { [weak self] prompt in
                 self?.changePromptLabel(prompt)
+            }
+            .store(in: &cancellables)
+        switchGameUseCase.finishGamePublisher()
+            .sink { [weak self] isFinished in
+                self?.finishGameAlert(isFinished)
             }
             .store(in: &cancellables)
     }
@@ -103,6 +109,11 @@ internal class SwitchGameViewModel {
             })
             .replaceError(with: false)
             .eraseToAnyPublisher()
+    }
+    
+    private func finishGameAlert(_ winningCondition: Bool) {
+        let message = winningCondition ? "You won!" : "You lost!"
+        finishGameAlert.send(message)
     }
     
     private func showAlert(for error: Error) {

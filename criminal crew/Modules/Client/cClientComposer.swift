@@ -40,10 +40,24 @@ public class ClientComposer : UsesDependenciesInjector {
         self.router         = router
         self.networkManager = networkManager
         self.localStorage   = localStorage
+        
+        router.openChannel(for: GPTaskReceivedEvent.self)
+        router.openChannel(for: GPPromptReceivedEvent.self)
+        router.openChannel(for: GPFinishGameEvent.self)
+        
+        self.networkManager.browser.startBrowsing(self.networkManager.browser)
+        self.networkManager.browser.$discoveredServers.sink { discoveredServers in
+            discoveredServers.forEach { server in
+                self.networkManager.eventBroadcaster.approve(
+                    self.networkManager.browser.requestToJoin(server.serverId)
+                )
+            }
+        }.store(in: &cancellables)
+        
+        
+        placeInitialView()
     }
     
-    var cancellableForAutoJoinSelfCreatedServer : AnyCancellable?
-
 }
 
 extension ClientComposer {
@@ -142,6 +156,9 @@ extension ClientComposer {
             }, eventRouter: self.router
         )
         switchRepository.placeSubscription(on: GPTaskReceivedEvent.self)
+        switchRepository.placeSubscription(on: GPPromptReceivedEvent.self)
+        switchRepository.placeSubscription(on: GPFinishGameEvent.self)
+        let cablesGame = CableGameViewController()
         
         navigationController.pushViewController(mmvc, animated: true)
     }

@@ -28,11 +28,19 @@ protocol GetPromptUseCaseProtocol {
     
 }
 
+protocol FinishGameUseCaseProtocol {
+    
+    func getWinningCondition(_ winningCondition: Bool)
+    func finishGamePublisher() -> AnyPublisher<Bool, Never>
+    
+}
+
 internal class SwitchGameUseCase {
     
     private var cancellables: Set<AnyCancellable> = Set<AnyCancellable>()
     
     private var promptSubject: PassthroughSubject<String, Never> = PassthroughSubject<String, Never>()
+    private var finishGameSubject: PassthroughSubject<Bool, Never> = PassthroughSubject<Bool, Never>()
     
     private let taskRepository: MultipeerTaskRepository
     private var newTask: [NewTask] = []
@@ -48,6 +56,11 @@ internal class SwitchGameUseCase {
         taskRepository.promptPublisher()
             .sink { [weak self] prompt in
                 self?.getPrompt(prompt)
+            }
+            .store(in: &cancellables)
+        taskRepository.finishGamePublisher()
+            .sink { [weak self] winningCondition in
+                self?.getWinningCondition(winningCondition)
             }
             .store(in: &cancellables)
     }
@@ -142,12 +155,24 @@ extension SwitchGameUseCase: GetTaskUseCaseProtocol {
 extension SwitchGameUseCase: GetPromptUseCaseProtocol {
     
     internal func getPrompt(_ newPrompt: NewPrompt) {
-        let prompt = newPrompt.promptToBeDone.joined(separator: ", ")
+        let prompt = newPrompt.promptToBeDone
         promptSubject.send(prompt)
     }
     
     internal func promptPublisher() -> AnyPublisher<String, Never> {
         return promptSubject.eraseToAnyPublisher()
+    }
+    
+}
+
+extension SwitchGameUseCase: FinishGameUseCaseProtocol {
+    
+    func getWinningCondition(_ winningCondition: Bool) {
+        finishGameSubject.send(winningCondition)
+    }
+    
+    func finishGamePublisher() -> AnyPublisher<Bool, Never> {
+        return finishGameSubject.eraseToAnyPublisher()
     }
     
 }
