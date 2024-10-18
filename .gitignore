@@ -5,3 +5,4 @@
 package.resolved
 .swiftpm
 *xcodeproj
+.pbxproj
