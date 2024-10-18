@@ -1,6 +1,18 @@
 import UIKit
+import GamePantry
 
 internal class ClockGameViewController: BaseGameViewController, GameContentProvider {
+    
+//    struct Relay: CommunicationPortal {
+//        var getTask : () -> [GameTask]
+//    }
+//    
+//    var subscriptions: Set<AnyCancellable>
+//    
+//    func placeSubscription(on eventType: any GamePantry.GPEvent.Type) {
+//        
+//    }
+    
     internal var viewModel: SwitchGameViewModel?
     internal var coordinator: ClientComposer?
     var switchStackView: SwitchStackView?
@@ -267,29 +279,74 @@ internal class ClockGameViewController: BaseGameViewController, GameContentProvi
         
         let imageSize: CGFloat = 45
         let labelHeight: CGFloat = 20
+        let switchHeight: CGFloat = 45
         let padding: CGFloat = 15
-        let verticalSpacing: CGFloat = 20
         let itemsPerRow = 7
-    
+        
         let randomSymbols = symbolsSwitch.shuffled()
         
-        for i in 0..<14 {
-            let row = i / itemsPerRow
+        // first group (baris 1 dan 2: simbol dan switch)
+        for i in 0..<7 {
             let col = i % itemsPerRow
             let xPos = CGFloat(col) * (imageSize + padding)
-            let yPos = CGFloat(row) * (imageSize + labelHeight + padding) + (CGFloat(row) * verticalSpacing)
             
-            let symbolLabel = UILabel(frame: CGRect(x: xPos, y: yPos, width: imageSize, height: labelHeight))
-            symbolLabel.text = randomSymbols[i % randomSymbols.count]
+            let symbolYPos: CGFloat = 0
+            let symbolView = UIView(frame: CGRect(x: xPos, y: symbolYPos, width: imageSize, height: imageSize + labelHeight))
+            
+            let symbolImage = UIImageView(frame: CGRect(x: 0, y: 0, width: imageSize - 5, height: imageSize - 5))
+            symbolImage.image = UIImage(named: "Label Square")
+            symbolView.addSubview(symbolImage)
+            
+            let symbolLabel = UILabel(frame: CGRect(x: 0, y: 0, width: imageSize, height: labelHeight))
+            symbolLabel.text = randomSymbols[i]
             symbolLabel.textAlignment = .center
             symbolLabel.font = UIFont.systemFont(ofSize: 20)
-            switchArea.addSubview(symbolLabel)
+            symbolLabel.center = symbolImage.center
+            symbolView.addSubview(symbolLabel)
             
-            let switchButton = UIButton(frame: CGRect(x: xPos + 5, y: yPos + labelHeight + 5, width: imageSize, height: imageSize))
+            switchArea.addSubview(symbolView)
+            
+            // Switch row (baris 2)
+            let switchYPos: CGFloat = symbolYPos + imageSize
+            let switchButton = UIButton(frame: CGRect(x: xPos, y: switchYPos, width: imageSize, height: imageSize))
             switchButton.tag = i
-            switchButton.accessibilityLabel = randomSymbols[i % randomSymbols.count]
+            switchButton.accessibilityLabel = randomSymbols[i]
             switchButton.setBackgroundImage(UIImage(named: "Switch Off"), for: .normal)
             switchButton.addTarget(self, action: #selector(switchTapped(_:)), for: .touchUpInside)
+            
+            switchArea.addSubview(switchButton)
+            switchButtons.append(switchButton)
+        }
+        
+        let firstGroupHeight = (imageSize + labelHeight + switchHeight - 10)
+        
+        for i in 7..<14 {
+            let col = i % itemsPerRow
+            let xPos = CGFloat(col) * (imageSize + padding)
+            
+            let symbolYPos: CGFloat = firstGroupHeight
+            let symbolView = UIView(frame: CGRect(x: xPos, y: symbolYPos, width: imageSize, height: imageSize + labelHeight))
+            
+            let symbolImage = UIImageView(frame: CGRect(x: 0, y: 0, width: imageSize - 5, height: imageSize - 5))
+            symbolImage.image = UIImage(named: "Label Square")
+            symbolView.addSubview(symbolImage)
+            
+            let symbolLabel = UILabel(frame: CGRect(x: 0, y: 0, width: imageSize, height: labelHeight))
+            symbolLabel.text = randomSymbols[i]
+            symbolLabel.textAlignment = .center
+            symbolLabel.font = UIFont.systemFont(ofSize: 20)
+            symbolLabel.center = symbolImage.center
+            symbolView.addSubview(symbolLabel)
+            
+            switchArea.addSubview(symbolView)
+            
+            let switchYPos: CGFloat = symbolYPos + imageSize
+            let switchButton = UIButton(frame: CGRect(x: xPos, y: switchYPos, width: imageSize, height: switchHeight))
+            switchButton.tag = i
+            switchButton.accessibilityLabel = randomSymbols[i]
+            switchButton.setBackgroundImage(UIImage(named: "Switch Off"), for: .normal)
+            switchButton.addTarget(self, action: #selector(switchTapped(_:)), for: .touchUpInside)
+            
             switchArea.addSubview(switchButton)
             switchButtons.append(switchButton)
         }
