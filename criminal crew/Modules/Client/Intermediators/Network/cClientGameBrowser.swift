@@ -14,6 +14,10 @@ public class ClientGameBrowser : GPGameClientBrowser {
     }
     
     public func didFindJoinableServer ( _ serverId: MCPeerID, with discoveryInfo: [String : String]?) {
+        guard !discoveredServers.contains(where: {$0.serverId == serverId}) else {
+            debug("Rediscovered a known server: \(serverId.displayName)")
+            return
+        }
         discoveredServers.append (
             GPGameServerDiscoveryReport (
                 serverId: serverId, 

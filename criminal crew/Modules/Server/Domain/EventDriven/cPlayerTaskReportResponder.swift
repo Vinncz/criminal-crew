@@ -18,17 +18,19 @@ public class PlayerTaskReportResponder {
         subscriptions.forEach { $0.cancel() }
     }
     
+    private let consoleIdentifier: String = "[S-TRR]"
+    
 }
 
 extension PlayerTaskReportResponder : GPHandlesEvents {
     
     public func placeSubscription ( on eventType: any GamePantry.GPEvent.Type ) {
         guard let relay = self.relay else {
-            debug("PlayerTaskReportResponder is unable to place subscription: relay is missing or not set"); return
+            debug("\(consoleIdentifier) PlayerTaskReportResponder is unable to place subscription: relay is missing or not set"); return
         }
         
         guard let eventRouter = relay.eventRouter else {
-            debug("PlayerTaskReportResponder is unable to place subscription: eventRouter is missing or not set"); return
+            debug("\(consoleIdentifier) PlayerTaskReportResponder is unable to place subscription: eventRouter is missing or not set"); return
         }
         
         eventRouter.subscribe(to: eventType)?.sink { event in
@@ -41,7 +43,7 @@ extension PlayerTaskReportResponder : GPHandlesEvents {
             case let event as TaskReportEvent:
                 handlePlayerTaskReportEvent(event)
             default:
-                debug("Unhandled event: \(event)")
+                debug("\(consoleIdentifier) Unhandled event: \(event)")
                 break
         }
     }
@@ -52,11 +54,11 @@ extension PlayerTaskReportResponder : GPEmitsEvents {
     
     public func emit ( _ event: GPEvent ) -> Bool {
         guard let relay = self.relay else {
-            debug("PlayerTaskReportResponder is unable to emit: relay is missing or not set"); return false
+            debug("\(consoleIdentifier) PlayerTaskReportResponder is unable to emit: relay is missing or not set"); return false
         }
         
         guard let eventRouter = relay.eventRouter else {
-            debug("PlayerTaskReportResponder is unable to emit: eventRouter is missing or not set"); return false
+            debug("\(consoleIdentifier) PlayerTaskReportResponder is unable to emit: eventRouter is missing or not set"); return false
         }
         
         return eventRouter.route(event)
@@ -68,19 +70,19 @@ extension PlayerTaskReportResponder {
     
     private func handlePlayerTaskReportEvent ( _ event: TaskReportEvent ) {
         guard let relay = self.relay else {
-            debug("PlayerTaskReportResponder is unable to handle events: relay is missing or not set"); return
+            debug("\(consoleIdentifier) PlayerTaskReportResponder is unable to handle events: relay is missing or not set"); return
         }
         
         guard let gameRuntimeContainer = relay.gameRuntimeContainer else {
-            debug("PlayerTaskReportResponder is unable to handle events: gameRuntimeContainer is missing or not set"); return
+            debug("\(consoleIdentifier) PlayerTaskReportResponder is unable to handle events: gameRuntimeContainer is missing or not set"); return
         }
         
         if ( event.isAccomplished ) {
             gameRuntimeContainer.tasksProgression.advance(by: 1)
-            debug("PlayerTaskReportResponder advances the task progression by one")
+            debug("\(consoleIdentifier) PlayerTaskReportResponder advances the task progression by one")
         } else {
             gameRuntimeContainer.penaltiesProgression.advance(by: 1)
-            debug("PlayerTaskReportResponder advances the penalty progression by one")
+            debug("\(consoleIdentifier) PlayerTaskReportResponder advances the penalty progression by one")
         }
     }
     

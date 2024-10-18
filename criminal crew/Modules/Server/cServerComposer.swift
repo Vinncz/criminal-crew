@@ -60,7 +60,26 @@ extension ServerComposer {
     
     public final func coordinate () {
         setupRelays()
+        openRouterToEvents()
         subscribeUCsToEvents()
+    }
+    
+    private final func openRouterToEvents () {
+        guard
+            router.openChannel(for:GPGameJoinRequestedEvent.self),
+            router.openChannel(for:GPUnableToBrowseEvent.self),
+            router.openChannel(for:GPGameStartRequestedEvent.self),
+            router.openChannel(for:GPGameEndRequestedEvent.self),
+            router.openChannel(for:GPGameJoinVerdictDeliveredEvent.self),
+            router.openChannel(for:GPBlacklistedEvent.self),
+            router.openChannel(for:GPTerminatedEvent.self),
+            router.openChannel(for:TaskReportEvent.self),
+            router.openChannel(for:GPAcquaintanceStatusUpdateEvent.self),
+            router.openChannel(for:InquiryAboutConnectedPlayersRequestedEvent.self)
+        else {
+            debug("[S] Did fail to open all required channels for EventRouter")
+            return
+        }
     }
     
     private final func setupRelays () {
@@ -153,6 +172,7 @@ extension ServerComposer {
         evtUC_hostSignalResponder.placeSubscription(on: GPGameJoinVerdictDeliveredEvent.self)
         evtUC_hostSignalResponder.placeSubscription(on: GPBlacklistedEvent.self)
         evtUC_hostSignalResponder.placeSubscription(on: GPTerminatedEvent.self)
+        evtUC_hostSignalResponder.placeSubscription(on: InquiryAboutConnectedPlayersRequestedEvent.self)
         debug("[S] Placed subscription of HostSignalResponder to GPGameStartRequestedEvent, GPGameEndRequestedEvent, GPGameJoinVerdictDeliveredEvent, GPBlacklistedEvent, and GPTerminatedEvent")
         
         evtUC_taskReportResponder.placeSubscription(on: TaskReportEvent.self)

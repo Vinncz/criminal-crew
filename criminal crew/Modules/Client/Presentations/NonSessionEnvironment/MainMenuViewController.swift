@@ -4,9 +4,10 @@ import GamePantry
 
 class MainMenuViewController: UIViewController, UsesDependenciesInjector {
     
-    let lGameName    : UILabel
-    let bBrowseRooms : UIButton
-    let bHostRoom    : UIButton
+    let lGameName         : UILabel
+    
+    let bBrowseRooms      : UIButton
+    let bHostRoom         : UIButton
     
     override init ( nibName nibNameOrNil: String?, bundle nibBundleOrNil: Bundle? ) {
         self.lGameName    = Self.makeLabel("Criminal Crew")
@@ -24,10 +25,13 @@ class MainMenuViewController: UIViewController, UsesDependenciesInjector {
     public var relay : Relay?
     public struct Relay : CommunicationPortal {
         var makeServerVisible   : ([String: String]) -> Void
-        var admitTheHost        : () -> Void
         var navigateTo          : (UIViewController) -> Void
         var communicateToServer : (Data) throws -> Void
         var sendMockDataFromServer : () -> Void
+        var requestConnectedPlayerNames : () throws -> Void
+        var startSearchingForServers : () -> Void
+        var stopSearchingForServers : () -> Void
+        var requestDiscoveredServersData : () -> [String]
     }
     
 }
@@ -44,23 +48,8 @@ extension MainMenuViewController {
         _ = bHostRoom.executes(self, action: #selector(cueToNavigate(sender:)), for: .touchUpInside)
         let a = UIButton().titled("Send mock data").styled(.link).executes(self, action: #selector(sendMockData), for: .touchUpInside)
         let vstack = Self.makeStack(direction: .vertical, distribution: .fill).thatHolds(lGameName, a, bBrowseRooms, bHostRoom)
-//        
-//        let emergencyMainMenuReplacer = UIHostingConfiguration {
-//            MainMenuView(relay: .init(
-//                    makeServerVisible: { [weak self] advContent in
-//                        self?.relay?.makeServerVisible(advContent)
-//                    }, admitTheHost: { [weak self] in
-//                        self?.relay?.admitTheHost()
-//                    }, navigateTo: { [weak self] destination in
-//                        self?.relay?.navigateTo(destination)
-//                    }, communicateToServer: { [weak self] data in
-//                        try? self?.relay?.communicateToServer(data)
-//                    }
-//                )
-//            )
-//        }
+
         view.addSubview(vstack)
-//        vstack.addArrangedSubview(emergencyMainMenuReplacer.makeContentView())
         
         NSLayoutConstraint.activate([
             vstack.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor),
@@ -82,20 +71,45 @@ extension MainMenuViewController {
         
         switch ( sender.tag ) {
             case Self.browseRoomButtonId:
-                relay.navigateTo(BrowseRoomsViewController())
-            case Self.hostRoomButtonId:
-                let hostRoomController = RoomHostViewController()
-                hostRoomController.relay = RoomHostViewController.Relay (
-                    makeServerVisible: { [weak self] advertContent in
-                        self?.relay?.makeServerVisible(advertContent)
+                let browseRoomsController = BrowseRoomsViewController()
+                browseRoomsController.relay = BrowseRoomsViewController.Relay (
+                    startSearchingForServers: { [weak self] in
+                        self?.relay?.startSearchingForServers()
                     }, 
-                    admitTheHost: { [weak self] in
-                        self?.relay?.admitTheHost()
+                    stopSearchingForServers: { [weak self] in
+                        self?.relay?.stopSearchingForServers()
                     },
                     navigateTo: { [weak self] vc in
                         self?.relay?.navigateTo(vc)
                     }, 
-                    communicateToServer: { [weak self] data in
+                    sendToServer: { [weak self] data in
+                        try? self?.relay?.communicateToServer(data)
+                    }, 
+                    placeSubscriptionOnDiscoveryOfServers: {
+                        Future<String, Never>{promise in promise(.success(""))}
+                            .sink {val in}
+                    }, 
+                    requestDiscoveredServersData: { [weak self] in
+                        self?.relay?.requestDiscoveredServersData() ?? ["No servers found"]
+                    }
+                )
+                relay.navigateTo(browseRoomsController)
+            case Self.hostRoomButtonId:
+                let hostRoomController = RoomHostViewController()
+                hostRoomController.relay = RoomHostViewController.Relay (
+                    listenForSelfCreatedServer: { [weak self] in
+                        self?.relay?.startSearchingForServers()
+                    },
+                    makeServerVisible: { [weak self] advertContent in
+                        self?.relay?.makeServerVisible(advertContent)
+                    },
+                    requestConnectedPlayerNames: { [weak self] in
+                        try self?.relay?.requestConnectedPlayerNames()
+                    },
+                    navigateTo: { [weak self] vc in
+                        self?.relay?.navigateTo(vc)
+                    }, 
+                    sendToServer: { [weak self] data in
                         try? self?.relay?.communicateToServer(data)
                     }
                 )

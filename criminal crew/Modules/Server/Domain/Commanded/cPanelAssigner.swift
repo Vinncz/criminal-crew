@@ -12,23 +12,25 @@ public class PanelAssigner : UseCase {
         weak var panelRuntimeContainer  : PanelRuntimeContainer?
     }
     
+    private let consoleIdentifier: String = "[S-PAS]"
+    
 }
 
 extension PanelAssigner {
     
     public func distributePanel () -> Bool {
         guard let relay = relay else {
-            debug("PanelAssigner is unable to distribute panel: relay is missing or not set")
+            debug("\(consoleIdentifier) PanelAssigner is unable to distribute panel: relay is missing or not set")
             return false
         }
         
         guard let playerRuntimeContainer = relay.playerRuntimeContainer else {
-            debug("PanelAssigner is unable to distribute panel: playerRuntimeContainer is missing or not set")
+            debug("\(consoleIdentifier) PanelAssigner is unable to distribute panel: playerRuntimeContainer is missing or not set")
             return false
         }
         
         guard let panelRuntimeContainer = relay.panelRuntimeContainer else {
-            debug("PanelAssigner is unable to distribute panel: panelRuntimeContainer is missing or not set")
+            debug("\(consoleIdentifier) PanelAssigner is unable to distribute panel: panelRuntimeContainer is missing or not set")
             return false
         }
         
@@ -38,7 +40,7 @@ extension PanelAssigner {
         let panelComposition  : [GamePanel.Type] = Array(panelRuntimeContainer.getRegisteredPanelTypes().shuffled().prefix(playerComposition.count))
         
         guard let eventBroadcaster = relay.eventBroadcaster else {
-            debug("PanelAssigner is unable to distribute panel: eventBroadcaster is missing or not set")
+            debug("\(consoleIdentifier) PanelAssigner is unable to distribute panel: eventBroadcaster is missing or not set")
             return false
         }
         
@@ -53,9 +55,9 @@ extension PanelAssigner {
             
             do {
                 try eventBroadcaster.broadcast(distributePanelOrder.representedAsData(), to: [player])
-                debug("PanelAssigner assigned \(panelForThisPlayer.panelId) to \(player.displayName)")
+                debug("\(consoleIdentifier) PanelAssigner assigned \(panelForThisPlayer.panelId) to \(player.displayName)")
             } catch {
-                debug("Failed to distribute panel to \(player): \(error)")
+                debug("\(consoleIdentifier) Failed to distribute panel to \(player): \(error)")
                 isSuccessful = false
             }
         }

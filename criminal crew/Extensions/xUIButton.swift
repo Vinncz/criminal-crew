@@ -29,19 +29,22 @@ extension UIButton {
             case .borderedProminent:
                 var config = UIButton.Configuration.filled()
                 self.backgroundColor = .systemBlue
+                self.layer.backgroundColor = UIColor.systemBlue.cgColor
                 self.layer.cornerRadius = UIViewConstants.CornerRadiuses.normal
                 self.setTitleColor(.white, for: .normal)
                 config.contentInsets = NSDirectionalEdgeInsets(top: UIViewConstants.Paddings.normal, leading: UIViewConstants.Paddings.huge, bottom: UIViewConstants.Paddings.normal, trailing: UIViewConstants.Paddings.huge)
                 self.configuration = config
+                
             case .secondary:
                 self.backgroundColor = .systemBlue.withAlphaComponent(0.33)
                 self.layer.cornerRadius = UIViewConstants.CornerRadiuses.normal
                 self.setTitleColor(.systemBlue, for: .normal)
+                
             case .link:
                 self.setTitleColor(.systemBlue, for: .normal)
+                
             case .text:
                 self.setTitleColor(.black, for: .normal)
-                break
         }
         
         return self

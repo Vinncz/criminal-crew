@@ -2,7 +2,7 @@ import UIKit
 
 extension UIViewController {
     
-    public static func makeStack ( direction: NSLayoutConstraint.Axis, spacing: CGFloat = UIViewConstants.Spacings.normal, distribution: UIStackView.Distribution = .equalSpacing ) -> UIStackView {
+    public static func makeStack ( direction: NSLayoutConstraint.Axis, spacing: CGFloat = UIViewConstants.Spacings.normal, distribution: UIStackView.Distribution = .fillProportionally ) -> UIStackView {
         let sv              = UIStackView()
             sv.axis         = direction
             sv.spacing      = spacing
@@ -17,6 +17,20 @@ extension UIViewController {
             label.textColor     = color
             label.textAlignment = alignment
         return label
+    }
+    
+    public static func makeSpacer ( width: CGFloat = 0, height: CGFloat = 0 ) -> UIView {
+        let spacer = UIView()
+            spacer.widthAnchor.constraint(equalToConstant: width).isActive = true
+            spacer.heightAnchor.constraint(equalToConstant: height).isActive = true
+        return spacer
+    }
+    
+    public static func makeDynamicSpacer ( grows: NSLayoutConstraint.Axis ) -> UIView {
+        let spacer = UIView()
+            spacer.setContentHuggingPriority(.defaultLow, for: grows)
+            spacer.setContentCompressionResistancePriority(.defaultLow, for: grows)
+        return spacer
     }
     
 }

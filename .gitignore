@@ -3,3 +3,5 @@
 .xcodeproj/
 .ds_store
 package.resolved
+.swiftpm
+*xcodeproj

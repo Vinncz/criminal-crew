@@ -25,7 +25,7 @@ public class ClientComposer : UsesDependenciesInjector {
     private var cancellables  : Set<AnyCancellable> = []
     
     public struct Relay : CommunicationPortal {
-        var makeServerVisible : ([String: String]) -> Void
+        var makeServerVisible : ([String: String]) -> MCPeerID?
         var admitTheHost      : (MCPeerID) -> Void
         var sendMockDataFromServer : () -> Void
     }
@@ -40,44 +40,59 @@ public class ClientComposer : UsesDependenciesInjector {
         self.router         = router
         self.networkManager = networkManager
         self.localStorage   = localStorage
-        
-        router.openChannel(for: GPTaskReceivedEvent.self)
-        
-        self.networkManager.browser.startBrowsing(self.networkManager.browser)
-        self.networkManager.browser.$discoveredServers.sink { discoveredServers in
-            discoveredServers.forEach { server in
-                self.networkManager.eventBroadcaster.approve(
-                    self.networkManager.browser.requestToJoin(server.serverId)
-                )
-            }
-        }.store(in: &cancellables)
-        
-        
-        placeInitialView()
     }
     
+    var cancellableForAutoJoinSelfCreatedServer : AnyCancellable?
+
 }
 
 extension ClientComposer {
     
     public func coordinate () -> Void {
-        
+        openRouterToEvents()
+        placeInitialView()
     }
     
+    private final func openRouterToEvents () {
+        guard
+            router.openChannel(for:GPGameJoinRequestedEvent.self),
+            router.openChannel(for:GPUnableToBrowseEvent.self),
+            router.openChannel(for:GPGameStartRequestedEvent.self),
+            router.openChannel(for:GPGameEndRequestedEvent.self),
+            router.openChannel(for:GPGameJoinVerdictDeliveredEvent.self),
+            router.openChannel(for:GPBlacklistedEvent.self),
+            router.openChannel(for:GPTerminatedEvent.self),
+            router.openChannel(for:TaskReportEvent.self),
+            router.openChannel(for:GPAcquaintanceStatusUpdateEvent.self),
+            router.openChannel(for:InquiryAboutConnectedPlayersRespondedEvent.self)
+        else {
+            debug("[C] Did fail to open all required channels for EventRouter")
+            return
+        }
+    }
 
-    
     private func placeInitialView () -> Void {
         let mmvc = MainMenuViewController(nibName: "MainMenuView", bundle: nil)
         mmvc.relay = MainMenuViewController.Relay (
             makeServerVisible   : { [weak self] advertContent in
-                self?.relay?.makeServerVisible(advertContent)
-            },
-            admitTheHost        : { [weak self] in
-                guard let self else { return }
-                self.networkManager.eventBroadcaster.approve(
-                    self.networkManager.browser.requestToJoin(self.networkManager.myself)
-                )
-                self.relay?.admitTheHost(self.networkManager.myself)
+                guard let self, let serverAddr = self.relay?.makeServerVisible(advertContent) else {
+                    debug("ClientComposer relay is missing or not set")
+                    return
+                }
+                
+                // activates self' browser
+                cancellableForAutoJoinSelfCreatedServer = self.networkManager.browser.$discoveredServers.sink { servers in
+                    servers.forEach { serv in
+                        if ( serv.serverId == serverAddr ) {
+                            self.networkManager.eventBroadcaster.approve(
+                                self.networkManager.browser.requestToJoin(serv.serverId)
+                            )
+                        }
+                    }
+                }
+                
+                // places a subscription to RootComposer, to always admit the given MCPeerID
+                relay?.admitTheHost(self.networkManager.myself)
             },
             navigateTo          : { [weak self] vc in
                 self?.navigationController.pushViewController(vc, animated: true)
@@ -91,6 +106,27 @@ extension ClientComposer {
             },
             sendMockDataFromServer : { [weak self] in
                 self?.relay?.sendMockDataFromServer()
+            },
+            requestConnectedPlayerNames: { [weak self] in 
+                guard let self else { return }
+                try self.networkManager.eventBroadcaster.broadcast(
+                    InquiryAboutConnectedPlayersRequestedEvent(authorizedBy: self.networkManager.myself.displayName).representedAsData(),
+                    to: self.networkManager.eventBroadcaster.getPeers()
+                )
+            },
+            startSearchingForServers: { [weak self] in 
+                guard let self else { return }
+                self.networkManager.browser.startBrowsing(self.networkManager.browser)
+            },
+            stopSearchingForServers: { [weak self] in 
+                guard let self else { return }
+                self.networkManager.browser.stopBrowsing(self.networkManager.browser)
+            },
+            requestDiscoveredServersData: { [weak self] in 
+                guard let self else { return ["No discovered servers"] }
+                return self.networkManager.browser.discoveredServers.map {
+                    return $0.discoveryContext["roomName"] ?? "Unnamed server"
+                }
             }
         )
         
@@ -106,9 +142,7 @@ extension ClientComposer {
             }, eventRouter: self.router
         )
         switchRepository.placeSubscription(on: GPTaskReceivedEvent.self)
-        let cablesGame = SwitchGameViewController()
         
-//        navigationController.pushViewController(cablesGame, animated: true)
         navigationController.pushViewController(mmvc, animated: true)
     }
     

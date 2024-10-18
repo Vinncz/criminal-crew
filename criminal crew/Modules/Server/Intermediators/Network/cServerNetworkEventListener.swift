@@ -12,27 +12,27 @@ public class ServerNetworkEventListener : GPGameEventListener {
     }
     
     public func heardNews ( of: MCPeerID, to: MCSessionState ) {
-        var consoleMsg = ""
         if !emit (
             GPAcquaintanceStatusUpdateEvent (
                 subject : of, 
                 status  : to
             )
         ) {
-            consoleMsg += "\(consoleIdentifier) Failed to emit acquaintance event\n"
+            debug("\(consoleIdentifier) Failed to emit acquaintance event\n")
         }
-        consoleMsg += "\(consoleIdentifier) Status of \(of.displayName) updated to \(to.toString())"
-        
-        debug(consoleMsg)
     }
     
     public func heardData ( from peer: MCPeerID, _ data: Data ) {
+        debug("ServerNetworkEventListener did receive the following data: \(data.toString() ?? "<error>Invalid data</error>")")
         if let parsedData = EventParser.parse(data) {
             if !emit(parsedData) {
                 debug("\(consoleIdentifier) Events on the network are received but not shared via the event router")
             }
+        } else if let parsedData = InquiryAboutConnectedPlayersRequestedEvent.construct(from: fromData(data: data)!) {
+            if !emit(parsedData) {
+                debug("\(consoleIdentifier) Did receive an inquiry about connected players request but not shared via the event router")
+            }
         }
-        debug("ServerNetworkManager did receive the following data: \(data.toString() ?? "<error>Invalid data</error>")")
     }
     
     public func heardIncomingStreamRequest ( from peer: MCPeerID, _ stream: InputStream, withContextOf context: String ) {

@@ -19,17 +19,19 @@ public class EventRelayer : UseCase {
         subscriptions.forEach { $0.cancel() }
     }
     
+    private let consoleIdentifier: String = "[S-ERY]"
+    
 }
 
 extension EventRelayer : GPHandlesEvents {
     
     public func placeSubscription ( on eventType: any GamePantry.GPEvent.Type ) {
         guard let relay = self.relay else {
-            debug("EventRelayer is unable to place subscription: relay is missing or not set"); return
+            debug("\(consoleIdentifier) EventRelayer is unable to place subscription: relay is missing or not set"); return
         }
         
         guard let eventRouter = relay.eventRouter else {
-            debug("EventRelayer is unable to place subscription: eventRouter is missing or not set"); return
+            debug("\(consoleIdentifier) EventRelayer is unable to place subscription: eventRouter is missing or not set"); return
         }
         
         eventRouter.subscribe(to: eventType)?.sink { event in
@@ -44,7 +46,7 @@ extension EventRelayer : GPHandlesEvents {
             case let event as GPUnableToAdvertiseEvent:
                 relayToClientHost(event)
             default:
-                debug("Unhandled event: \(event)")
+                debug("\(consoleIdentifier) Unhandled event: \(event)")
                 break
         }
     }
@@ -55,20 +57,20 @@ extension EventRelayer {
     
     private func relayToClientHost ( _ event: any GPSendableEvent ) {
         guard let relay = relay else {
-            debug("EventRelayer is unable to respond to \(event): relay is missing or not set")
+            debug("\(consoleIdentifier) EventRelayer is unable to respond to \(event): relay is missing or not set")
             return
         }
         
         guard let player = relay.playerRegistry?.getAcquaintancedPartiesAndTheirState().keys.first else {
-            debug("EventRelayer is unable to respond to \(event): player is missing or not set or empty")
+            debug("\(consoleIdentifier) EventRelayer is unable to respond to \(event): player is missing or not set or empty")
             return
         }
         
         do {
             try relay.eventBroadcaster?.broadcast(event.representedAsData(), to: [player])
-            debug("EventRelayer did relay \(event) to client-host")
+            debug("\(consoleIdentifier) EventRelayer did relay \(event) to client-host")
         } catch {
-            debug("EventRelayer did fail to relay \(event) to client-host")
+            debug("\(consoleIdentifier) EventRelayer did fail to relay \(event) to client-host: \(error)")
         }
     }
     
