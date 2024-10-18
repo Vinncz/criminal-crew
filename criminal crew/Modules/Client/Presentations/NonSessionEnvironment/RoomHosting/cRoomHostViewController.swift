@@ -2,7 +2,19 @@ import UIKit
 import GamePantry
 import SwiftUI
 
-class RoomHostViewController : UIViewController, UsesDependenciesInjector {
+class RoomHostViewController : UIViewController, UsesDependenciesInjector, GPHandlesEvents {
+    var subscriptions: Set<AnyCancellable> = []
+    
+    func placeSubscription(on eventType: any GamePantry.GPEvent.Type) {
+        guard let relay = self.relay else { debug("black hole"); return }
+        
+        guard let eventRouter = relay.eventRouter else { debug("black hole"); return }
+        
+        eventRouter.subscribe(to: eventType)?.sink { event in
+            self.handle(event)
+        }.store(in: &subscriptions)
+    }
+    
     
     let tRoomName        : UITextField
     let bExposeRoom      : UIButton
@@ -35,9 +47,22 @@ class RoomHostViewController : UIViewController, UsesDependenciesInjector {
     public struct Relay : CommunicationPortal {
         var listenForSelfCreatedServer : () -> Void
         var makeServerVisible : ([String: String]) -> Void
-        var requestConnectedPlayerNames : () throws -> [String]
+        var requestConnectedPlayerNames : () throws -> Void
         var navigateTo        : (UIViewController) -> Void
         var sendToServer      : (Data) throws -> Void
+        weak var eventRouter: GPEventRouter?
+    }
+    
+    private func handle(_ event: GPEvent) {
+        switch (event) {
+        case let event as InquiryAboutConnectedPlayersRespondedEvent:
+                debug("Event is recognized as InquiryAboutConnectedPlayersRespondedEvent")
+            playerList = event.connectedPlayerNames
+            playerTableView.reloadData()
+                break
+            default :
+                break
+        }
     }
     
 }
@@ -91,8 +116,7 @@ extension RoomHostViewController {
         guard let relay = relay else { return }
         
         do { 
-            try playerList = relay.requestConnectedPlayerNames()
-            playerTableView.reloadData()
+            try relay.requestConnectedPlayerNames()
         } catch {
             debug("RoomHostController did fail to request connected players from server: \(error)")
         }
@@ -130,6 +154,24 @@ extension RoomHostViewController: UITableViewDelegate {
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         let selectedPlayer = playerList[indexPath.row]
         print("select \(selectedPlayer)")
+    }
+    
+    func tableView(_ tableView: UITableView, trailingSwipeActionsConfigurationForRowAt indexPath: IndexPath) -> UISwipeActionsConfiguration? {
+        let kickAction = UIContextualAction(style: .destructive, title: "Kick") { (action, view, completionHandler) in
+                let playerToKick = self.playerList[indexPath.row]
+                print("Kicked player: \(playerToKick)")
+                
+                self.playerList.remove(at: indexPath.row)
+                tableView.deleteRows(at: [indexPath], with: .automatic)
+                
+                completionHandler(true)
+            }
+            
+            kickAction.backgroundColor = .red
+            
+            let swipeConfiguration = UISwipeActionsConfiguration(actions: [kickAction])
+            
+            return swipeConfiguration
     }
 }
 
