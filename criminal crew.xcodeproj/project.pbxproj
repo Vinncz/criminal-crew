@@ -35,7 +35,7 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
-		202DA7FD2CBE75D3009932F5 /* Exceptions for "criminal crew" folder in "criminal crew" target */ = {
+		A7ECBBD72CC251E500A2BB97 /* Exceptions for "criminal crew" folder in "criminal crew" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				Info.plist,
@@ -45,14 +45,6 @@
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
-		202DA7D72CBE75D2009932F5 /* criminal crew */ = {
-			isa = PBXFileSystemSynchronizedRootGroup;
-			exceptions = (
-				202DA7FD2CBE75D3009932F5 /* Exceptions for "criminal crew" folder in "criminal crew" target */,
-			);
-			path = "criminal crew";
-			sourceTree = "<group>";
-		};
 		202DA7EE2CBE75D3009932F5 /* criminal crewTests */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			path = "criminal crewTests";
@@ -61,6 +53,14 @@
 		202DA7F82CBE75D3009932F5 /* criminal crewUITests */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			path = "criminal crewUITests";
+			sourceTree = "<group>";
+		};
+		A7ECBB5F2CC251E500A2BB97 /* criminal crew */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				A7ECBBD72CC251E500A2BB97 /* Exceptions for "criminal crew" folder in "criminal crew" target */,
+			);
+			path = "criminal crew";
 			sourceTree = "<group>";
 		};
 /* End PBXFileSystemSynchronizedRootGroup section */
@@ -95,7 +95,7 @@
 		202DA7CC2CBE75D1009932F5 = {
 			isa = PBXGroup;
 			children = (
-				202DA7D72CBE75D2009932F5 /* criminal crew */,
+				A7ECBB5F2CC251E500A2BB97 /* criminal crew */,
 				202DA7EE2CBE75D3009932F5 /* criminal crewTests */,
 				202DA7F82CBE75D3009932F5 /* criminal crewUITests */,
 				202DA7D62CBE75D2009932F5 /* Products */,
@@ -128,7 +128,7 @@
 			dependencies = (
 			);
 			fileSystemSynchronizedGroups = (
-				202DA7D72CBE75D2009932F5 /* criminal crew */,
+				A7ECBB5F2CC251E500A2BB97 /* criminal crew */,
 			);
 			name = "criminal crew";
 			packageProductDependencies = (

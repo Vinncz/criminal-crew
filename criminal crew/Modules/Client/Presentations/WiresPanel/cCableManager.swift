@@ -60,3 +60,33 @@ class CableManager {
     private init() {}
 }
 
+class HexColorConverter {
+    // Static function to convert a hex string to UIColor
+    static func color(from hex: String, alpha: CGFloat = 1.0) -> UIColor? {
+        var hexFormatted = hex.trimmingCharacters(in: .whitespacesAndNewlines).uppercased()
+        
+        // Ensure the string has the correct format
+        if hexFormatted.hasPrefix("#") {
+            hexFormatted.remove(at: hexFormatted.startIndex)
+        }
+        
+        // The hex code should be 6 or 8 characters long
+        if hexFormatted.count == 6 {
+            hexFormatted.append("FF") // Add alpha if not present
+        }
+        
+        guard hexFormatted.count == 8 else {
+            return nil
+        }
+        
+        var rgbValue: UInt64 = 0
+        Scanner(string: hexFormatted).scanHexInt64(&rgbValue)
+        
+        let red = CGFloat((rgbValue & 0xFF000000) >> 24) / 255.0
+        let green = CGFloat((rgbValue & 0x00FF0000) >> 16) / 255.0
+        let blue = CGFloat((rgbValue & 0x0000FF00) >> 8) / 255.0
+        let alpha = CGFloat(rgbValue & 0x000000FF) / 255.0
+        
+        return UIColor(red: red, green: green, blue: blue, alpha: alpha)
+    }
+}

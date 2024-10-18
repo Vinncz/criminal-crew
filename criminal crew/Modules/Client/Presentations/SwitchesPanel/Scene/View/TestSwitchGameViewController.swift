@@ -1,4 +1,11 @@
 //
+//  TestSwitchGameViewController.swift
+//  criminal crew
+//
+//  Created by Hansen Yudistira on 18/10/24.
+//
+
+//
 //  SwitchGameViewController.swift
 //  CriminalCrew
 //
@@ -8,7 +15,7 @@
 import UIKit
 import Combine
 
-internal class SwitchGameViewController: BaseGameViewController {
+internal class TestSwitchGameViewController: BaseGameViewController {
     
     private var cancellables: Set<AnyCancellable> = Set<AnyCancellable>()
     internal var viewModel: SwitchGameViewModel?
@@ -161,7 +168,7 @@ internal class SwitchGameViewController: BaseGameViewController {
     
 }
 
-extension SwitchGameViewController: ButtonTappedDelegate {
+extension TestSwitchGameViewController: ButtonTappedDelegate {
     
     internal func buttonTapped(sender: UIButton) {
         if let sender = sender as? LeverButton {

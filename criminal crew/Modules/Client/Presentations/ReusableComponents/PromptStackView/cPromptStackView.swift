@@ -24,16 +24,17 @@ open class PromptStackView: UIStackView {
     
     private func setupStackView() {
         axis = .horizontal
-        distribution = .fillEqually
+        alignment = .fill
         spacing = 8
         
         addArrangedSubview(promptLabelView)
         addArrangedSubview(timeView)
         
-        promptLabelView.translatesAutoresizingMaskIntoConstraints = false
         NSLayoutConstraint.activate([
             promptLabelView.widthAnchor.constraint(equalTo: widthAnchor, multiplier: 0.9),
+            promptLabelView.heightAnchor.constraint(equalTo: heightAnchor),
             timeView.widthAnchor.constraint(equalTo: widthAnchor, multiplier: 0.1),
+            timeView.heightAnchor.constraint(equalTo: heightAnchor)
         ])
     }
     

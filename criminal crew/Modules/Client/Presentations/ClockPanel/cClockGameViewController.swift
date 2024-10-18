@@ -1,6 +1,6 @@
 import UIKit
 
-internal class ClockGameViewController: BaseGameViewController, GameContentProvider {
+internal class ClockGameViewController: BaseGameViewController {
     internal var viewModel: SwitchGameViewModel?
     internal var coordinator: ClientComposer?
     var switchStackView: SwitchStackView?
@@ -26,7 +26,7 @@ internal class ClockGameViewController: BaseGameViewController, GameContentProvi
     var promptCount = 0
 
     
-    func createFirstPanelView() -> UIView {
+    override func createFirstPanelView() -> UIView {
         
         let portraitBackgroundImage = ViewFactory.addBackgroundImageView("BG Portrait")
         firstPanelContainerView.addSubview(portraitBackgroundImage)
@@ -103,7 +103,7 @@ internal class ClockGameViewController: BaseGameViewController, GameContentProvi
         return firstPanelContainerView
     }
     
-    func createSecondPanelView() -> UIView {
+    override func createSecondPanelView() -> UIView {
         let secondPanelContainerView: UIView = UIView()
         
         let landscapeBackgroundImage = ViewFactory.addBackgroundImageView("BG Landscape")
@@ -128,10 +128,6 @@ internal class ClockGameViewController: BaseGameViewController, GameContentProvi
         ])
         
         return secondPanelContainerView
-    }
-    
-    override func setupGameContent() {
-        contentProvider = self
     }
     
     func setupClockFace() {

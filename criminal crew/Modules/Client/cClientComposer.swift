@@ -110,7 +110,7 @@ extension ClientComposer {
         switchRepository.placeSubscription(on: GPTaskReceivedEvent.self)
         switchRepository.placeSubscription(on: GPPromptReceivedEvent.self)
         switchRepository.placeSubscription(on: GPFinishGameEvent.self)
-        let cablesGame = ClockGameViewController()
+        let cablesGame = CableGameViewController()
         
         navigationController.pushViewController(cablesGame, animated: true)
 //        navigationController.pushViewController(mmvc, animated: true)
