@@ -11,6 +11,9 @@ class RoomHostViewController : UIViewController, UsesDependenciesInjector {
     
     let tPermissionToggle : UISwitch
     let lPermissionLabel  : UILabel
+    
+    let playerTableView: UITableView
+    var playerList: [String] = []
         
     override init ( nibName nibNameOrNil: String?, bundle nibBundleOrNil: Bundle? ) {
         self.tRoomName        = UITextField().placeholder("Unnamed room").styled(.bordered)
@@ -19,6 +22,7 @@ class RoomHostViewController : UIViewController, UsesDependenciesInjector {
         
         self.tPermissionToggle = UISwitch()
         self.lPermissionLabel  = UILabel().labeled("Require approval to join").styled(.body)
+        self.playerTableView = UITableView()
         
         super.init(nibName: nil, bundle: nil)
     }
@@ -31,7 +35,7 @@ class RoomHostViewController : UIViewController, UsesDependenciesInjector {
     public struct Relay : CommunicationPortal {
         var listenForSelfCreatedServer : () -> Void
         var makeServerVisible : ([String: String]) -> Void
-        var requestConnectedPlayerNames : () throws -> Void
+        var requestConnectedPlayerNames : () throws -> [String]
         var navigateTo        : (UIViewController) -> Void
         var sendToServer      : (Data) throws -> Void
     }
@@ -49,14 +53,18 @@ extension RoomHostViewController {
         
         let roomNamingTextField = Self.makeStack(direction: .horizontal).thatHolds(tRoomName, bExposeRoom, Self.makeDynamicSpacer(grows: .horizontal))
         let autoAllowJoinRequestToglleHStack = Self.makeStack(direction: .horizontal, spacing: UIViewConstants.Spacings.large, distribution: .fill).thatHolds(tPermissionToggle, lPermissionLabel, Self.makeDynamicSpacer(grows: .horizontal))
-        let vstack = Self.makeStack(direction: .vertical, distribution: .fillProportionally).thatHolds(roomNamingTextField, bSendMessage, autoAllowJoinRequestToglleHStack)
+        let vstack = Self.makeStack(direction: .vertical, distribution: .fillProportionally).thatHolds(roomNamingTextField, bSendMessage, autoAllowJoinRequestToglleHStack, playerTableView)
+        playerTableView.delegate = self
+        playerTableView.dataSource = self
+        playerTableView.register(PlayerCell.self, forCellReuseIdentifier: PlayerCell.identifier)
         
         view.addSubview(vstack)
         
         NSLayoutConstraint.activate([
             vstack.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
             vstack.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor),
-            vstack.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor)
+            vstack.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor),
+            playerTableView.heightAnchor.constraint(equalToConstant: 300)
         ])
         
         relay?.listenForSelfCreatedServer()
@@ -83,10 +91,12 @@ extension RoomHostViewController {
         guard let relay = relay else { return }
         
         do { 
-            try relay.requestConnectedPlayerNames()
+            try playerList = relay.requestConnectedPlayerNames()
+            playerTableView.reloadData()
         } catch {
             debug("RoomHostController did fail to request connected players from server: \(error)")
         }
+        
     }
     
 }
@@ -96,6 +106,31 @@ extension RoomHostViewController {
     fileprivate static let openRoom : Int = 0
     fileprivate static let sendMessage : Int = 1
     
+}
+
+extension RoomHostViewController: UITableViewDataSource {
+    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+        return playerList.count
+    }
+    
+    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+        guard let cell = tableView.dequeueReusableCell(withIdentifier: PlayerCell.identifier, for: indexPath) as? PlayerCell else {
+            return UITableViewCell()
+        }
+        let playerName = playerList[indexPath.row]
+        
+        cell.configure(playerName: playerName)
+        return cell
+    }
+    
+    
+}
+
+extension RoomHostViewController: UITableViewDelegate {
+    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        let selectedPlayer = playerList[indexPath.row]
+        print("select \(selectedPlayer)")
+    }
 }
 
 #Preview {

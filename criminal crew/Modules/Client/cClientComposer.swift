@@ -95,15 +95,15 @@ extension ClientComposer {
                 }
                 
                 // activates self' browser
-                cancellableForAutoJoinSelfCreatedServer = self.networkManager.browser.$discoveredServers.sink { servers in
-                    servers.forEach { serv in
-                        if ( serv.serverId == serverAddr ) {
-                            self.networkManager.eventBroadcaster.approve(
-                                self.networkManager.browser.requestToJoin(serv.serverId)
-                            )
-                        }
-                    }
-                }
+    //                cancellableForAutoJoinSelfCreatedServer = self.networkManager.browser.$discoveredServers.sink { servers in
+    //                    servers.forEach { serv in
+    //                        if ( serv.serverId == serverAddr ) {
+    //                            self.networkManager.eventBroadcaster.approve(
+    //                                self.networkManager.browser.requestToJoin(serv.serverId)
+    //                            )
+    //                        }
+    //                    }
+    //                }
                 
                 // places a subscription to RootComposer, to always admit the given MCPeerID
                 relay?.admitTheHost(self.networkManager.myself)
@@ -158,7 +158,7 @@ extension ClientComposer {
         switchRepository.placeSubscription(on: GPTaskReceivedEvent.self)
         switchRepository.placeSubscription(on: GPPromptReceivedEvent.self)
         switchRepository.placeSubscription(on: GPFinishGameEvent.self)
-        let cablesGame = CableGameViewController()
+        let cablesGame = SwitchGameViewController()
         
         navigationController.pushViewController(mmvc, animated: true)
     }
