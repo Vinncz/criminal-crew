@@ -42,6 +42,8 @@ public class ClientComposer : UsesDependenciesInjector {
         self.localStorage   = localStorage
         
         router.openChannel(for: GPTaskReceivedEvent.self)
+        router.openChannel(for: GPPromptReceivedEvent.self)
+        router.openChannel(for: GPFinishGameEvent.self)
         
         self.networkManager.browser.startBrowsing(self.networkManager.browser)
         self.networkManager.browser.$discoveredServers.sink { discoveredServers in
@@ -106,10 +108,12 @@ extension ClientComposer {
             }, eventRouter: self.router
         )
         switchRepository.placeSubscription(on: GPTaskReceivedEvent.self)
-        let cablesGame = SwitchGameViewController()
+        switchRepository.placeSubscription(on: GPPromptReceivedEvent.self)
+        switchRepository.placeSubscription(on: GPFinishGameEvent.self)
+        let cablesGame = ClockGameViewController()
         
-//        navigationController.pushViewController(cablesGame, animated: true)
-        navigationController.pushViewController(mmvc, animated: true)
+        navigationController.pushViewController(cablesGame, animated: true)
+//        navigationController.pushViewController(mmvc, animated: true)
     }
     
 }

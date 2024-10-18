@@ -9,7 +9,7 @@ import UIKit
 
 open class PromptStackView: UIStackView {
     
-    public var promptView: PromptView = PromptView(label: "Initial Prompt")
+    public var promptLabelView: PromptView = PromptView(label: "Initial Prompt")
     public var timeView: TimeView = TimeView()
     
     public init() {
@@ -27,12 +27,12 @@ open class PromptStackView: UIStackView {
         distribution = .fillEqually
         spacing = 8
         
-        addArrangedSubview(promptView)
+        addArrangedSubview(promptLabelView)
         addArrangedSubview(timeView)
         
-        promptView.translatesAutoresizingMaskIntoConstraints = false
+        promptLabelView.translatesAutoresizingMaskIntoConstraints = false
         NSLayoutConstraint.activate([
-            promptView.widthAnchor.constraint(equalTo: widthAnchor, multiplier: 0.9),
+            promptLabelView.widthAnchor.constraint(equalTo: widthAnchor, multiplier: 0.9),
             timeView.widthAnchor.constraint(equalTo: widthAnchor, multiplier: 0.1),
         ])
     }

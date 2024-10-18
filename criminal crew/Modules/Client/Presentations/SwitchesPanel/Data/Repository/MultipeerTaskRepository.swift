@@ -8,38 +8,6 @@ import Foundation
 import Combine
 import GamePantry
 
-public struct GPTaskReceivedEvent : GPEvent, GPReceivableEvent {
-//    let array: [String] = ["babu", "babi", "babe"]
-    public let prompt : String
-    public let completionCriteria : [String]
-    public let duration: Int
-    public let taskId: String
-    
-    public let id: String = "AssignTaskEvent"
-    public let purpose: String = "Get the task assigned from server"
-    public let instanciatedOn: Date = .now
-    
-    public static func construct(from payload: [String : Any]) -> GPTaskReceivedEvent? {
-        guard
-            "AssignTaskEvent" == payload["eventId"] as? String,
-            let prompt = payload["prompt"] as? String,
-            let taskId = payload["taskId"] as? String,
-            let completionCriteria = payload["completionCriteria"] as? String,
-            let duration = payload["duration"] as? String,
-            let duraDouble = Double(duration)
-        else { 
-            debug("Did fail to parse GPTaskReceivedEvent")
-            return nil
-        }
-        
-        let durationInt = Int(duraDouble)
-        let joined = completionCriteria.split(separator: "¬Ω").map(String.init)
-        
-        return GPTaskReceivedEvent(prompt: prompt, completionCriteria: joined, duration: durationInt, taskId: taskId)
-    }
-    
-}
-
 protocol TaskRepository {
     
     func sendTaskDataToPeer(taskDone: TaskDone) -> AnyPublisher<Bool, Never>
@@ -49,12 +17,38 @@ protocol TaskRepository {
 
 protocol PromptRepository {
     
-    func getPromptDataFromPeer(_ promptToBeDone: [String])
+    func getPromptDataFromPeer(_ promptToBeDone: String)
+    
+}
+
+protocol FinishGameRepository {
+    
+    func getFinishGameDataFromPeer(_ winningCondition: Bool)
     
 }
 
 public class MultipeerTaskRepository: UsesDependenciesInjector, GPHandlesEvents {
     public var subscriptions: Set<AnyCancellable> = Set<AnyCancellable>()
+    
+    public var relay: Relay?
+    
+    private var cancellables: Set<AnyCancellable> = Set<AnyCancellable>()
+    private var taskSubject: PassthroughSubject<NewTask, Never> = PassthroughSubject<NewTask, Never>()
+    private var promptSubject: PassthroughSubject<NewPrompt, Never> = PassthroughSubject<NewPrompt, Never>()
+    private var finishGameSubject: PassthroughSubject<Bool, Never> = PassthroughSubject<Bool, Never>()
+    
+    public struct Relay: CommunicationPortal {
+        var communicateToServer: (Data) throws -> Bool
+        weak var eventRouter: GPEventRouter?
+    }
+    
+    public init() {
+//        networkManager.eventPublisher()
+//            .sink { [weak self] newEvent in
+//                self?.handleNewEvent(newEvent)
+//            }
+//            .store(in: &cancellables)
+    }
     
     public func placeSubscription(on eventType: any GamePantry.GPEvent.Type) {
         guard let relay = self.relay else { debug("black hole"); return }
@@ -70,63 +64,22 @@ public class MultipeerTaskRepository: UsesDependenciesInjector, GPHandlesEvents 
         switch (event) {
             case let event as GPTaskReceivedEvent:
                 debug("Event is recognized as GPTaskReceivedEvent")
-                let prompt = event.prompt
                 let completionCriteria = event.completionCriteria
                 let taskId = event.taskId
                 let duration = event.duration
                 getTaskDataFromPeer(taskId: taskId, taskToBeDone: completionCriteria)
                 break
-            case let event as AssignPanelEvent:
-                print("\(event)")
+            case let event as GPPromptReceivedEvent:
+                debug("Event is recognized as GPPromptReceivedEvent")
+                let prompt = event.prompt
+                getPromptDataFromPeer(prompt)
+                break
+            case let event as GPFinishGameEvent:
+                debug("Event is recognized as GPFinishGameEvent")
+                
                 break
             default :
                 break
-        }
-    }
-    
-    public var relay: Relay?
-    
-    private var cancellables: Set<AnyCancellable> = Set<AnyCancellable>()
-    private var taskSubject: PassthroughSubject<NewTask, Never> = PassthroughSubject<NewTask, Never>()
-    private var promptSubject: PassthroughSubject<NewPrompt, Never> = PassthroughSubject<NewPrompt, Never>()
-    
-    public struct Relay: CommunicationPortal {
-        var communicateToServer: (Data) throws -> Bool
-        weak var eventRouter: GPEventRouter?
-    }
-    
-    
-    public init() {
-//        networkManager.eventPublisher()
-//            .sink { [weak self] newEvent in
-//                self?.handleNewEvent(newEvent)
-//            }
-//            .store(in: &cancellables)
-    }
-    
-    private func handleNewEvent(_ newEvent: NewEventDTO) {
-        if let id = newEvent.payload["id"] as? String {
-            switch id {
-                case "newTaskFromServer":
-                    guard let taskToBeDone = newEvent.payload["taskToBeDone"],
-                            let taskId = newEvent.payload["taskId"] as? String
-                    else { return print("error: taskToBeDone tidak ditemukan") }
-                    getTaskDataFromPeer(taskId: taskId, taskToBeDone: taskToBeDone)
-                case "newPromptFromServer":
-                    guard let promptToBeDone = newEvent.payload["promptToBeDone"] as? [String]
-                    else { return print("error: promptToBeDone tidak ditemukan") }
-                    getPromptDataFromPeer(promptToBeDone)
-            case "assignedPanelFromServer":
-                break
-            case "gameEnded":
-                break
-            case "reportTaskToServer":
-                break
-                default:
-                    break
-            }
-        } else {
-            return print("error: id tidak ditemukan")
         }
     }
     
@@ -136,6 +89,10 @@ public class MultipeerTaskRepository: UsesDependenciesInjector, GPHandlesEvents 
     
     internal func promptPublisher() -> AnyPublisher<NewPrompt, Never> {
         return promptSubject.eraseToAnyPublisher()
+    }
+    
+    internal func finishGamePublisher() -> AnyPublisher<Bool, Never> {
+        return finishGameSubject.eraseToAnyPublisher()
     }
     
     deinit {
@@ -160,12 +117,15 @@ extension MultipeerTaskRepository: TaskRepository {
         
         return Future { promise in
             do {
-                let success = try self.relay!.communicateToServer(data)
-                promise(.success(success))
+                let success = try self.relay?.communicateToServer(data)
+                if let isSuccess = success {
+                    promise(.success(isSuccess))
+                } else {
+                    promise(.success(false))
+                }
             } catch {
                 print("\(error)")
             }
-            
         }
         .eraseToAnyPublisher()
     }
@@ -174,9 +134,17 @@ extension MultipeerTaskRepository: TaskRepository {
 
 extension MultipeerTaskRepository: PromptRepository {
     
-    internal func getPromptDataFromPeer(_ promptToBeDone: [String]) {
+    internal func getPromptDataFromPeer(_ promptToBeDone: String) {
         let newPrompt = NewPrompt.construct(from: promptToBeDone)
         promptSubject.send(newPrompt)
+    }
+    
+}
+
+extension MultipeerTaskRepository: FinishGameRepository {
+    
+    internal func getFinishGameDataFromPeer(_ winningCondition: Bool) {
+        finishGameSubject.send(winningCondition)
     }
     
 }

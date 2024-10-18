@@ -13,11 +13,11 @@ open class BaseGameViewController: UIViewController {
     
     private let firstPanelView = UIView()
     private let secondPanelView = UIView()
-    private var promptView = UIView()
+    private let promptView = UIView()
     
     public let mainStackView: UIStackView = UIStackView()
     public let rightStackView: UIStackView = UIStackView()
-    public var promptStackView: PromptStackView?
+    public let promptStackView: PromptStackView = PromptStackView()
     
     override init(nibName nibNameOrNil: String?, bundle nibBundleOrNil: Bundle?) {
         super.init(nibName: nil, bundle: nil)
@@ -110,15 +110,8 @@ open class BaseGameViewController: UIViewController {
     }
     
     private func createPromptView() -> UIStackView {
-        promptStackView = PromptStackView()
-        
-        if let promptStackView = promptStackView {
-            promptStackView.promptView.promptLabel.text = "Red, Quantum Encryption, Pseudo AIIDS"
-            return promptStackView
-        } else {
-            print("Prompt View failed to load!!!")
-            return UIStackView()
-        }
+        promptStackView.promptLabelView.promptLabel.text = "Red, Quantum Encryption, Pseudo AIIDS"
+        return promptStackView
     }
     
 }

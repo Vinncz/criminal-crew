@@ -108,6 +108,12 @@ internal class SwitchGameViewController: BaseGameViewController, GameContentProv
                 self?.changePromptLabel(prompt)
             }
             .store(in: &cancellables)
+        viewModel.finishGameAlert
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] message in
+                self?.showAlert(message)
+            }
+            .store(in: &cancellables)
     }
     
     @objc private func toggleButton(_ sender: SwitchButton) {
@@ -119,6 +125,12 @@ internal class SwitchGameViewController: BaseGameViewController, GameContentProv
     
     @objc private func didCompleteQuickTimeEvent() {
 //        coordinator?.handleTaskCompletion()
+    }
+    
+    private func showAlert(_ message: String) {
+        let alert = UIAlertController(title: "Game Over", message: message, preferredStyle: .alert)
+        alert.addAction(UIAlertAction(title: "OK", style: .default, handler: nil))
+        present(alert, animated: true, completion: nil)
     }
 
     private func showTaskAlert(isSuccess: Bool) {
@@ -139,7 +151,7 @@ internal class SwitchGameViewController: BaseGameViewController, GameContentProv
     }
     
     private func changePromptLabel(_ prompt: String) {
-        promptStackView?.promptView.promptLabel.text = prompt
+        promptStackView.promptLabelView.promptLabel.text = prompt
     }
     
     deinit {

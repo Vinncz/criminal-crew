@@ -16,9 +16,9 @@ internal struct NewPrompt: GPEvent {
     
     internal var instanciatedOn: Date = .now
     
-    internal let promptToBeDone: [String]
+    internal let promptToBeDone: String
     
-    init(promptToBeDone: [String]) {
+    init(promptToBeDone: String) {
         self.promptToBeDone = promptToBeDone
     }
     
@@ -35,7 +35,7 @@ internal struct NewPrompt: GPEvent {
 
 extension NewPrompt {
     
-    internal static func construct(from promptToBeDone: [String]) -> NewPrompt {
+    internal static func construct(from promptToBeDone: String) -> NewPrompt {
         return .init(promptToBeDone: promptToBeDone)
     }
     

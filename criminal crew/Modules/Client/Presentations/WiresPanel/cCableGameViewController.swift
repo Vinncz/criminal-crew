@@ -1,23 +1,21 @@
 import UIKit
 
-public class CableGameViewController: BaseGameViewController, GameContentProvider {
+internal class CableGameViewController: BaseGameViewController, GameContentProvider {
     
-    public var connections: [[String]] = []
-    public var currentCableHead: UIImageView?
-    public var connectedCableHeads: Set<UIImageView> = []
+    internal var connections: [[String]] = []
+    internal var currentCableHead: UIImageView?
+    internal var connectedCableHeads: Set<UIImageView> = []
     
-    public var cableHeads: [String: UIImageView] = [:]
-    public var startPointIDs: [UIView: String] = [:]
-    public var endPointIDs: [UIView: String] = [:]
+    internal var cableHeads: [String: UIImageView] = [:]
+    internal var startPointIDs: [UIView: String] = [:]
+    internal var endPointIDs: [UIView: String] = [:]
     
-    public var secondCableHeads: [String: UIImageView] = [:]
-    public var secondStartPointIDs: [UIView: String] = [:]
-    public var secondEndPointIDs: [UIView: String] = [:]
+    internal var secondCableHeads: [String: UIImageView] = [:]
+    internal var secondStartPointIDs: [UIView: String] = [:]
+    internal var secondEndPointIDs: [UIView: String] = [:]
     
-    public var containerView: UIView?
-    
-    private var timeLabel: UILabel = createLabel(text: "20")
-    private var promptLabel: UILabel = createLabel(text: "Quantum Encryption, Pseudo AIIDS")
+    internal var firstPanelContainerView: UIView = UIView()
+    internal var secondPanelContainerView: UIView = UIView()
     
     // public override func viewDidLoad () {
     //     let leftPanel = createFirstPanelView()
@@ -27,57 +25,50 @@ public class CableGameViewController: BaseGameViewController, GameContentProvide
     //     view.addSubview(leftPanel)
     // }
     
-    public func createFirstPanelView() -> UIView {
-        containerView = UIView()
-        containerView?.translatesAutoresizingMaskIntoConstraints = false
-        guard let containerView else {
-            return UIView()
-        }
+    internal func createFirstPanelView() -> UIView {
         
         let portraitBackgroundImage = ViewFactory.addBackgroundImageView("client.panels.cables-panel.panel-background-left")
         portraitBackgroundImage.translatesAutoresizingMaskIntoConstraints = false
-        containerView.addSubview(portraitBackgroundImage)
+        firstPanelContainerView.addSubview(portraitBackgroundImage)
         
         setupViewsForFirstPanel()
-        randomizePositions(for: containerView)
+        randomizePositions(for: firstPanelContainerView)
         
         NSLayoutConstraint.activate([
-            portraitBackgroundImage.topAnchor.constraint(equalTo: containerView.topAnchor),
-            portraitBackgroundImage.leadingAnchor.constraint(equalTo: containerView.leadingAnchor),
-            portraitBackgroundImage.bottomAnchor.constraint(equalTo: containerView.bottomAnchor),
-            portraitBackgroundImage.trailingAnchor.constraint(equalTo: containerView.trailingAnchor)
+            portraitBackgroundImage.topAnchor.constraint(equalTo: firstPanelContainerView.topAnchor),
+            portraitBackgroundImage.leadingAnchor.constraint(equalTo: firstPanelContainerView.leadingAnchor),
+            portraitBackgroundImage.bottomAnchor.constraint(equalTo: firstPanelContainerView.bottomAnchor),
+            portraitBackgroundImage.trailingAnchor.constraint(equalTo: firstPanelContainerView.trailingAnchor)
         ])
         
-        return containerView
+        return firstPanelContainerView
     }
     
-    public func createSecondPanelView() -> UIView {
-        let landscapeContainerView = UIView()
+    internal func createSecondPanelView() -> UIView {
         setupViewsForSecondPanel()
-        view.addSubview(landscapeContainerView)
-        randomizePositionsForSecondPanel(for: landscapeContainerView)
+        randomizePositionsForSecondPanel(for: secondPanelContainerView)
         
         let landscapeBackgroundImage = ViewFactory.addBackgroundImageView("client.panels.cables-panel.panel-background-center")
-        landscapeContainerView.insertSubview(landscapeBackgroundImage, at: 0)
+        secondPanelContainerView.insertSubview(landscapeBackgroundImage, at: 0)
 
         NSLayoutConstraint.activate([
-            landscapeBackgroundImage.topAnchor.constraint(equalTo: landscapeContainerView.topAnchor),
-            landscapeBackgroundImage.leadingAnchor.constraint(equalTo: landscapeContainerView.leadingAnchor),
-            landscapeBackgroundImage.bottomAnchor.constraint(equalTo: landscapeContainerView.bottomAnchor),
-            landscapeBackgroundImage.trailingAnchor.constraint(equalTo: landscapeContainerView.trailingAnchor)
+            landscapeBackgroundImage.topAnchor.constraint(equalTo: secondPanelContainerView.topAnchor),
+            landscapeBackgroundImage.leadingAnchor.constraint(equalTo: secondPanelContainerView.leadingAnchor),
+            landscapeBackgroundImage.bottomAnchor.constraint(equalTo: secondPanelContainerView.bottomAnchor),
+            landscapeBackgroundImage.trailingAnchor.constraint(equalTo: secondPanelContainerView.trailingAnchor)
         ])
         
-        return landscapeContainerView
+        return secondPanelContainerView
     }
     
-    public override func setupGameContent() {
+    internal override func setupGameContent() {
         contentProvider = self
         setupGestureRecognizers()
         assignIDs()
         
     }
     
-    func setupViewsForFirstPanel() {
+    internal func setupViewsForFirstPanel() {
         CableManager.shared.cableRedStart.image = UIImage(named: "client.panels.cables-panel.red-cable-vertical")
         CableManager.shared.cableBlueStart.image = UIImage(named: "client.panels.cables-panel.blue-cable-vertical")
         CableManager.shared.cableYellowStart.image = UIImage(named: "client.panels.cables-panel.yellow-cable-vertical")
@@ -107,9 +98,7 @@ public class CableGameViewController: BaseGameViewController, GameContentProvide
          CableManager.shared.cableGreenHead].forEach {
             $0.contentMode = .scaleAspectFit
             $0.translatesAutoresizingMaskIntoConstraints = false
-            if let containerView = containerView {
-                containerView.addSubview($0)
-            }
+            firstPanelContainerView.addSubview($0)
         }
     }
     
@@ -143,7 +132,7 @@ public class CableGameViewController: BaseGameViewController, GameContentProvide
          CableManager.shared.secondCableGreenHead].forEach {
             $0.contentMode = .scaleAspectFit
             $0.translatesAutoresizingMaskIntoConstraints = false
-            view.addSubview($0)
+            secondPanelContainerView.addSubview($0)
         }
     }
 
@@ -833,7 +822,6 @@ public class CableGameViewController: BaseGameViewController, GameContentProvide
            return
        }
    }
-    
     
 }
 
