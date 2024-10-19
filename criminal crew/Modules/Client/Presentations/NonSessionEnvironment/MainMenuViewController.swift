@@ -10,7 +10,7 @@ class MainMenuViewController: UIViewController, UsesDependenciesInjector {
     let bHostRoom         : UIButton
     
     override init ( nibName nibNameOrNil: String?, bundle nibBundleOrNil: Bundle? ) {
-        self.lGameName    = Self.makeLabel("Criminal Crew")
+        self.lGameName    = Self.makeLabel("Criminal Crew").styled(.title).withFont(.monospacedSystemFont(ofSize: 36, weight: .bold))
         
         self.bBrowseRooms = UIButton().titled("Browse Rooms").styled(.borderedProminent).tagged(Self.browseRoomButtonId)
         self.bHostRoom    = UIButton().titled("Host Room").styled(.secondary).tagged(Self.hostRoomButtonId)
@@ -25,6 +25,7 @@ class MainMenuViewController: UIViewController, UsesDependenciesInjector {
     public var relay : Relay?
     public struct Relay : CommunicationPortal {
         var makeServerVisible   : ([String: String]) -> Void
+        var makeServerInvisible : () -> Void
         var navigateTo          : (UIViewController) -> Void
         var communicateToServer : (Data) throws -> Void
         var sendMockDataFromServer : () -> Void
@@ -36,8 +37,6 @@ class MainMenuViewController: UIViewController, UsesDependenciesInjector {
     
 }
 
-
-/// Extension for behavior
 extension MainMenuViewController {
     @objc func sendMockData () -> Void {
         self.relay?.sendMockDataFromServer()
@@ -59,8 +58,6 @@ extension MainMenuViewController {
     
 }
 
-
-/// Extension for relay functionalities
 extension MainMenuViewController {
     
     @objc func cueToNavigate ( sender: UIButton ) {
@@ -103,6 +100,9 @@ extension MainMenuViewController {
                     makeServerVisible: { [weak self] advertContent in
                         self?.relay?.makeServerVisible(advertContent)
                     },
+                    makeServerInvisible: { [weak self] in 
+                        self?.relay?.makeServerInvisible()
+                    },
                     requestConnectedPlayerNames: { [weak self] in
                         try self?.relay?.requestConnectedPlayerNames()
                     },
@@ -121,8 +121,6 @@ extension MainMenuViewController {
     
 }
 
-
-// Extension for constants
 extension MainMenuViewController {
     
     fileprivate static let browseRoomButtonId : Int = 0

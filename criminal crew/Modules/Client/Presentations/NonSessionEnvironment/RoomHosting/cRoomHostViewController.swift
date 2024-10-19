@@ -47,15 +47,22 @@ class RoomHostViewController : UIViewController, UsesDependenciesInjector, GPHan
     public struct Relay : CommunicationPortal {
         var listenForSelfCreatedServer : () -> Void
         var makeServerVisible : ([String: String]) -> Void
+        var makeServerInvisible : () -> Void
         var requestConnectedPlayerNames : () throws -> Void
         var navigateTo        : (UIViewController) -> Void
         var sendToServer      : (Data) throws -> Void
         weak var eventRouter: GPEventRouter?
     }
     
-    private func handle(_ event: GPEvent) {
+    private let consoleIdentifer = "[C-RoomHostViewController]"
+    
+}
+
+extension RoomHostViewController {
+    
+    private func handle ( _ event: GPEvent ) {
         switch (event) {
-        case let event as InquiryAboutConnectedPlayersRespondedEvent:
+            case let event as ConnectedPlayerNamesResponse:
                 debug("Event is recognized as InquiryAboutConnectedPlayersRespondedEvent")
             playerList = event.connectedPlayerNames
             playerTableView.reloadData()
@@ -76,9 +83,17 @@ extension RoomHostViewController {
         _ = bSendMessage.executes(self, action: #selector(requestConnectedPlayersFromServer), for: .touchUpInside)
 //        _ = tPermissionToggle.executes(target: self, action: #selector(die), for: .touchUpInside)
         
-        let roomNamingTextField = Self.makeStack(direction: .horizontal).thatHolds(tRoomName, bExposeRoom, Self.makeDynamicSpacer(grows: .horizontal))
+        let roomNamingTextField = Self.makeStack(direction: .horizontal).thatHolds(tRoomName, bExposeRoom.padded(UIViewConstants.Paddings.large))
         let autoAllowJoinRequestToglleHStack = Self.makeStack(direction: .horizontal, spacing: UIViewConstants.Spacings.large, distribution: .fill).thatHolds(tPermissionToggle, lPermissionLabel, Self.makeDynamicSpacer(grows: .horizontal))
-        let vstack = Self.makeStack(direction: .vertical, distribution: .fillProportionally).thatHolds(roomNamingTextField, bSendMessage, autoAllowJoinRequestToglleHStack, playerTableView)
+        let vstack = Self.makeStack(direction: .vertical, distribution: .fillProportionally)
+            .thatHolds(
+                roomNamingTextField, 
+                bSendMessage, 
+                autoAllowJoinRequestToglleHStack, 
+                playerTableView
+            )
+        
+        
         playerTableView.delegate = self
         playerTableView.dataSource = self
         playerTableView.register(PlayerCell.self, forCellReuseIdentifier: PlayerCell.identifier)
@@ -93,6 +108,14 @@ extension RoomHostViewController {
         ])
         
         relay?.listenForSelfCreatedServer()
+    }
+    
+    override func viewDidDisappear ( _ animated: Bool ) {
+        super.viewDidDisappear(animated)
+        
+        if let relay {
+            relay.makeServerInvisible()
+        }
     }
     
 }
@@ -113,7 +136,9 @@ extension RoomHostViewController {
     }
     
     @objc func requestConnectedPlayersFromServer () {
-        guard let relay = relay else { return }
+        guard let relay else { 
+            return 
+        }
         
         do { 
             try relay.requestConnectedPlayerNames()
@@ -121,6 +146,13 @@ extension RoomHostViewController {
             debug("RoomHostController did fail to request connected players from server: \(error)")
         }
         
+    }
+    
+    @objc func updateAdmissionPolicy () {
+        guard let relay else {
+            debug("\(consoleIdentifer) Unable to update admission policy. Relay is missing or not set")
+            return
+        }
     }
     
 }

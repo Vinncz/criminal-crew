@@ -1,6 +1,6 @@
 import GamePantry
 
-final public class ServerComposer {
+final public class ServerComposer : UsesDependenciesInjector {
     
     static let configuration : GPGameProcessConfiguration = GamePantry.GPGameProcessConfiguration (
         debugEnabled : AppConfig.debugEnabled, 
@@ -9,6 +9,11 @@ final public class ServerComposer {
         serviceType  : AppConfig.serviceType,
         timeout      : 10
     )
+    
+    public var relay          : Relay?
+    public struct Relay : CommunicationPortal {
+        // var cancelHostAdmissionJob: () -> Void
+    }
     
     public let router         : GamePantry.GPEventRouter
     public let networkManager : ServerNetworkManager
@@ -22,14 +27,14 @@ final public class ServerComposer {
     public let evtUC_eventRelayer              : EventRelayer
     public let evtUC_hostSignalResponder       : HostSignalResponder
     public let evtUC_taskReportResponder       : PlayerTaskReportResponder
-    public let evtUC_playerConnectionResponder : PlayerConnectionResponder
+    public let evtUC_playerConnectionResponder : ServerPlayerConnectionResponder
     
     // public let dmnUC_gameContinuumObserver   : GameContinuumDaemon
     // public let dmnUC_quickTimeEventInitiator : QuickTimeEventDaemon
     
-    public let ent_playerRuntimeContainer : PlayerRuntimeContainer
-    public let ent_panelRuntimeContainer  : PanelRuntimeContainer
-    public let ent_gameRuntimeContainer   : GameRuntimeContainer
+    public let ent_playerRuntimeContainer : ServerPlayerRuntimeContainer
+    public let ent_panelRuntimeContainer  : ServerPanelRuntimeContainer
+    public let ent_gameRuntimeContainer   : ServerGameRuntimeContainer
     
     public init () {
         router                   = GamePantry.GPEventRouter()
@@ -44,14 +49,20 @@ final public class ServerComposer {
         evtUC_eventRelayer              = EventRelayer()
         evtUC_hostSignalResponder       = HostSignalResponder()
         evtUC_taskReportResponder       = PlayerTaskReportResponder()
-        evtUC_playerConnectionResponder = PlayerConnectionResponder()
+        evtUC_playerConnectionResponder = ServerPlayerConnectionResponder()
         
         // dmnUC_gameContinuumObserver   = GameContinuumDaemon()
         // dmnUC_quickTimeEventInitiator = QuickTimeEventDaemon()
         
-        ent_playerRuntimeContainer = PlayerRuntimeContainer()
-        ent_panelRuntimeContainer  = PanelRuntimeContainer()
-        ent_gameRuntimeContainer   = GameRuntimeContainer()
+        ent_playerRuntimeContainer = ServerPlayerRuntimeContainer()
+        ent_panelRuntimeContainer  = ServerPanelRuntimeContainer()
+        ent_gameRuntimeContainer   = ServerGameRuntimeContainer()
+    }
+    
+    private var cancellables : Set<AnyCancellable> = []
+    
+    deinit {
+        cancellables.forEach { $0.cancel() }
     }
     
 }
@@ -120,30 +131,30 @@ extension ServerComposer {
             gameRuntimeContainer   : self.ent_gameRuntimeContainer,
             admitPlayer            : { playerName, decideToAdmit in
                 guard let playerRequest = self.networkManager.advertiserService.pendingRequests.first(where: { $0.requestee.displayName == playerName }) else {
-                    debug("HostSignalResponder is unable to admit the player: the request record is missing or not found")
+                    debug("[S] HostSignalResponder is unable to admit the player: the request record is missing or not found")
                     return
                 }
                 
                 if decideToAdmit {
                     self.networkManager.eventBroadcaster.approve(playerRequest.resolve(to: .admit))
-                    debug("Admitted the player named: \(playerName)")
+                    debug("[S] HostSignalResponder admitted the player named: \(playerName)")
                 } else {
                     self.networkManager.eventBroadcaster.approve(playerRequest.resolve(to: .reject))
                     self.networkManager.advertiserService.pendingRequests.removeAll { $0.requestee.displayName == playerName }
-                    debug("Rejected the player named: \(playerName), and removed their request")
+                    debug("[S] HostSignalResponder rejected the player named: \(playerName), and removed their request")
                 }
             },
             terminatePlayer        : { terminationEvent in
                 guard let playerToBeTerminated = self.ent_playerRuntimeContainer.getAcquaintancedPartiesAndTheirState().first(where: { $0.key.displayName == terminationEvent.subject })?.key else {
-                    debug("HostSignalResponder is unable to admit the player: the request record is missing or not found")
+                    debug("[S] HostSignalResponder is unable to admit the player: the request record is missing or not found")
                     return
                 }
                 
                 do {
                     try self.networkManager.eventBroadcaster.broadcast(terminationEvent.representedAsData(), to: [playerToBeTerminated])
-                    debug("HostSignalResponder broadcasted the termination event to the player named: \(playerToBeTerminated.displayName): \(terminationEvent.representedAsData())")
+                    debug("[S] HostSignalResponder broadcasted the termination event to the player named: \(playerToBeTerminated.displayName): \(terminationEvent.representedAsData())")
                 } catch {
-                    debug("HostSignalResponder is unable to terminate the player: \(error)")
+                    debug("[S] HostSignalResponder is unable to terminate the player: \(error)")
                 }
             }
         )
@@ -155,7 +166,7 @@ extension ServerComposer {
         )
         debug("[S] PlayerTaskReportResponder relay has been set up")
         
-        evtUC_playerConnectionResponder.relay = PlayerConnectionResponder.Relay (
+        evtUC_playerConnectionResponder.relay = ServerPlayerConnectionResponder.Relay (
             eventRouter            : self.router,
             playerRuntimeContainer : self.ent_playerRuntimeContainer
         )

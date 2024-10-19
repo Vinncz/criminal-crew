@@ -8,8 +8,8 @@ public class PanelAssigner : UseCase {
     
     public struct Relay : CommunicationPortal {
         weak var eventBroadcaster       : GPGameEventBroadcaster?
-        weak var playerRuntimeContainer : PlayerRuntimeContainer?
-        weak var panelRuntimeContainer  : PanelRuntimeContainer?
+        weak var playerRuntimeContainer : ServerPlayerRuntimeContainer?
+        weak var panelRuntimeContainer  : ServerPanelRuntimeContainer?
     }
     
     private let consoleIdentifier: String = "[S-PAS]"

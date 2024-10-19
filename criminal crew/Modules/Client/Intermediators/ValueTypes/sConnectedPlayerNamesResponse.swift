@@ -1,11 +1,11 @@
 import GamePantry
 
-public struct InquiryAboutConnectedPlayersRespondedEvent : GPEvent, GPReceivableEvent, GPSendableEvent {
+public struct ConnectedPlayerNamesResponse : GPEvent, GPReceivableEvent, GPSendableEvent {
     
     public let connectedPlayerNames : [String]
     public let delimiter             : String = "˛"
     
-    public let id              : String = "InquiryAboutConnectedPlayersRespondedEvent"
+    public let id              : String = "ConnectedPlayerNamesResponse"
     public let purpose         : String = "A response to an inquiry about connected players"
     public let instanciatedOn  : Date   = .now
     
@@ -17,12 +17,12 @@ public struct InquiryAboutConnectedPlayersRespondedEvent : GPEvent, GPReceivable
     
 }
 
-extension InquiryAboutConnectedPlayersRespondedEvent {
+extension ConnectedPlayerNamesResponse {
     
     public enum PayloadKeys : String, CaseIterable {
-        case eventId = "eventId",
+        case eventId              = "eventId",
              connectedPlayerNames = "connectedPlayerNames",
-             delimiter = "delimiter"
+             delimiter            = "delimiter"
     }
     
     public func value(for key: PayloadKeys) -> Any? {
@@ -31,7 +31,7 @@ extension InquiryAboutConnectedPlayersRespondedEvent {
     
 }
 
-extension InquiryAboutConnectedPlayersRespondedEvent {
+extension ConnectedPlayerNamesResponse {
     
     public func representedAsData () -> Data {
         dataFrom {
@@ -45,24 +45,25 @@ extension InquiryAboutConnectedPlayersRespondedEvent {
     
 }
 
-extension InquiryAboutConnectedPlayersRespondedEvent {
+extension ConnectedPlayerNamesResponse {
     
-    public static func construct ( from payload: [String : Any] ) -> InquiryAboutConnectedPlayersRespondedEvent? {
+    public static func construct ( from payload: [String : Any] ) -> ConnectedPlayerNamesResponse? {
         guard
-            "InquiryAboutConnectedPlayersRespondedEvent" == payload[PayloadKeys.eventId.rawValue] as? String,
+            "ConnectedPlayerNamesResponse" == payload[PayloadKeys.eventId.rawValue] as? String,
             let names = payload[PayloadKeys.connectedPlayerNames.rawValue] as? String,
             let delimiter = payload[PayloadKeys.delimiter.rawValue] as? String
         else {
+            debug("Construction of ConnectedPlayerNamesResponse failed: Payload is missing required keys.")
             return nil
         }
         
         let arrayOfNames = names.split(separator: delimiter).map(String.init)
         guard arrayOfNames.count > 0 else {
-            debug("Construction of InquiryAboutConnectedPlayersRespondedEvent failed: No names provided.")
+            debug("Construction of ConnectedPlayerNamesResponse failed: No names provided.")
             return nil
         }
         
-        return InquiryAboutConnectedPlayersRespondedEvent(names: arrayOfNames)
+        return ConnectedPlayerNamesResponse(names: arrayOfNames)
     }
     
 }

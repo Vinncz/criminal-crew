@@ -1,7 +1,7 @@
 import Combine
 import GamePantry
 
-public class PlayerRuntimeContainer : ObservableObject {
+public class ServerPlayerRuntimeContainer : ObservableObject {
     
     @Published public var acquaintancedParties : [MCPeerID: MCSessionState] {
         didSet {
@@ -19,9 +19,11 @@ public class PlayerRuntimeContainer : ObservableObject {
         blacklistedParties   = [:]
     }
     
+    private let consoleIdentifier : String = "[S-PRC]"
+    
 }
 
-extension PlayerRuntimeContainer {
+extension ServerPlayerRuntimeContainer {
     
     public func getBlacklistedPartiesAndTheirState () -> [MCPeerID: MCSessionState] {
         blacklistedParties
@@ -41,7 +43,7 @@ extension PlayerRuntimeContainer {
     
 }
 
-extension PlayerRuntimeContainer {
+extension ServerPlayerRuntimeContainer {
     
     public func update ( _ peerId: MCPeerID, state: MCSessionState ) {
         if ( blacklistedParties.contains { blacklisted, _ in blacklisted == peerId } ) {
@@ -49,19 +51,34 @@ extension PlayerRuntimeContainer {
         }
         
         acquaintancedParties[peerId] = state
+        debug("\(consoleIdentifier) Did update \(peerId.displayName)'s state (\(state.toString())) to both acquaintancedParties and blacklistedParties")
     }
     
     public func acquaint ( _ peerId: MCPeerID, state: MCSessionState ) {
         acquaintancedParties[peerId] = state
+        debug("\(consoleIdentifier) Did add \(peerId.displayName) to acquaintancedParties")
     }
     
     public func blacklist ( _ peerId: MCPeerID ) {
         blacklistedParties[peerId] = acquaintancedParties[peerId]
+        debug("\(consoleIdentifier) Did add \(peerId.displayName) to blacklistedParties")
+    }
+    
+    public func terminate ( _ peerId: MCPeerID ) {
+        blacklistedParties.removeValue(forKey: peerId)
+        acquaintancedParties.removeValue(forKey: peerId)
+        debug("\(consoleIdentifier) Did remove \(peerId.displayName) from acquaintancedParties and blacklistedParties")
+    }
+    
+    public func reset () {
+        blacklistedParties.removeAll()
+        acquaintancedParties.removeAll()
+        debug("\(consoleIdentifier) Did reset PlayerRuntimeContainer")
     }
     
 }
 
-extension PlayerRuntimeContainer {
+extension ServerPlayerRuntimeContainer {
     
     public struct Report {
         public let player : MCPeerID

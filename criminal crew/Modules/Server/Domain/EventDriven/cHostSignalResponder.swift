@@ -19,9 +19,9 @@ public class HostSignalResponder : UseCase {
         weak var taskGenerator          : TaskGenerator?
         weak var panelAssigner          : PanelAssigner?
         
-        weak var panelRuntimeContainer  : PanelRuntimeContainer?
-        weak var playerRuntimeContainer : PlayerRuntimeContainer?
-        weak var gameRuntimeContainer   : GameRuntimeContainer?
+        weak var panelRuntimeContainer  : ServerPanelRuntimeContainer?
+        weak var playerRuntimeContainer : ServerPlayerRuntimeContainer?
+        weak var gameRuntimeContainer   : ServerGameRuntimeContainer?
              var admitPlayer            : (String, Bool) -> Void
              var terminatePlayer        : (GPTerminatedEvent) -> Void
     }
@@ -90,7 +90,7 @@ extension HostSignalResponder {
         }
         
         do {
-            try relay.eventBroadcaster?.broadcast(InquiryAboutConnectedPlayersRespondedEvent(names: playerNames).representedAsData(), to: [host])
+            try relay.eventBroadcaster?.broadcast(ConnectedPlayerNamesResponse(names: playerNames).representedAsData(), to: [host])
             debug("\(consoleIdentifier) Responded with names of connected players")
         } catch {
             debug("\(consoleIdentifier) Did fail to respond with names of connected players: \(error)")
@@ -170,7 +170,7 @@ extension HostSignalResponder {
         }
         
         // - Check if the player had already joined or did have joined
-        if let reportOfThePlayerThatHadBeenInTheGame : PlayerRuntimeContainer.Report = relay.playerRuntimeContainer!.getPlayer(named: event.subjectName) {
+        if let reportOfThePlayerThatHadBeenInTheGame : ServerPlayerRuntimeContainer.Report = relay.playerRuntimeContainer!.getPlayer(named: event.subjectName) {
             
             // - If they had joined in the past, check if the player is blacklisted
             if reportOfThePlayerThatHadBeenInTheGame.isBlacklisted { 

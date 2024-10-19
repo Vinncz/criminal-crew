@@ -8,7 +8,7 @@ public class TaskAssigner : UseCase {
     
     public struct Relay : CommunicationPortal {
         weak var eventBroadcaster       : GPGameEventBroadcaster?
-        weak var playerRuntimeContainer : PlayerRuntimeContainer?
+        weak var playerRuntimeContainer : ServerPlayerRuntimeContainer?
     }
     
     private let consoleIdentifier: String = "[S-TAS]"

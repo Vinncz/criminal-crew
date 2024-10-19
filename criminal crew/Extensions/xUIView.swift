@@ -93,6 +93,120 @@ extension UIView {
             self.addSubview($0)
         }
     }
+    
+    func withBackgroundColor ( of color: UIColor ) -> Self {
+        backgroundColor = color
+        return self
+    }
+    
+    func withCornerRadius ( of radius: CGFloat ) -> Self {
+        layer.cornerRadius = radius
+        return self
+    }
+    
+    func withBorder ( of width: CGFloat, color: UIColor ) -> Self {
+        layer.borderWidth = width
+        layer.borderColor = color.cgColor
+        return self
+    }
+    
+    func withShadow ( of color: UIColor, opacity: Float, offset: CGSize, radius: CGFloat ) -> Self {
+        layer.shadowColor = color.cgColor
+        layer.shadowOpacity = opacity
+        layer.shadowOffset = offset
+        layer.shadowRadius = radius
+        return self
+    }
+    
+    func withAlpha ( of alpha: CGFloat ) -> Self {
+        self.alpha = alpha
+        return self
+    }
+    
+    func withContentMode ( of mode: UIView.ContentMode ) -> Self {
+        contentMode = mode
+        return self
+    }
+    
+    func withClipsToBounds ( _ clips: Bool ) -> Self {
+        clipsToBounds = clips
+        return self
+    }
+    
+    func withUserInteraction ( _ enabled: Bool ) -> Self {
+        isUserInteractionEnabled = enabled
+        return self
+    }
+    
+    func withAccessibility ( _ enabled: Bool ) -> Self {
+        isAccessibilityElement = enabled
+        return self
+    }
+    
+    func withAccessibilityLabel ( _ label: String ) -> Self {
+        accessibilityLabel = label
+        return self
+    }
+    
+    func withAccessibilityHint ( _ hint: String ) -> Self {
+        accessibilityHint = hint
+        return self
+    }
+    
+    func withAccessibilityTraits ( _ traits: UIAccessibilityTraits ) -> Self {
+        accessibilityTraits = traits
+        return self
+    }
+    
+    func withAccessibilityIdentifier ( _ identifier: String ) -> Self {
+        accessibilityIdentifier = identifier
+        return self
+    }
+    
+    func withTint ( of color: UIColor ) -> Self {
+        tintColor = color
+        return self
+    }
+    
+    func withTag ( _ tag: Int ) -> Self {
+        self.tag = tag
+        return self
+    }
+    
+    func withMaxWidth ( _ width: CGFloat ) -> Self {
+        setContentCompressionResistancePriority(.defaultLow, for: .horizontal)
+        widthAnchor.constraint(lessThanOrEqualToConstant: width).isActive = true
+        return self
+    }
+    
+    func withMaxHeight ( _ height: CGFloat ) -> Self {
+        setContentCompressionResistancePriority(.defaultLow, for: .vertical)
+        heightAnchor.constraint(lessThanOrEqualToConstant: height).isActive = true
+        return self
+    }
+    
+    func withMinWidth ( _ width: CGFloat ) -> Self {
+        setContentCompressionResistancePriority(.defaultHigh, for: .horizontal)
+        widthAnchor.constraint(greaterThanOrEqualToConstant: width).isActive = true
+        return self
+    }
+    
+    func withMinHeight ( _ height: CGFloat ) -> Self {
+        setContentCompressionResistancePriority(.defaultHigh, for: .vertical)
+        heightAnchor.constraint(greaterThanOrEqualToConstant: height).isActive = true
+        return self
+    }
+    
+    func withPriority ( _ priority: UILayoutPriority, for axis: NSLayoutConstraint.Axis ) -> Self {
+        setContentHuggingPriority(priority, for: axis)
+        return self
+    }
+    
+    func stretchPriority ( _ priority: UILayoutPriority, on axis: NSLayoutConstraint.Axis ) -> Self {
+        setContentCompressionResistancePriority(priority, for: axis)
+        return self
+    }
+    
 }
 
 

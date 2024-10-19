@@ -28,25 +28,81 @@ extension UIButton {
         switch style {
             case .borderedProminent:
                 var config = UIButton.Configuration.filled()
-                self.backgroundColor = .systemBlue
-                self.layer.backgroundColor = UIColor.systemBlue.cgColor
-                self.layer.cornerRadius = UIViewConstants.CornerRadiuses.normal
-                self.setTitleColor(.white, for: .normal)
                 config.contentInsets = NSDirectionalEdgeInsets(top: UIViewConstants.Paddings.normal, leading: UIViewConstants.Paddings.huge, bottom: UIViewConstants.Paddings.normal, trailing: UIViewConstants.Paddings.huge)
                 self.configuration = config
                 
             case .secondary:
-                self.backgroundColor = .systemBlue.withAlphaComponent(0.33)
-                self.layer.cornerRadius = UIViewConstants.CornerRadiuses.normal
-                self.setTitleColor(.systemBlue, for: .normal)
+                var config = UIButton.Configuration.tinted()
+                config.contentInsets = NSDirectionalEdgeInsets(top: UIViewConstants.Paddings.normal, leading: UIViewConstants.Paddings.huge, bottom: UIViewConstants.Paddings.normal, trailing: UIViewConstants.Paddings.huge)
+                self.configuration = config
                 
             case .link:
-                self.setTitleColor(.systemBlue, for: .normal)
+                var config = UIButton.Configuration.borderless()
+                config.contentInsets = NSDirectionalEdgeInsets(top: UIViewConstants.Paddings.normal, leading: UIViewConstants.Paddings.huge, bottom: UIViewConstants.Paddings.normal, trailing: UIViewConstants.Paddings.huge)
+                self.configuration = config
                 
             case .text:
-                self.setTitleColor(.black, for: .normal)
+                var config = UIButton.Configuration.plain()
+                config.contentInsets = NSDirectionalEdgeInsets(top: UIViewConstants.Paddings.normal, leading: UIViewConstants.Paddings.huge, bottom: UIViewConstants.Paddings.normal, trailing: UIViewConstants.Paddings.huge)
+                self.configuration = config
         }
         
+        return self
+    }
+    
+    public func padded ( _ padding: CGFloat, on edge: UIRectEdge? = .all ) -> Self {
+        var config = self.configuration ?? UIButton.Configuration.filled()
+        
+        if edge == .all {
+            config.contentInsets = NSDirectionalEdgeInsets(top: padding, leading: padding, bottom: padding, trailing: padding)
+        } else {
+            if edge == .top {
+                config.contentInsets.top = padding
+            }
+            if edge == .bottom {
+                config.contentInsets.bottom = padding
+            }
+            if edge == .left {
+                config.contentInsets.leading = padding
+            }
+            if edge == .right {
+                config.contentInsets.trailing = padding
+            }
+        }
+        
+        self.configuration = config
+        return self
+    }
+    
+    public func additivePadding ( _ padding: CGFloat, on edge: UIRectEdge? = .all ) -> Self {
+        var config = self.configuration ?? UIButton.Configuration.filled()
+        
+        if edge == .all {
+            config.contentInsets = NSDirectionalEdgeInsets(top: config.contentInsets.top + padding, leading: config.contentInsets.leading + padding, bottom: config.contentInsets.bottom + padding, trailing: config.contentInsets.trailing + padding)
+        } else {
+            if edge == .top {
+                config.contentInsets.top += padding
+            }
+            if edge == .bottom {
+                config.contentInsets.bottom += padding
+            }
+            if edge == .left {
+                config.contentInsets.leading += padding
+            }
+            if edge == .right {
+                config.contentInsets.trailing += padding
+            }
+        }
+        
+        self.configuration = config
+        return self
+    }
+    
+    public func roled ( _ role: UIButton.Role ) -> Self {
+        self.role = role
+        if role == .destructive || role == .cancel {
+            self.tintColor = .systemRed
+        }
         return self
     }
     

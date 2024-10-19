@@ -5,7 +5,7 @@ import UIKit
     
     public var serverComposer: ServerComposer { didSet { serverComposer$ = serverComposer } }
     public var clientComposer: ClientComposer { didSet { clientComposer$ = clientComposer } }
-    var cancellables: Set<AnyCancellable> = []
+    var queuedJobToAdmitTheHost : AnyCancellable?
     
     public init ( rootNavigationController: UINavigationController ) {
         let serverComposer = ServerComposer()
@@ -28,29 +28,35 @@ import UIKit
                 debug("[S-ADV] Made the server discoverable in the network")
                 return self?.serverComposer.networkManager.myself
             }, 
-            admitTheHost: { [weak self] hostID in
+            makeServerInvisible: { [weak self] in 
+                self?.serverComposer.networkManager.advertiserService.stopAdvertising(on: self!.serverComposer.networkManager.advertiserService)
+                self?.queuedJobToAdmitTheHost?.cancel()
+                debug("[S-ADV] Made the server invisible in the network")
+            },
+            resetServerState: { [weak self] in 
+                self?.serverComposer.networkManager.eventBroadcaster.ceaseCommunication()
+                self?.serverComposer.ent_playerRuntimeContainer.reset()
+                self?.queuedJobToAdmitTheHost?.cancel()
+            },
+            placeJobToAdmitHost: { [weak self] hostID in
                 guard let self else { return }
-//                DispatchQueue.main.asyncAfter(deadline: .now() + 6) {
-//                    guard let requestOfHost = self.serverComposer.networkManager.advertiserService.pendingRequests.first ( 
-//                        where:  { $0.requestee == hostID } 
-//                    ) else {
-//                        debug("[S-ADV] Unable to find a pending request for hostID: \(hostID)")
-//                        return
-//                    }
-//                    
-//                    self.serverComposer.networkManager.eventBroadcaster.approve(requestOfHost.resolve(to: .admit))
-//                    debug("[S-ADV] Admitted the host: \(requestOfHost.requestee.displayName)")                    
-//                }
-                cancellables.insert (
-                    self.serverComposer.networkManager.advertiserService.$pendingRequests.sink { reqs in
-                        reqs.forEach { req in
-                            if ( req.requestee == hostID ) {
-                                self.serverComposer.networkManager.eventBroadcaster.approve(req.resolve(to: .admit))
-                                debug("[S-ADV] Admitted the host: \(req.requestee.displayName)")
-                            }
+                debug("[S-ADV] Placed a job to admit the host")
+                self.queuedJobToAdmitTheHost = self.serverComposer.networkManager.advertiserService.$pendingRequests.sink { reqs in
+                    reqs.forEach { req in
+                        if ( req.requestee == hostID ) {
+                            self.serverComposer.networkManager.eventBroadcaster.approve(req.resolve(to: .admit))
+                            debug("[S-ADV] Admitted the host: \(req.requestee.displayName)")
                         }
                     }
-                )
+                }
+                let queuedJobToCancelHostAdmissionJob = self.serverComposer.ent_playerRuntimeContainer.$acquaintancedParties.sink { parties in
+                    if ( parties.keys.first == hostID ) {
+                        self.queuedJobToAdmitTheHost?.cancel()
+                        debug("[S-ADV] Cancelled the job to admit the host, as the host has been admitted")
+                    } else {
+                        debug("[S-ADV] Did not cancel host admission job: Host has not been admitted yet")
+                    }
+                }
             },
             sendMockDataFromServer: { [weak self] in
                 guard let self else { return }
@@ -65,6 +71,12 @@ import UIKit
                 }
             }
         )
+        
+//        serverComposer.relay = ServerComposer.Relay (
+//            cancelHostAdmissionJob: { [weak self] in 
+//                self?.queuedJobToAdmitTheHost?.cancel()
+//            }
+//        )
     }
     
     @ObservationIgnored @Published public var serverComposer$ : ServerComposer

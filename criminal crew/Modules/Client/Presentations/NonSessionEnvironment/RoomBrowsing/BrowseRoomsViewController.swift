@@ -135,3 +135,7 @@ extension BrowseRoomsViewController: UITableViewDelegate {
         print("Selected room: \(selectedRoomName)")
     }
 }
+
+#Preview {
+    BrowseRoomsViewController()
+}

@@ -11,7 +11,7 @@ public class EventRelayer : UseCase {
     
     public struct Relay : CommunicationPortal {
         weak var eventRouter    : GPEventRouter?
-        weak var playerRegistry : PlayerRuntimeContainer?
+        weak var playerRegistry : ServerPlayerRuntimeContainer?
         weak var eventBroadcaster : GPGameEventBroadcaster?
     }
     

@@ -1,6 +1,6 @@
 import GamePantry
 
-@Observable public class GameRuntimeContainer : ObservableObject {
+@Observable public class ServerGameRuntimeContainer : ObservableObject {
     
     public var state                : GameState            { didSet { state$                = state                } }
     public var penaltiesProgression : PenaltiesProgression { didSet { penaltiesProgression$ = penaltiesProgression } }

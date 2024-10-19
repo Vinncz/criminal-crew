@@ -1,6 +1,6 @@
 import GamePantry
 
-public class PlayerTaskReportResponder {
+public class PlayerTaskReportResponder : UseCase {
     
     public var relay         : Relay?
     public var subscriptions : Set<AnyCancellable>
@@ -11,7 +11,7 @@ public class PlayerTaskReportResponder {
     
     public struct Relay : CommunicationPortal {
         weak var eventRouter          : GPEventRouter?
-        weak var gameRuntimeContainer : GameRuntimeContainer?
+        weak var gameRuntimeContainer : ServerGameRuntimeContainer?
     }
     
     deinit {

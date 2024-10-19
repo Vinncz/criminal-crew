@@ -7,7 +7,7 @@ public class PenaltyAssigner : UseCase {
     public init () {}
     
     public struct Relay : CommunicationPortal {
-        weak var gameRuntimeContainer : GameRuntimeContainer?
+        weak var gameRuntimeContainer : ServerGameRuntimeContainer?
     }
     
     private let consoleIdentifier: String = "[S-PEN]"

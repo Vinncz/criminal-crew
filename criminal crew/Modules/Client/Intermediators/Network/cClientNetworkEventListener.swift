@@ -33,10 +33,24 @@ public class ClientNetworkEventListener : GPGameEventListener {
             if !emit(parsedData) {
                 debug("\(consoleIdentifier) Did receive GPTaskReceivedEvent, but not shared via event router")
             }
-        } else if let parsedData = InquiryAboutConnectedPlayersRespondedEvent.construct(from: fromData(data: data)!) {
+        } else if let parsedData = ConnectedPlayerNamesResponse.construct(from: fromData(data: data)!) {
             if !emit(parsedData) {
                 debug("\(consoleIdentifier) Did receive InquiryAboutConnectedPlayersRespondedEvent, but not shared via event router")
             }
+        } else if let parsedData = HasBeenAssignedTask.construct(from: fromData(data: data)!) {
+            if !emit(parsedData) {
+                debug("\(consoleIdentifier) Did receive HasBeenAssignedTask, but not shared via event router")
+            }
+        } else if let parsedData = HasBeenAssignedPanel.construct(from: fromData(data: data)!) {
+            if !emit(parsedData) {
+                debug("\(consoleIdentifier) Did receive HasBeenAssignedPanel, but not shared via event router")
+            }
+        } else if let parsedData = HasBeenAssignedHost.construct(from: fromData(data: data)!) {
+            if !emit(parsedData) {
+                debug("\(consoleIdentifier) Did receive HasBeenAssignedHost, but not shared via event router")
+            }
+        } else {
+            debug("\(consoleIdentifier) Did receive data, but could not parse it")
         }
     }
     

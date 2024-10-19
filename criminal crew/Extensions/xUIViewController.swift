@@ -2,7 +2,7 @@ import UIKit
 
 extension UIViewController {
     
-    public static func makeStack ( direction: NSLayoutConstraint.Axis, spacing: CGFloat = UIViewConstants.Spacings.normal, distribution: UIStackView.Distribution = .fillProportionally ) -> UIStackView {
+    public static func makeStack ( direction: NSLayoutConstraint.Axis, spacing: CGFloat = UIViewConstants.Spacings.normal, distribution: UIStackView.Distribution = .fill ) -> UIStackView {
         let sv              = UIStackView()
             sv.axis         = direction
             sv.spacing      = spacing

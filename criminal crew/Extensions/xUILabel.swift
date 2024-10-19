@@ -7,6 +7,11 @@ extension UILabel {
         return self
     }
     
+    public func withFont ( _ font: UIFont ) -> Self {
+        self.font = font
+        return self
+    }
+    
     public func styled ( _ style: Style ) -> Self {
         switch style {
             case .title:
@@ -42,6 +47,11 @@ extension UILabel {
                 self.sizeToFit()
         }
         
+        return self
+    }
+    
+    public func aligned ( _ alignment: NSTextAlignment ) -> Self {
+        self.textAlignment = alignment
         return self
     }
     
