@@ -2,22 +2,38 @@ import GamePantry
 
 public class ClientGameRuntimeContainer : ObservableObject {
     
-    @Published public var state                : GameState
-    
-    @Published public var connectedPlayerNames : [String]
-    
-    @Published public var connectedServer      : MCPeerID?
-    @Published public var isHost               : Bool
-    @Published public var admissionPolicy      : AdmissionPolicy
+    @Published public var state                : GameState {
+        didSet {
+            debug("\(consoleIdentifier) Did update game state to \(state.rawValue)")
+        }
+    }
+    @Published public var playedServerAddr     : MCPeerID? {
+        didSet {
+            debug("\(consoleIdentifier) Did update played server addr to \(playedServerAddr?.displayName ?? "Unnamed server")")
+        }
+    }
+    @Published public var connectionState      : MCSessionState {
+        didSet {
+            debug("\(consoleIdentifier) Did update connection status to played server (\(connectionState.toString())")
+        }
+    }
+    @Published public var isHost               : Bool {
+        didSet {
+            debug("\(consoleIdentifier) Self host previllege is \(isHost ? "active" : "innactive")")
+        }
+    }
+    @Published public var admissionPolicy      : AdmissionPolicy {
+        didSet {
+            debug("\(consoleIdentifier) Did update admission policy to \(admissionPolicy.rawValue)")
+        }
+    }
     
     public init () {
-        state = .notStarted
-        
-        connectedPlayerNames = []
-        
-        connectedServer = nil
-        isHost = false
-        admissionPolicy = .open
+        state            = .notStarted
+        connectionState  = .notConnected
+        playedServerAddr = nil
+        isHost           = false
+        admissionPolicy  = .open
     }
     
     public enum GameState : String {
@@ -27,10 +43,12 @@ public class ClientGameRuntimeContainer : ObservableObject {
              playing,
              paused,
              over,
+             win,
+             lose,
              error
     }
     
-    private let consoleIdentifier : String = "[C-GRC]"
+    private let consoleIdentifier : String = "[C-GAM]"
     
 }
 
@@ -41,7 +59,7 @@ extension ClientGameRuntimeContainer {
     }
     
     public func didConnect ( to server: MCPeerID ) {
-        connectedServer = server
+        playedServerAddr = server
     }
     
     public func setAdmissionPolicy ( _ policy: AdmissionPolicy ) {
@@ -50,9 +68,10 @@ extension ClientGameRuntimeContainer {
     
     public func reset () {
         state                = .notStarted
-        connectedPlayerNames = []
-        connectedServer      = nil
+        connectionState      = .notConnected
+        playedServerAddr     = nil
         isHost               = false
+        admissionPolicy      = .approvalRequired
     }
     
 }
@@ -61,7 +80,8 @@ extension ClientGameRuntimeContainer {
     
     public enum AdmissionPolicy : String {
         case open,
-             approvalRequired
+             approvalRequired,
+             closed
     }
     
 }

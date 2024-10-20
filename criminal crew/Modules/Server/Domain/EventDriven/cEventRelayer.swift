@@ -27,11 +27,11 @@ extension EventRelayer : GPHandlesEvents {
     
     public func placeSubscription ( on eventType: any GamePantry.GPEvent.Type ) {
         guard let relay = self.relay else {
-            debug("\(consoleIdentifier) EventRelayer is unable to place subscription: relay is missing or not set"); return
+            debug("\(consoleIdentifier) Did fail to place subscription: relay is missing or not set"); return
         }
         
         guard let eventRouter = relay.eventRouter else {
-            debug("\(consoleIdentifier) EventRelayer is unable to place subscription: eventRouter is missing or not set"); return
+            debug("\(consoleIdentifier) Did fail to place subscription: eventRouter is missing or not set"); return
         }
         
         eventRouter.subscribe(to: eventType)?.sink { event in
@@ -41,6 +41,8 @@ extension EventRelayer : GPHandlesEvents {
     
     private func handle ( _ event: GPEvent ) {
         switch ( event ) {
+            case let event as GPAcquaintanceStatusUpdateEvent:
+                relayInGamePlayerComposition(event)
             case let event as GPGameJoinRequestedEvent:
                 relayToClientHost(event)
             case let event as GPUnableToAdvertiseEvent:
@@ -55,22 +57,47 @@ extension EventRelayer : GPHandlesEvents {
 
 extension EventRelayer {
     
+    private func relayInGamePlayerComposition ( _ event: GPAcquaintanceStatusUpdateEvent ) {
+        guard let relay = relay else {
+            debug("\(consoleIdentifier) Did fail to respond to \(event): relay is missing or not set")
+            return
+        }
+        
+        guard 
+            let pRegistry = relay.playerRegistry,
+            let player = pRegistry.getAcquaintancedPartiesAndTheirState().keys.first 
+        else {
+            debug("\(consoleIdentifier) Did fail to respond to \(event): player is missing or not set or empty")
+            return
+        }
+        
+        do {
+            try relay.eventBroadcaster?.broadcast (
+                ConnectedPlayerNamesResponse(names: pRegistry.getWhitelistedPartiesAndTheirState().keys.map{$0.displayName}).representedAsData(), 
+                to: [player]
+            )
+            debug("\(consoleIdentifier) Did relay \(event) to client-host")
+        } catch {
+            debug("\(consoleIdentifier) Did fail to relay \(event) to client-host: \(error)")
+        }
+    }
+    
     private func relayToClientHost ( _ event: any GPSendableEvent ) {
         guard let relay = relay else {
-            debug("\(consoleIdentifier) EventRelayer is unable to respond to \(event): relay is missing or not set")
+            debug("\(consoleIdentifier) Did fail to respond to \(event): relay is missing or not set")
             return
         }
         
         guard let player = relay.playerRegistry?.getAcquaintancedPartiesAndTheirState().keys.first else {
-            debug("\(consoleIdentifier) EventRelayer is unable to respond to \(event): player is missing or not set or empty")
+            debug("\(consoleIdentifier) Did fail to respond to \(event): player is missing or not set or empty")
             return
         }
         
         do {
             try relay.eventBroadcaster?.broadcast(event.representedAsData(), to: [player])
-            debug("\(consoleIdentifier) EventRelayer did relay \(event) to client-host")
+            debug("\(consoleIdentifier) Did relay \(event) to client-host")
         } catch {
-            debug("\(consoleIdentifier) EventRelayer did fail to relay \(event) to client-host: \(error)")
+            debug("\(consoleIdentifier) Did fail to relay \(event) to client-host: \(error)")
         }
     }
     

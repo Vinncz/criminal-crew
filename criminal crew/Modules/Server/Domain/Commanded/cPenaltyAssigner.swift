@@ -18,12 +18,12 @@ extension PenaltyAssigner {
     
     public func assesAndAssign ( _ penalty: GamePenalty ) {
         guard let relay = relay else {
-            debug("\(consoleIdentifier) Unable to asses and assign penalty: relay is missing or not set")
+            debug("\(consoleIdentifier) Did fail to asses and assign penalty: relay is missing or not set")
             return
         }
         
         guard let gameRuntimeContainer = relay.gameRuntimeContainer else {
-            debug("\(consoleIdentifier) Unable to asses and assign penalty: gameRuntimeContainer is missing or not set")
+            debug("\(consoleIdentifier) Did fail to asses and assign penalty: gameRuntimeContainer is missing or not set")
             return
         }
         

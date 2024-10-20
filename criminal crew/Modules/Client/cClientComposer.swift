@@ -24,13 +24,15 @@ public class ClientComposer : UsesDependenciesInjector {
     
     
     // Use Cases -----------------------------------------
-    public let evtUC_serverSignalResponder : ServerSignalResponder
+    public let evtUC_serverSignalResponder     : ServerSignalResponder
+    public let comUC_selfSignalCommandCenter   : SelfSignalCommandCenter
     // ---------------------------------------------------
     
     
     // Entities ------------------------------------------
-    public let ent_panelRuntimeContainer : ClientPanelRuntimeContainer
-    public let ent_gameRuntimeContainer  : ClientGameRuntimeContainer
+    public let ent_panelRuntimeContainer  : ClientPanelRuntimeContainer
+    public let ent_playerRuntimeContainer : ClientPlayerRuntimeContainer
+    public let ent_gameRuntimeContainer   : ClientGameRuntimeContainer
     // ---------------------------------------------------
     
     
@@ -63,10 +65,12 @@ public class ClientComposer : UsesDependenciesInjector {
         self.networkManager = networkManager
         self.localStorage   = localStorage
         
-        self.evtUC_serverSignalResponder = ServerSignalResponder()
+        self.comUC_selfSignalCommandCenter   = SelfSignalCommandCenter()
+        self.evtUC_serverSignalResponder     = ServerSignalResponder()
         
-        self.ent_panelRuntimeContainer = ClientPanelRuntimeContainer()
-        self.ent_gameRuntimeContainer  = ClientGameRuntimeContainer()
+        self.ent_playerRuntimeContainer = ClientPlayerRuntimeContainer()
+        self.ent_panelRuntimeContainer  = ClientPanelRuntimeContainer()
+        self.ent_gameRuntimeContainer   = ClientGameRuntimeContainer()
         
     }
     
@@ -88,8 +92,18 @@ extension ClientComposer {
             eventRouter      : router,
             eventBroadcaster : networkManager.eventBroadcaster,
             gameRuntime      : ent_gameRuntimeContainer,
-            panelRuntime     : ent_panelRuntimeContainer
+            panelRuntime     : ent_panelRuntimeContainer,
+            playerRuntime    : ent_playerRuntimeContainer
         )
+        debug("[C] ServerSignalResponder relay has been set up")
+        
+        comUC_selfSignalCommandCenter.relay = SelfSignalCommandCenter.Relay (
+            eventBroadcaster : networkManager.eventBroadcaster,
+            gameRuntime      : ent_gameRuntimeContainer,
+            panelRuntime     : ent_panelRuntimeContainer,
+            playerRuntime    : ent_playerRuntimeContainer
+        )
+        debug("[C] SelfSignalCommandCenter relay has been set up")
     }
     
     private final func openRouterToEvents () {
@@ -108,6 +122,9 @@ extension ClientComposer {
             router.openChannel(for:GPAcquaintanceStatusUpdateEvent.self),
             router.openChannel(for:ConnectedPlayerNamesResponse.self),
             
+            router.openChannel(for:PenaltyDidReachLimitEvent.self),
+            router.openChannel(for:TaskDidReachLimitEvent.self),
+            
             router.openChannel(for:HasBeenAssignedHost.self),
             router.openChannel(for:HasBeenAssignedPanel.self),
             router.openChannel(for:HasBeenAssignedTask.self)
@@ -118,11 +135,14 @@ extension ClientComposer {
     }
     
     private final func subscribeUCsToEvents () {
-        evtUC_serverSignalResponder.placeSubscription(on: ConnectedPlayerNamesResponse.self)
+        evtUC_serverSignalResponder.placeSubscription(on: GPAcquaintanceStatusUpdateEvent.self)
         evtUC_serverSignalResponder.placeSubscription(on: HasBeenAssignedHost.self)
         evtUC_serverSignalResponder.placeSubscription(on: HasBeenAssignedPanel.self)
         evtUC_serverSignalResponder.placeSubscription(on: HasBeenAssignedTask.self)
-        debug("[C] Placed subscription of ServerSignalResponder to ConnectedPlayerNamesResponse, HasBeenAssignedHost, HasBeenAssignedPanel, and HasBeenAssignedTask")
+        evtUC_serverSignalResponder.placeSubscription(on: PenaltyDidReachLimitEvent.self)
+        evtUC_serverSignalResponder.placeSubscription(on: TaskDidReachLimitEvent.self)
+        evtUC_serverSignalResponder.placeSubscription(on: ConnectedPlayerNamesResponse.self)
+        debug("[C] Placed subscription of ServerSignalResponder to GPAcquaintanceStatusUpdateEvent, HasBeenAssignedHost, HasBeenAssignedPanel, HasBeenAssignedTask, PenaltyDidReachLimitEvent, TaskDidReachLimitEvent, ConnectedPlayerNamesResponse")
     }
 
     private func placeInitialView () -> Void {
@@ -157,7 +177,7 @@ extension ClientComposer {
                 do {
                     try self?.networkManager.eventBroadcaster.broadcast(data, to: self!.networkManager.eventBroadcaster.getPeers())
                 } catch {
-                    debug("unable to make broadcast to server: \(error)")
+                    debug("Did fail to make broadcast to server: \(error)")
                 }
             },
             sendMockDataFromServer : { [weak self] in
@@ -193,7 +213,7 @@ extension ClientComposer {
                     try self?.networkManager.eventBroadcaster.broadcast(data, to: self!.networkManager.eventBroadcaster.getPeers())
                     return true
                 } catch {
-                    debug("unable to make broadcast to server: \(error)")
+                    debug("Did fail to make broadcast to server: \(error)")
                     return false
                 }
             }, eventRouter: self.router

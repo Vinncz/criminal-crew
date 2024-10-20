@@ -27,7 +27,7 @@ public class ClientNetworkEventListener : GPGameEventListener {
     }
     
     public func heardData ( from peer: MCPeerID, _ data: Data ) {
-        debug("ClientNetworkEventListener did receive the following data: \(data.toString() ?? "<error>Invalid data</error>")")
+        debug("\(consoleIdentifier) Did receive the following data: \(data.toString() ?? "<error>Invalid data</error>")")
         
         if let parsedData = GPTaskReceivedEvent.construct(from: fromData(data: data)!) {
             if !emit(parsedData) {

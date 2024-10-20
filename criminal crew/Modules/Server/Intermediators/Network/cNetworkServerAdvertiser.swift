@@ -16,7 +16,7 @@ public class GameServerAdvertiser : GPGameServerAdvertiser {
                 dueTo: error.localizedDescription
             )
         ) {
-            consoleMsg += "\(consoleIdentifier) Failed to emit the event that the server is unable to advertise\n"
+            consoleMsg += "\(consoleIdentifier) Did fail to emit the event that the server is unable to advertise\n"
         }
         consoleMsg += "\(consoleIdentifier) ServerAdvertiser failed to advertise due to \(error.localizedDescription)"
         
@@ -39,11 +39,17 @@ public class GameServerAdvertiser : GPGameServerAdvertiser {
                 requestedBy: peer.displayName
             )
         ) {
-            consoleMsg += "\(consoleIdentifier) Failed to emit the event that a player has requested to join the game\n"
+            consoleMsg += "\(consoleIdentifier) Did fail to emit the event that a player has requested to join the game\n"
         }
         consoleMsg += "\(consoleIdentifier) Player \(peer.displayName) has requested to join the game"
         
         debug(consoleMsg)
+    }
+    
+    public func reset ( newAdvertContent: [String: String] ) {
+        self.stopAdvertising(on: self)
+        self.pendingRequests.removeAll()
+        self.startAdvertising(what: newAdvertContent, on: self)
     }
     
     private let consoleIdentifier : String = "[S-ADV]"

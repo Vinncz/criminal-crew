@@ -9,20 +9,21 @@ public class ClientGameBrowser : GPGameClientBrowser {
         self.eventRouter = router
     } 
     
-    public func unableToBrowse(error: any Error) {
-        debug("\(consoleIdentifier) Unable to browse: \(error)")
+    public func unableToBrowse ( error: any Error ) {
+        debug("\(consoleIdentifier) Did fail to browse: \(error)")
     }
     
     public func didFindJoinableServer ( _ serverId: MCPeerID, with discoveryInfo: [String : String]?) {
         guard !discoveredServers.contains(where: {$0.serverId == serverId}) else {
-            debug("Rediscovered a known server: \(serverId.displayName)")
+            debug("\(consoleIdentifier) Rediscovered a known server: \(serverId.displayName)")
             return
         }
+        
         discoveredServers.append (
             GPGameServerDiscoveryReport (
                 serverId: serverId, 
                 discoveryContext: discoveryInfo ?? [
-                    "gameName" : "Unnamed Room"
+                    "roomName" : "Unnamed Room"
                 ]
             )
         )
@@ -33,6 +34,13 @@ public class ClientGameBrowser : GPGameClientBrowser {
         discoveredServers.removeAll { discoveryReport in
             discoveryReport.serverId == serverId
         }
+    }
+    
+    public func reset () {
+        self.stopBrowsing(self)
+        discoveredServers.removeAll()
+        self.startBrowsing(self)
+        
     }
     
     private let consoleIdentifier : String = "[C-BWS]"

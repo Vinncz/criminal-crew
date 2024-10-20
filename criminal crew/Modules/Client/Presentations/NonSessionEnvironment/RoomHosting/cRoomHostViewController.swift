@@ -124,7 +124,7 @@ extension RoomHostViewController {
     
     @objc func exposeRoom () {
         guard let relay else {
-            debug("RoomHostViewController is unable to expose its room. Relay is missing or not set")
+            debug("RoomHostViewController did fail to expose its room. Relay is missing or not set")
             return
         }
         

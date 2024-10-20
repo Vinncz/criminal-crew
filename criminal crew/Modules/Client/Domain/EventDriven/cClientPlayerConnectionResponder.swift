@@ -1,17 +1,18 @@
 import GamePantry
 
+@available(*, deprecated)
 public class ClientPlayerConnectionResponder : UseCase {
     
-    public var relay         : Relay?
-    public var subscriptions : Set<AnyCancellable>
+    public var subscriptions: Set<AnyCancellable>
     
-    public init () {
-        self.subscriptions = []
-    }
-    
+    public var relay    : Relay?
     public struct Relay : CommunicationPortal {
         weak var eventRouter            : GPEventRouter?
         weak var playerRuntimeContainer : ClientPlayerRuntimeContainer?
+    }
+    
+    public init () {
+        subscriptions = []
     }
     
     deinit {
@@ -69,16 +70,16 @@ extension ClientPlayerConnectionResponder : GPEmitsEvents {
 extension ClientPlayerConnectionResponder {
     
     private func handleAcquaintanceEvent ( _ event: GPAcquaintanceStatusUpdateEvent ) {
-        guard let relay = self.relay else {
-            debug("\(consoleIdentifier) Did fail to handle events: relay is missing or not set"); return
-        }
-        
-        guard let playerRuntimeContainer = relay.playerRuntimeContainer else {
-            debug("\(consoleIdentifier) Did fail to handle events: playerRuntimeContainer is missing or not set"); return
-        }
-        
-        playerRuntimeContainer.update(event.subject, state: event.status)
-        debug("\(consoleIdentifier) Did update a player's state: \(event.subject.displayName) to \(event.status.toString())")
+//        guard let relay = self.relay else {
+//            debug("\(consoleIdentifier) Did fail to handle events: relay is missing or not set"); return
+//        }
+//        
+//        guard let playerRuntimeContainer = relay.playerRuntimeContainer else {
+//            debug("\(consoleIdentifier) Did fail to handle events: playerRuntimeContainer is missing or not set"); return
+//        }
+//        
+//        playerRuntimeContainer.connectedNames
+//        debug("\(consoleIdentifier) Did update a player's state: \(event.subject.displayName) to \(event.status.toString())")
     }
     
 }

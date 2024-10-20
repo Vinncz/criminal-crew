@@ -38,11 +38,11 @@ extension HostSignalResponder : GPHandlesEvents {
     
     public func placeSubscription ( on eventType: any GPEvent.Type ) {
         guard let relay = self.relay else {
-            debug("\(consoleIdentifier) HostSignalResponder is unable to place subscription: relay is missing or not set"); return
+            debug("\(consoleIdentifier) Did fail to place subscription: relay is missing or not set"); return
         }
         
         guard let eventRouter = relay.eventRouter else {
-            debug("\(consoleIdentifier) HostSignalResponder is unable to place subscription: eventRouter is missing or not set"); return
+            debug("\(consoleIdentifier) Did fail to place subscription: eventRouter is missing or not set"); return
         }
         
         eventRouter.subscribe(to: eventType)?.sink { event in
@@ -56,12 +56,15 @@ extension HostSignalResponder : GPHandlesEvents {
                 respondToGameStartRequest(event)
             case let event as GPGameEndRequestedEvent:
                 respondToGameEndRequest(event)
+                
             case let event as GPGameJoinVerdictDeliveredEvent:
                 respondToGameJoinVerdict(event)
+                
             case let event as GPBlacklistedEvent:
                 respondToBlacklistedEvent(event)
             case let event as GPTerminatedEvent:
                 respondToTerminatedEvent(event)
+                
             case let event as InquiryAboutConnectedPlayersRequestedEvent:
                 respondWithConnectedPlayerNames(event)
             default:
@@ -76,7 +79,7 @@ extension HostSignalResponder {
     
     private func respondWithConnectedPlayerNames ( _ event: InquiryAboutConnectedPlayersRequestedEvent ) {
         guard let relay = relay else {
-            debug("\(consoleIdentifier) Unable to respond to game start request: relay is missing or not set")
+            debug("\(consoleIdentifier) Did fail to respond to game start request: relay is missing or not set")
             return
         }
         
@@ -141,7 +144,7 @@ extension HostSignalResponder {
     
     private func respondToGameEndRequest ( _ event: GPGameEndRequestedEvent) {
         guard let relay = relay else {
-            debug("\(consoleIdentifier) Unable to respond to game end request: relay is missing or not set")
+            debug("\(consoleIdentifier) Did fail to respond to game end request: relay is missing or not set")
             return
         }
         
@@ -165,7 +168,7 @@ extension HostSignalResponder {
     
     private func respondToGameJoinVerdict ( _ event: GPGameJoinVerdictDeliveredEvent) {
         guard let relay = relay else {
-            debug("\(consoleIdentifier) Unable to respond to game join verdict: relay is missing or not set")
+            debug("\(consoleIdentifier) Did fail to respond to game join verdict: relay is missing or not set")
             return
         }
         
@@ -213,7 +216,7 @@ extension HostSignalResponder {
     
     private func respondToTerminatedEvent ( _ event: GPTerminatedEvent) {
         guard let relay = relay else {
-            debug("\(consoleIdentifier) Unable to respond to terminated event: relay is missing or not set")
+            debug("\(consoleIdentifier) Did fail to respond to terminated event: relay is missing or not set")
             return
         }
         

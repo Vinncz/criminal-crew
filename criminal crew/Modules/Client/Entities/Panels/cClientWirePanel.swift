@@ -17,5 +17,6 @@ public class ClientWirePanel : GamePanel, ObservableObject {
     }
     
     private let consoleIdentifier : String = "[C-PWR]"
+    public static var panelId : String = "WirePanel"
     
 }
