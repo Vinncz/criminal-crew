@@ -5,12 +5,17 @@ public class ServerPlayerRuntimeContainer : ObservableObject {
     
     @Published public var acquaintancedParties : [MCPeerID: MCSessionState] {
         didSet {
-            objectWillChange.send()
+            debug("\(consoleIdentifier) Did update acquaintancedParties to \(acquaintancedParties.map{$0.key.displayName})")
         }
     }
     @Published public var blacklistedParties   : [MCPeerID: MCSessionState] {
         didSet {
-            objectWillChange.send()
+            debug("\(consoleIdentifier) Did update blacklistedParties to \(blacklistedParties.map{$0.key.displayName})")
+        }
+    }
+    @Published public var hostAddr : MCPeerID? {
+        didSet {
+            debug("\(consoleIdentifier) Did update hostAddr to \(hostAddr?.displayName ?? "none")")
         }
     }
     
@@ -19,7 +24,7 @@ public class ServerPlayerRuntimeContainer : ObservableObject {
         blacklistedParties   = [:]
     }
     
-    private let consoleIdentifier : String = "[S-PRC]"
+    private let consoleIdentifier : String = "[S-PLR]"
     
 }
 
@@ -68,6 +73,19 @@ extension ServerPlayerRuntimeContainer {
         blacklistedParties.removeValue(forKey: peerId)
         acquaintancedParties.removeValue(forKey: peerId)
         debug("\(consoleIdentifier) Did remove \(peerId.displayName) from acquaintancedParties and blacklistedParties")
+    }
+    
+    public func terminate ( _ playerName: String ) {
+        guard let player = acquaintancedParties.first(where: { acquaintance, _ in
+            acquaintance.displayName == playerName
+        }) else {
+            debug("\(consoleIdentifier) Did fail to terminate player: \(playerName) is not found in acquaintancedParties")
+            return
+        }
+        
+        blacklistedParties.removeValue(forKey: player.key)
+        acquaintancedParties.removeValue(forKey: player.key)
+        debug("\(consoleIdentifier) Did remove \(playerName) from acquaintancedParties and blacklistedParties")
     }
     
     public func reset () {

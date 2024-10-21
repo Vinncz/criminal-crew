@@ -92,9 +92,32 @@ extension ServerSignalResponder {
             return
         }
         
+        // It turns out that even though you're not the one that's being requested to join into,
+        // youre notified if another player joins in
+        
+        // therefore, only the first acquaintance update through here gonna be the real server's address
+        // the rest is just another players joining in
+        
+        // however, you gotta check it to the known server addr (from the first acquaintance update)
+        // because you might disconnect and reconnect to server
+        
+        guard gameRuntime.playedServerAddr == nil else {
+            var consoleMsg = ""
+            if gameRuntime.playedServerAddr == event.subject {
+                gameRuntime.connectionState = event.status
+                consoleMsg = "Did update played server connection state to \(event.status.toString())"
+            } else {
+                consoleMsg = "Ignoring \(event.subject.displayName) connection update since it's not the played server"
+            }
+            
+            debug("\(consoleIdentifier) \(consoleMsg)")
+            return 
+        }
+        
         gameRuntime.playedServerAddr = event.subject
         gameRuntime.connectionState = event.status
         browser.discoveredServers.removeAll { $0.serverId == event.subject }
+        
     }
     
     public func didGetTermination ( _ event: GPTerminatedEvent ) {
@@ -248,17 +271,52 @@ extension ServerSignalResponder {
         
         guard 
             let gameRuntime = relay.gameRuntime,
+            let serverAddr = gameRuntime.playedServerAddr,
             gameRuntime.isHost == true
         else {
-            debug("\(consoleIdentifier) Did fail to handle didGetAdmissionRequest since GameRuntime is missing or not set, or self is not host")
+            debug("\(consoleIdentifier) Did fail to handle didGetAdmissionRequest since GameRuntime is missing or not set, or is not connected to server, or self is not host")
             return
         }
         
-        guard 
-            let playerRuntime = relay.playerRuntime,
-            playerRuntime.joinRequestedPlayersNames.contains(event.subjectName) == false
-        else {
-            debug("\(consoleIdentifier) Did fail to handle didGetAdmissionRequest since PanelRuntime is missing or not set, or player has already requested to join")
+        guard let playerRuntime: ClientPlayerRuntimeContainer = relay.playerRuntime else {
+            debug("\(consoleIdentifier) Did fail to handle didGetAdmissionRequest since PanelRuntime is missing or not set")
+            return
+        }
+        
+        guard playerRuntime.joinRequestedPlayersNames.contains(event.subjectName) == false else {
+            debug("\(consoleIdentifier) Did fail to admit player: \(event.subjectName) has already requested to join or is already connected")
+            return
+        }
+        
+        guard gameRuntime.admissionPolicy == .approvalRequired else {
+            if gameRuntime.admissionPolicy == .closed {
+                debug("\(consoleIdentifier) Auto-rejecting \(event.subjectName) since admission policy is set to closed")
+                return
+            }
+            
+            debug("\(consoleIdentifier) Auto-accepting \(event.subjectName) since admission policy is set to open")
+            guard let eventBroadcaster = relay.eventBroadcaster else {
+                debug("\(consoleIdentifier) Did fail to admit player: eventBroadcaster is missing or not set")
+                return
+            }
+            
+            do {
+                try eventBroadcaster.broadcast (
+                    GPGameJoinVerdictDeliveredEvent (
+                        forName: event.subjectName, 
+                        verdict: true, 
+                        authorizedBy: eventBroadcaster.broadcastingFor.displayName
+                    ).representedAsData(), 
+                    to: [serverAddr]
+                )
+                debug("\(consoleIdentifier) Did relay admission verdict of \(event.subjectName) to server")
+                playerRuntime.joinRequestedPlayersNames.removeAll { $0 == event.subjectName }
+                
+            } catch {
+                debug("\(consoleIdentifier) Did fail to relay admission verdict of \(event.subjectName) to server: \(error)")
+                
+            }
+        
             return
         }
         

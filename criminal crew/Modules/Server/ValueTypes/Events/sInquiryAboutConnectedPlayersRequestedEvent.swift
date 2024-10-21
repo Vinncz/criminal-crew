@@ -49,6 +49,7 @@ extension InquiryAboutConnectedPlayersRequestedEvent {
             "InquiryAboutConnectedPlayersRequestedEvent" == payload[PayloadKeys.eventId.rawValue] as? String,
             let signingKey = payload[PayloadKeys.signingKey.rawValue] as? String
         else {
+            debug("Construction of InquiryAboutConnectedPlayersRequestedEvent failed: Payload is missing required keys.")
             return nil
         }
         

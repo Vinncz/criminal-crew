@@ -14,7 +14,7 @@ public class ClientGameRuntimeContainer : ObservableObject {
     }
     @Published public var connectionState      : MCSessionState {
         didSet {
-            debug("\(consoleIdentifier) Did update connection status to played server (\(connectionState.toString())")
+            debug("\(consoleIdentifier) Did update connection status to played server \(connectionState.toString())")
         }
     }
     @Published public var isHost               : Bool {
@@ -33,7 +33,7 @@ public class ClientGameRuntimeContainer : ObservableObject {
         connectionState  = .notConnected
         playedServerAddr = nil
         isHost           = false
-        admissionPolicy  = .open
+        admissionPolicy  = .approvalRequired
     }
     
     public enum GameState : String {

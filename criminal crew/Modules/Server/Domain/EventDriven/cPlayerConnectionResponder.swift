@@ -78,7 +78,22 @@ extension ServerPlayerConnectionResponder {
         }
         
         playerRuntimeContainer.update(event.subject, state: event.status)
-        debug("\(consoleIdentifier) PlayerConnectionResponder updates a player's state: \(event.subject.displayName) to \(event.status.toString())")
+        debug("\(consoleIdentifier) Did update a player's state: \(event.subject.displayName) to \(event.status.toString())")
+        
+        guard let host = playerRuntimeContainer.hostAddr else {
+            debug("\(consoleIdentifier) Host is missing or not set, skipping host update");
+            return
+        }
+        
+        if ( event.status == .notConnected && event.subject == host ) {
+            playerRuntimeContainer.hostAddr = nil
+            debug("\(consoleIdentifier) Host \(event.subject.displayName) left the room")
+            
+        } else if ( event.status == .connected && event.subject.displayName == host.displayName ) {
+            playerRuntimeContainer.hostAddr = event.subject
+            debug("\(consoleIdentifier) Host \(event.subject.displayName) joined the room")
+        }
+        
     }
     
 }

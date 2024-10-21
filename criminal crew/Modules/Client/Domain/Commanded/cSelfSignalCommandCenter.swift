@@ -27,6 +27,97 @@ public class SelfSignalCommandCenter : UseCase {
 
 extension SelfSignalCommandCenter {
     
+    public func whoAmI () -> String {
+        guard let relay else {
+            debug("\(consoleIdentifier) Did fail to get self: relay is missing or not set")
+            fatalError("\(consoleIdentifier) Impossible condition: relay is missing or not set")
+        }
+        
+        guard let eventBroadcaster = relay.eventBroadcaster else {
+            debug("\(consoleIdentifier) Did fail to get self: eventBroadcaster is missing or not set")
+            fatalError("\(consoleIdentifier) Impossible condition: eventBroadcaster is missing or not set")
+        }
+        
+        return eventBroadcaster.broadcastingFor.displayName
+    }
+    
+    public func browseForServers () -> Bool {
+        var flowIsComplete = false
+        
+        guard let relay else {
+            debug("\(consoleIdentifier) Did fail to browse for servers: relay is missing or not set")
+            return flowIsComplete
+        }
+        
+        guard let browser = relay.browser else {
+            debug("\(consoleIdentifier) Did fail to browse for servers: browser is missing or not set")
+            return flowIsComplete
+        }
+        
+        browser.startBrowsing(browser)
+        debug("\(consoleIdentifier) Did start browsing for servers")
+        
+        flowIsComplete = true
+        
+        return flowIsComplete
+    }
+    
+    public func stopBrowsingForServers () -> Bool {
+        var flowIsComplete = false
+        
+        guard let relay else {
+            debug("\(consoleIdentifier) Did fail to stop browsing for servers: relay is missing or not set")
+            return flowIsComplete
+        }
+        
+        guard let browser = relay.browser else {
+            debug("\(consoleIdentifier) Did fail to stop browsing for servers: browser is missing or not set")
+            return flowIsComplete
+        }
+        
+        browser.stopBrowsing(browser)
+        debug("\(consoleIdentifier) Did stop browsing for servers")
+        
+        flowIsComplete = true
+        
+        return flowIsComplete
+    }
+    
+    public func getDiscoveredServers () -> [String] {
+        guard let relay else {
+            debug("\(consoleIdentifier) Did fail to get discovered servers: relay is missing or not set")
+            return []
+        }
+        
+        guard let browser = relay.browser else {
+            debug("\(consoleIdentifier) Did fail to get discovered servers: browser is missing or not set")
+            return []
+        }
+        
+        return browser.discoveredServers.map { $0.discoveryContext["roomName"] ?? "Unnamed Room" }
+    }
+    
+    public func resetBrowser () -> Bool {
+        var flowIsComplete = false
+        
+        guard let relay else {
+            debug("\(consoleIdentifier) Did fail to reset browser: relay is missing or not set")
+            return flowIsComplete
+        }
+        
+        guard let browser = relay.browser as? ClientGameBrowser else {
+            debug("\(consoleIdentifier) Did fail to reset browser: browser is missing or not set")
+            return flowIsComplete
+        }
+        
+        browser.reset()
+        debug("\(consoleIdentifier) Did reset browser")
+        
+        flowIsComplete = true
+        
+        return flowIsComplete
+    }
+    
     public func sendJoinRequest ( to serverAddr: String ) -> Bool {
         var flowIsComplete = false
         
@@ -131,16 +222,83 @@ extension SelfSignalCommandCenter {
             debug("\(consoleIdentifier) Did fail to disconnect self: browser is missing or not set"); return
         }
         
+        guard let panelRuntime = relay.panelRuntime else {
+            debug("\(consoleIdentifier) Did fail to disconnect self: panelRuntime is missing or not set"); return
+        }
+        
         eventBroadcaster.ceaseCommunication()
         playerRuntime.reset()
         gameRuntime.reset()
         browser.reset()
+        panelRuntime.reset()
+    }
+    
+    public func makeSelfHost () {
+        guard let relay else {
+            debug("\(consoleIdentifier) Did fail to make self host: relay is missing or not set"); return
+        }
+        
+        guard let gameRuntime = relay.gameRuntime else {
+            debug("\(consoleIdentifier) Did fail to make self host: gameRuntime is missing or not set"); return
+        }
+        
+        gameRuntime.isHost = true
     }
     
 }
 
 // Host-only commands
 extension SelfSignalCommandCenter {
+    
+    public func refreshConnectedPlayerNamesFromServer () -> Bool {
+        var flowIsComplete = false
+        
+        guard let relay else {
+            debug("\(consoleIdentifier) Did fail to refresh connected player names: relay is missing or not set")
+            return flowIsComplete
+        }
+        
+        guard let gameRuntime = relay.gameRuntime else {
+            debug("\(consoleIdentifier) Did fail to refresh connected player names: gameRuntime is missing or not set")
+            return flowIsComplete
+        }
+        
+        guard 
+            let serverAddr = gameRuntime.playedServerAddr,
+            gameRuntime.connectionState == .connected
+        else {
+            debug("\(consoleIdentifier) Did fail to refresh connected player names: self is not connected to a server")
+            return flowIsComplete
+        }
+        
+        guard gameRuntime.isHost else {
+            debug("\(consoleIdentifier) Did fail to refresh connected player names: self is not the host")
+            return flowIsComplete
+        }
+        
+        guard let eventBroadcaster = relay.eventBroadcaster else {
+            debug("\(consoleIdentifier) Did fail to refresh connected player names: eventBroadcaster is missing or not set")
+            return flowIsComplete
+        }
+        
+        do {
+            try eventBroadcaster.broadcast (
+                InquiryAboutConnectedPlayersRequestedEvent (
+                    authorizedBy: eventBroadcaster.broadcastingFor.displayName
+                ).representedAsData(), 
+                to: [serverAddr]
+            )
+            debug("\(consoleIdentifier) Did request connected player names from server: \(serverAddr)")
+            
+            flowIsComplete = true
+            
+        } catch {
+            debug("\(consoleIdentifier) Did fail to request connected player names from server: \(error)")
+            
+        }
+        
+        return flowIsComplete
+    }
     
     public func verdictPlayer ( named playerName: String, isAdmitted: Bool ) {
         guard let relay else {
@@ -340,6 +498,20 @@ extension SelfSignalCommandCenter {
         }
         
         return flowIsComplete
+    }
+    
+    public func updateAdmissionPolicy ( to newPolicy: ClientGameRuntimeContainer.AdmissionPolicy ) {
+        guard let relay else {
+            debug("\(consoleIdentifier) Did fail to update admission policy. Relay is missing or not set")
+            return
+        }
+        
+        guard let gameRuntime = relay.gameRuntime else {
+            debug("\(consoleIdentifier) Did fail to update admission policy. GameRuntime is missing or not set")
+            return
+        }
+        
+        gameRuntime.admissionPolicy = newPolicy
     }
     
 }

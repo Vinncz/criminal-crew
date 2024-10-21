@@ -45,6 +45,7 @@ import UIKit
                     reqs.forEach { req in
                         if ( req.requestee == hostID ) {
                             self.serverComposer.networkManager.eventBroadcaster.approve(req.resolve(to: .admit))
+                            self.serverComposer.ent_playerRuntimeContainer.hostAddr = hostID
                             debug("[S-ADV] Admitted the host: \(req.requestee.displayName)")
                         }
                     }

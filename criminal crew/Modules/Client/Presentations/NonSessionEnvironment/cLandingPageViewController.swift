@@ -2,13 +2,17 @@ import UIKit
 
 public class LandingPageViewController : UIViewController, UsesDependenciesInjector {
     
-    let lGameName         : UILabel
-    let bBrowseRooms      : UIButton
-    let bHostRoom         : UIButton
+    let lGameName    : UILabel
+    let bBrowseRooms : UIButton
+    let bHostRoom    : UIButton
     
-    public var relay      : Relay?
+    public var relay    : Relay?
     public struct Relay : CommunicationPortal {
-        
+        weak var selfSignalCommandCenter : SelfSignalCommandCenter?
+        weak var playerRuntimeContainer  : ClientPlayerRuntimeContainer?
+        weak var serverBrowser           : ClientGameBrowser?
+             var publicizeRoom           : ( _ advertContent: [String: String] ) -> Void
+             var navigate                : ( _ to: UIViewController ) -> Void
     }
     
     override init ( nibName nibNameOrNil: String?, bundle nibBundleOrNil: Bundle? ) {
@@ -24,7 +28,7 @@ public class LandingPageViewController : UIViewController, UsesDependenciesInjec
         fatalError("init(coder:) has not been implemented")
     }
     
-    private let consoleIdentifer = "[C-LandingPageViewController]"
+    private let consoleIdentifer = "[C-LAP]"
     
 }
 
@@ -66,7 +70,34 @@ extension LandingPageViewController {
 extension LandingPageViewController {
     
     @objc func cueToNavigate ( sender: UIButton ) {
+        guard let relay else { 
+            debug("\(consoleIdentifer) Unable to cue navigation. Relay is missing or not set")
+            return
+        }
         
+        switch ( sender.tag ) {
+            case Self.browseRoomButtonId:
+                let serverBrowserPage = RoomBrowserPageViewController()
+                    serverBrowserPage.relay = RoomBrowserPageViewController.Relay (
+                        selfSignalCommandCenter : self.relay?.selfSignalCommandCenter,
+                        playerRuntimeContainer  : self.relay?.playerRuntimeContainer,
+                        serverBrowser           : self.relay?.serverBrowser
+                    )
+                relay.navigate(serverBrowserPage)
+            case Self.hostRoomButtonId:
+                let lobbyCreationPage = LobbyCreationPageViewController()
+                    lobbyCreationPage.relay = LobbyCreationPageViewController.Relay (
+                        selfSignalCommandCenter : self.relay?.selfSignalCommandCenter,
+                        playerRuntimeContainer  : self.relay?.playerRuntimeContainer, 
+                        publicizeRoom: { [weak self] advertContent in
+                            self?.relay?.publicizeRoom(advertContent)
+                        }
+                    )
+                relay.navigate(lobbyCreationPage)
+            default:
+                debug("\(consoleIdentifer) Unhandled button tag: \(sender.tag)")
+                break
+        }
     }
     
 }

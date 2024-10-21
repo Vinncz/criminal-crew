@@ -9,18 +9,6 @@ public class BrowseRoomsViewController : UIViewController, UsesDependenciesInjec
     
     var roomList: [String] = []
     
-    public override init ( nibName nibNameOrNil: String?, bundle nibBundleOrNil: Bundle? ) {
-        self.bListDiscoveredServers = UIButton().titled("Check discovered servers").styled(.borderedProminent).tagged(Self.listOfDiscoveredServers)
-        self.bRefreshBrowser = UIButton().titled("Refresh").styled(.secondary).tagged(Self.refreshBrowser)
-        self.roomTableView = UITableView()
-        
-        super.init(nibName: nil, bundle: nil)
-    }
-    
-    required init? ( coder: NSCoder ) {
-        fatalError("init(coder:) has not been implemented")
-    }
-    
     public var relay : Relay?
     public struct Relay : CommunicationPortal {
         var startSearchingForServers : () -> Void
@@ -31,7 +19,19 @@ public class BrowseRoomsViewController : UIViewController, UsesDependenciesInjec
         var requestDiscoveredServersData : () -> [String]
     }
     
-    private let consoleIdentifier : String = "BrowseRoomsViewController"
+    public override init ( nibName nibNameOrNil: String?, bundle nibBundleOrNil: Bundle? ) {
+        self.bListDiscoveredServers = UIButton().titled("Console-log discovered servers").styled(.borderedProminent).tagged(Self.listOfDiscoveredServers)
+        self.bRefreshBrowser = UIButton().titled("Refresh").styled(.secondary).tagged(Self.refreshBrowser)
+        self.roomTableView = UITableView()
+        
+        super.init(nibName: nil, bundle: nil)
+    }
+    
+    required init? ( coder: NSCoder ) {
+        fatalError("init(coder:) has not been implemented")
+    }
+    
+    private let consoleIdentifier : String = "[C-BRM]"
 }
 
 extension BrowseRoomsViewController {
@@ -41,7 +41,17 @@ extension BrowseRoomsViewController {
         _ = bListDiscoveredServers.executes(self, action: #selector(listOfDiscoveredServers), for: .touchUpInside)
         _ = bRefreshBrowser.executes(self, action: #selector(refreshServerBrowser), for: .touchUpInside)
         
-        let vstack = Self.makeStack(direction: .vertical, distribution: .fillProportionally).thatHolds(bListDiscoveredServers, bRefreshBrowser, roomTableView)
+        let vstack = Self.makeStack(direction: .vertical)
+                        .thatHolds(
+                            Self.makeStack(direction: .horizontal, distribution: .fillProportionally)
+                                .thatHolds(bListDiscoveredServers)
+                                .withMaxHeight(64),
+                            Self.makeStack(direction: .horizontal, distribution: .equalCentering)
+                                .thatHolds(bRefreshBrowser)
+                                .withMaxHeight(64),
+                            roomTableView
+                        )
+                        .padded(UIViewConstants.Paddings.huge)
         roomTableView.register(RoomCell.self, forCellReuseIdentifier: RoomCell.identifier)
         roomTableView.delegate = self
         roomTableView.dataSource = self
@@ -52,7 +62,7 @@ extension BrowseRoomsViewController {
             vstack.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
             vstack.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor),
             vstack.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor),
-            vstack.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor),
+//            vstack.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor),
             roomTableView.heightAnchor.constraint(equalToConstant: 300)
         ])
     }

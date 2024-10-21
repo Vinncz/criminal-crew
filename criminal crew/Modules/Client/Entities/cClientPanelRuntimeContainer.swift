@@ -49,4 +49,9 @@ extension ClientPanelRuntimeContainer {
         tasks.append(task)
     }
     
+    public func reset () {
+        panelPlayed = nil
+        tasks = []
+    }
+    
 }

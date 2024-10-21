@@ -91,6 +91,7 @@ extension ClientComposer {
         evtUC_serverSignalResponder.relay = ServerSignalResponder.Relay (
             eventRouter      : router,
             eventBroadcaster : networkManager.eventBroadcaster,
+            browser          : networkManager.browser as? ClientGameBrowser,
             gameRuntime      : ent_gameRuntimeContainer,
             panelRuntime     : ent_panelRuntimeContainer,
             playerRuntime    : ent_playerRuntimeContainer
@@ -99,6 +100,7 @@ extension ClientComposer {
         
         comUC_selfSignalCommandCenter.relay = SelfSignalCommandCenter.Relay (
             eventBroadcaster : networkManager.eventBroadcaster,
+            browser          : networkManager.browser,
             gameRuntime      : ent_gameRuntimeContainer,
             panelRuntime     : ent_panelRuntimeContainer,
             playerRuntime    : ent_playerRuntimeContainer
@@ -136,6 +138,7 @@ extension ClientComposer {
     
     private final func subscribeUCsToEvents () {
         evtUC_serverSignalResponder.placeSubscription(on: GPAcquaintanceStatusUpdateEvent.self)
+        evtUC_serverSignalResponder.placeSubscription(on: GPGameJoinRequestedEvent.self)
         evtUC_serverSignalResponder.placeSubscription(on: HasBeenAssignedHost.self)
         evtUC_serverSignalResponder.placeSubscription(on: HasBeenAssignedPanel.self)
         evtUC_serverSignalResponder.placeSubscription(on: HasBeenAssignedTask.self)
@@ -144,8 +147,40 @@ extension ClientComposer {
         evtUC_serverSignalResponder.placeSubscription(on: ConnectedPlayerNamesResponse.self)
         debug("[C] Placed subscription of ServerSignalResponder to GPAcquaintanceStatusUpdateEvent, HasBeenAssignedHost, HasBeenAssignedPanel, HasBeenAssignedTask, PenaltyDidReachLimitEvent, TaskDidReachLimitEvent, ConnectedPlayerNamesResponse")
     }
-
+    
     private func placeInitialView () -> Void {
+        let landingPage = LandingPageViewController()
+            landingPage.relay = LandingPageViewController.Relay (
+                selfSignalCommandCenter: self.comUC_selfSignalCommandCenter, 
+                playerRuntimeContainer: self.ent_playerRuntimeContainer,
+                serverBrowser: (self.networkManager.browser as! ClientGameBrowser),
+                publicizeRoom: { [weak self] advertContent in 
+                    guard let self, let serverAddr = self.relay?.makeServerVisible(advertContent) else {
+                        debug("[C] ClientComposer relay is missing or not set")
+                        return
+                    }
+                    
+                    cancellableForAutoJoinSelfCreatedServer = self.networkManager.browser.$discoveredServers.sink { servers in
+                        servers.forEach { serv in
+                            if ( serv.serverId == serverAddr ) {
+                                self.networkManager.eventBroadcaster.approve(
+                                    self.networkManager.browser.requestToJoin(serv.serverId)
+                                )
+                            }
+                        }
+                    }
+                    
+                    relay?.placeJobToAdmitHost(self.networkManager.myself)
+                }, 
+                navigate: { [weak self] to in 
+                    self?.navigate(to: to)
+                }
+            )
+        
+        navigationController.pushViewController(landingPage, animated: true)
+    }
+    
+    private func placeInitialOldView () -> Void {
         let mmvc = MainMenuViewController()
         mmvc.relay = MainMenuViewController.Relay (
             makeServerVisible   : { [weak self] advertContent in
@@ -154,6 +189,7 @@ extension ClientComposer {
                     return
                 }
                 
+                self.networkManager.browser.startBrowsing(self.networkManager.browser)
                 cancellableForAutoJoinSelfCreatedServer = self.networkManager.browser.$discoveredServers.sink { servers in
                     servers.forEach { serv in
                         if ( serv.serverId == serverAddr ) {

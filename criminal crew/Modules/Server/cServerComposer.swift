@@ -123,6 +123,7 @@ extension ServerComposer {
             gameProcessConfig      : Self.configuration,
             eventRouter            : self.router,
             eventBroadcaster       : self.networkManager.eventBroadcaster,
+            advertiserService      : self.networkManager.advertiserService,
             taskAssigner           : self.comUC_taskAssigner,
             taskGenerator          : self.comUC_taskGenerator,
             panelAssigner          : self.comUC_panelAssigner,

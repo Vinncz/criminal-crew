@@ -14,6 +14,7 @@ public class HostSignalResponder : UseCase {
         
         weak var eventRouter            : GPEventRouter?
         weak var eventBroadcaster       : GPGameEventBroadcaster?
+        weak var advertiserService      : GPGameServerAdvertiser?
         
         weak var taskAssigner           : TaskAssigner?
         weak var taskGenerator          : TaskGenerator?
@@ -83,12 +84,17 @@ extension HostSignalResponder {
             return
         }
         
-        guard let host = relay.playerRuntimeContainer!.getWhitelistedPartiesAndTheirState().first?.key else {
-            debug("\(consoleIdentifier) Initiator is not the host, ignoring the request to start game..")
+        guard let playerRuntimeContainer = relay.playerRuntimeContainer else {
+            debug("\(consoleIdentifier) Did fail to respond to game start request: playerRuntimeContainer is missing or not set")
             return
         }
         
-        let playerNames = relay.playerRuntimeContainer!.getWhitelistedPartiesAndTheirState().map { val in
+        guard let host = playerRuntimeContainer.hostAddr else {
+            debug("\(consoleIdentifier) Did fail to respond to game start request: host is missing or not set")
+            return
+        }
+        
+        let playerNames: [String] = playerRuntimeContainer.getWhitelistedPartiesAndTheirState().map { val in
             val.key.displayName
         }
         
@@ -172,8 +178,18 @@ extension HostSignalResponder {
             return
         }
         
+        guard let playerRuntimeContainer = relay.playerRuntimeContainer else {
+            debug("\(consoleIdentifier) Did fail to respond to game join verdict: playerRuntimeContainer is missing or not set")
+            return
+        }
+        
+        guard let advertService = relay.advertiserService else {
+            debug("\(consoleIdentifier) Did fail to respond to game join verdict: advertiserService is missing or not set")
+            return
+        }
+        
         // - Check if the player had already joined or did have joined
-        if let reportOfThePlayerThatHadBeenInTheGame : ServerPlayerRuntimeContainer.Report = relay.playerRuntimeContainer!.getPlayer(named: event.subjectName) {
+        if let reportOfThePlayerThatHadBeenInTheGame : ServerPlayerRuntimeContainer.Report = playerRuntimeContainer.getPlayer(named: event.subjectName) {
             
             // - If they had joined in the past, check if the player is blacklisted
             if reportOfThePlayerThatHadBeenInTheGame.isBlacklisted { 
@@ -187,6 +203,7 @@ extension HostSignalResponder {
         }
         
         relay.admitPlayer(event.subjectName, event.isAdmitted)
+        advertService.pendingRequests.removeAll { $0.requestee.displayName == event.subjectName }
         debug("\(consoleIdentifier) Acting on join request to admit: \(event.isAdmitted)")
         return
     }
@@ -220,24 +237,36 @@ extension HostSignalResponder {
             return
         }
         
-        // - Check if the initiator is the host
-        if let host = relay.playerRuntimeContainer?.getWhitelistedPartiesAndTheirState().first?.key {
-            if ( event.signingKey != host.displayName ) {
-                debug("\(consoleIdentifier) Initiator is not the host, ignoring the request to start game..")
-                return
-            }
-            
-            // - Check if the player is in the game
-            guard nil != relay.playerRuntimeContainer?.getPlayer(named: event.subject) else {
-                debug("\(consoleIdentifier) Player \(event.subject) is not in the game, ignoring the request to terminate..")
-                return
-            }
-            
-            relay.terminatePlayer (
-                GPTerminatedEvent (subject: event.subject, reason: event.reason, authorizedBy: host.displayName)
-            )
+        guard let playerRuntimeContainer = relay.playerRuntimeContainer else {
+            debug("\(consoleIdentifier) Did fail to respond to terminated event: playerRuntimeContainer is missing or not set")
+            return
         }
         
+        guard let host = playerRuntimeContainer.hostAddr else {
+            debug("\(consoleIdentifier) Did fail to respond to terminated event: host is missing or not set")
+            return
+        }
+        
+        if ( event.subject == host.displayName ) {
+            debug("\(consoleIdentifier) Host cannot be terminated, ignoring the request..")
+            return
+        }
+        
+        guard let player = playerRuntimeContainer.getPlayer(named: event.subject) else {
+            debug("\(consoleIdentifier) Player \(event.subject) is not in the game, ignoring the request to terminate..")
+            return
+        }
+        
+        guard let advertService = relay.advertiserService else {
+            debug("\(consoleIdentifier) Did fail to respond to terminated event: advertiserService is missing or not set")
+            return
+        }
+        
+        relay.terminatePlayer (
+            GPTerminatedEvent (subject: event.subject, reason: event.reason, authorizedBy: host.displayName)
+        )
+        playerRuntimeContainer.terminate(event.subject)
+        advertService.pendingRequests.removeAll { $0.requestee.displayName == event.subject }
     }
     
 }
