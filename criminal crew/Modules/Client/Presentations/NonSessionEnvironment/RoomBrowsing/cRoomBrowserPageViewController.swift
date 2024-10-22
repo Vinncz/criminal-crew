@@ -3,7 +3,7 @@ import UIKit
 
 public class RoomBrowserPageViewController : UIViewController {
     
-    let bConsoleLogger     : UIButton
+    let lPageTitle         : UILabel
     let bRefreshBrowser    : UIButton
     let tDiscoveredServers : UITableView
     
@@ -17,7 +17,7 @@ public class RoomBrowserPageViewController : UIViewController {
     }
     
     override init ( nibName nibNameOrNil: String?, bundle nibBundleOrNil: Bundle? ) {
-        self.bConsoleLogger     = UIButton().titled("Console-log discovered servers").styled(.borderedProminent).tagged(Self.consoleLogDiscoveredServers)
+        self.lPageTitle         = UILabel().labeled("Join Game").styled(.title)
         self.bRefreshBrowser    = UIButton().titled("Refresh").styled(.secondary).tagged(Self.refreshBrowser)
         self.tDiscoveredServers = UITableView()
         
@@ -41,18 +41,21 @@ extension RoomBrowserPageViewController {
     public override func viewDidLoad () {
         super.viewDidLoad()
         
-        _ = bConsoleLogger.executes(self, action: #selector(consoleLogDiscoveredServers), for: .touchUpInside)
         _ = bRefreshBrowser.executes(self, action: #selector(refreshServerBrowser), for: .touchUpInside)
         
         let vstack = Self.makeStack(direction: .vertical)
                         .thatHolds(
-                            Self.makeStack(direction: .horizontal, distribution: .fillProportionally)
-                                .thatHolds(bConsoleLogger)
-                                .withMaxHeight(64),
                             Self.makeStack(direction: .horizontal, distribution: .equalCentering)
-                                .thatHolds(bRefreshBrowser)
+                                .thatHolds(
+                                    lPageTitle,
+                                    Self.makeStack(direction: .horizontal, distribution: .equalCentering)
+                                        .thatHolds(
+                                            bRefreshBrowser
+                                        )
+                                )
                                 .withMaxHeight(64),
                             tDiscoveredServers
+                                .withMinHeight(150)
                         )
                         .padded(UIViewConstants.Paddings.huge)
         tDiscoveredServers.register(RoomCell.self, forCellReuseIdentifier: RoomCell.identifier)
@@ -64,12 +67,36 @@ extension RoomBrowserPageViewController {
         NSLayoutConstraint.activate([
             vstack.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
             vstack.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor),
-            vstack.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor),
-            tDiscoveredServers.heightAnchor.constraint(equalToConstant: 300)
+            vstack.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor)
         ])
         
-        _ = self.relay?.selfSignalCommandCenter?.browseForServers()
+        _ = self.relay?.selfSignalCommandCenter?.startBrowsingForServers()
         enableUpdateJobForDiscoveredServers()
+    }
+    
+    override public func viewDidDisappear ( _ animated: Bool ) {
+        super.viewDidDisappear(animated)
+        subscriptions.forEach { $0.cancel() }
+        
+        guard let relay else {
+            debug("\(consoleIdentifier) Did fail to clean up. Relay is missing or not set")
+            return
+        }
+        
+        guard let selfSignalCommandCenter = relay.selfSignalCommandCenter else {
+            debug("\(consoleIdentifier) Did fail to clean up. SelfSignalCommandCenter is missing or not set")
+            return
+        }
+        
+        selfSignalCommandCenter.disconnectSelf()
+        _ = selfSignalCommandCenter.resetBrowser()
+        
+        guard let playerRuntimeContainer = relay.playerRuntimeContainer else {
+            debug("\(consoleIdentifier) Did fail to clean up. PlayerRuntimeContainer is missing or not set")
+            return
+        }
+        
+        playerRuntimeContainer.reset()
     }
     
 }
@@ -101,28 +128,18 @@ extension RoomBrowserPageViewController {
 
 extension RoomBrowserPageViewController {
     
-    @objc func consoleLogDiscoveredServers () {
-        guard let relay = self.relay else {
-            debug("\(consoleIdentifier) Did fail to console-log discovered servers: relay is missing or not set"); return
-        }
-        
-        guard let serverBrowser = relay.serverBrowser else {
-            debug("\(consoleIdentifier) Did fail to console-log discovered servers: serverBrowser is missing or not set"); return
-        }
-        
-        debug("Discovered servers: \(serverBrowser.discoveredServers.map{ $0.discoveryContext["roomName"] })")
-    }
-    
     @objc func refreshServerBrowser () {
         guard let relay else {
             debug("\(consoleIdentifier) Did fail to refresh server browser: relay is missing or not set"); return
         }
         
-        guard let playerRuntimeContainer = relay.playerRuntimeContainer else {
-            debug("\(consoleIdentifier) Did fail to refresh server browser: playerRuntimeContainer is missing or not set"); return
+        guard let selfSignalCommandCenter = relay.selfSignalCommandCenter else {
+            debug("\(consoleIdentifier) Did fail to refresh server browser: selfSignalCommandCenter is missing or not set"); return
         }
         
-//        playerRuntimeContainer.refreshServerBrowser()
+        _ = selfSignalCommandCenter.resetBrowser()
+        _ = selfSignalCommandCenter.startBrowsingForServers()
+        tDiscoveredServers.reloadData()
     }
     
 }
@@ -157,9 +174,14 @@ extension RoomBrowserPageViewController : UITableViewDelegate, UITableViewDataSo
         }
         
         debug("Did try to access discoveredServers array at index \(indexPath.row)")
-        let roomName = serverBrowser.discoveredServers[indexPath.row].discoveryContext["roomName"] ?? "Unnamed Room"
+        let extractedRoomName      = serverBrowser.discoveredServers[indexPath.row].discoveryContext["roomName"] 
         
-        cell.configure(roomName: roomName)
+        var validRoomName : String = extractedRoomName ?? "Unnamed Room"
+        if extractedRoomName != nil && extractedRoomName!.isEmpty {
+            validRoomName = "Unknown Room"
+        }
+        
+        cell.configure(roomName: validRoomName)
         return cell
     }
     
@@ -177,7 +199,7 @@ extension RoomBrowserPageViewController : UITableViewDelegate, UITableViewDataSo
         }
         
         let selectedServer = serverBrowser.discoveredServers[indexPath.row]
-        _ = selfSignalCommandCenter.sendJoinRequest(to: selectedServer.discoveryContext["roomName"] ?? "Unnamed Room")
+        _ = selfSignalCommandCenter.sendJoinRequest(to: selectedServer.serverId)
     }
     
 }

@@ -37,7 +37,7 @@ extension PanelAssigner {
         var isSuccessful = true
         
         let playerComposition : [MCPeerID]       = Array(playerRuntimeContainer.getWhitelistedPartiesAndTheirState().keys)
-        let panelComposition  : [GamePanel.Type] = Array(panelRuntimeContainer.getRegisteredPanelTypes().shuffled().prefix(playerComposition.count))
+        let panelComposition  : [ServerGamePanel.Type] = Array(panelRuntimeContainer.getRegisteredPanelTypes().shuffled().prefix(playerComposition.count))
         
         guard let eventBroadcaster = relay.eventBroadcaster else {
             debug("\(consoleIdentifier) Did fail to distribute panel: eventBroadcaster is missing or not set")

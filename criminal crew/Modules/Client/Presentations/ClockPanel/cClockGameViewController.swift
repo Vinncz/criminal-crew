@@ -324,3 +324,7 @@ extension ClockGameViewController: ButtonTappedDelegate {
         }
     }
 }
+
+#Preview {
+    ClockGameViewController()
+}

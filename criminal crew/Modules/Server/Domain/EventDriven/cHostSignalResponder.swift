@@ -99,7 +99,7 @@ extension HostSignalResponder {
         }
         
         do {
-            try relay.eventBroadcaster?.broadcast(ConnectedPlayerNamesResponse(names: playerNames).representedAsData(), to: [host])
+            try relay.eventBroadcaster?.broadcast(ConnectedPlayersNamesResponse(names: playerNames).representedAsData(), to: [host])
             debug("\(consoleIdentifier) Responded with names of connected players")
         } catch {
             debug("\(consoleIdentifier) Did fail to respond with names of connected players: \(error)")

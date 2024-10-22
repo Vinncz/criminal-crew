@@ -41,7 +41,33 @@ extension SelfSignalCommandCenter {
         return eventBroadcaster.broadcastingFor.displayName
     }
     
-    public func browseForServers () -> Bool {
+}
+
+extension SelfSignalCommandCenter {
+    
+    public func resetBrowser () -> Bool {
+        
+        var flowIsComplete = false
+        
+        guard let relay else {
+            debug("\(consoleIdentifier) Did fail to reset browser: relay is missing or not set")
+            return flowIsComplete
+        }
+        
+        guard let browser = relay.browser as? ClientGameBrowser else {
+            debug("\(consoleIdentifier) Did fail to reset browser: browser is missing or not set")
+            return flowIsComplete
+        }
+        
+        browser.reset()
+        debug("\(consoleIdentifier) Did reset browser")
+        
+        flowIsComplete = true
+        
+        return flowIsComplete
+    }
+    
+    public func startBrowsingForServers () -> Bool {
         var flowIsComplete = false
         
         guard let relay else {
@@ -89,15 +115,29 @@ extension SelfSignalCommandCenter {
             return []
         }
         
+        guard let gameRuntime = relay.gameRuntime else {
+            debug("\(consoleIdentifier) Did fail to get discovered servers: gameRuntime is missing or not set")
+            return []
+        }
+        
+        guard gameRuntime.playedServerAddr == nil else {
+            debug("\(consoleIdentifier) Did fail to get discovered servers: you are in a server")
+            return []
+        }
+        
         guard let browser = relay.browser else {
             debug("\(consoleIdentifier) Did fail to get discovered servers: browser is missing or not set")
             return []
         }
         
-        return browser.discoveredServers.map { $0.discoveryContext["roomName"] ?? "Unnamed Room" }
+        return browser.discoveredServers.filter { $0.serverId != gameRuntime.playedServerAddr }.map { $0.discoveryContext["roomName"] ?? "Unnamed Room" }
     }
     
-    public func resetBrowser () -> Bool {
+}
+
+extension SelfSignalCommandCenter {
+    
+    public func resetPanelRuntime () -> Bool {
         var flowIsComplete = false
         
         guard let relay else {
@@ -105,20 +145,77 @@ extension SelfSignalCommandCenter {
             return flowIsComplete
         }
         
-        guard let browser = relay.browser as? ClientGameBrowser else {
-            debug("\(consoleIdentifier) Did fail to reset browser: browser is missing or not set")
+        guard let panelRuntime = relay.panelRuntime else {
+            debug("\(consoleIdentifier) Did fail to reset panel runtime: panel runtime is missing or not set")
             return flowIsComplete
         }
         
-        browser.reset()
-        debug("\(consoleIdentifier) Did reset browser")
+        panelRuntime.reset()
+        debug("\(consoleIdentifier) Did reset panel runtime")
         
         flowIsComplete = true
         
         return flowIsComplete
     }
     
-    public func sendJoinRequest ( to serverAddr: String ) -> Bool {
+    public func resetPlayerRuntime () -> Bool {
+        var flowIsComplete = false
+        
+        guard let relay else {
+            debug("\(consoleIdentifier) Did fail to reset browser: relay is missing or not set")
+            return flowIsComplete
+        }
+        
+        guard let playerRuntime = relay.playerRuntime else {
+            debug("\(consoleIdentifier) Did fail to reset player runtime: player runtime is missing or not set")
+            return flowIsComplete
+        }
+        
+        playerRuntime.reset()
+        debug("\(consoleIdentifier) Did reset player runtime")
+        
+        flowIsComplete = true
+        
+        return flowIsComplete
+    }
+    
+    public func disconnectSelf () {
+        guard let relay else {
+            debug("\(consoleIdentifier) Did fail to disconnect self: relay is missing or not set"); return
+        }
+        
+        guard let playerRuntime = relay.playerRuntime else {
+            debug("\(consoleIdentifier) Did fail to disconnect self: playerRuntime is missing or not set"); return
+        }
+        
+        guard let gameRuntime = relay.gameRuntime else {
+            debug("\(consoleIdentifier) Did fail to disconnect self: gameRuntime is missing or not set"); return
+        }
+        
+        guard let eventBroadcaster = relay.eventBroadcaster else {
+            debug("\(consoleIdentifier) Did fail to disconnect self: eventBroadcaster is missing or not set"); return
+        }
+        
+        guard let browser = relay.browser as? ClientGameBrowser else {
+            debug("\(consoleIdentifier) Did fail to disconnect self: browser is missing or not set"); return
+        }
+        
+        guard let panelRuntime = relay.panelRuntime else {
+            debug("\(consoleIdentifier) Did fail to disconnect self: panelRuntime is missing or not set"); return
+        }
+        
+        eventBroadcaster.ceaseCommunication()
+        playerRuntime.reset()
+        gameRuntime.reset()
+        browser.reset()
+        panelRuntime.reset()
+    }
+    
+}
+
+extension SelfSignalCommandCenter {
+    
+    public func sendJoinRequest ( to serverAddr: MCPeerID ) -> Bool {
         var flowIsComplete = false
         
         guard let relay else {
@@ -132,7 +229,7 @@ extension SelfSignalCommandCenter {
         }
                 
         guard 
-            let serverOfInterest = browser.discoveredServers.first(where: { $0.discoveryContext["roomName"] == serverAddr })
+            let serverOfInterest = browser.discoveredServers.first(where: { $0.serverId == serverAddr })
         else {
             debug("\(consoleIdentifier) Did fail to send join request: \(serverAddr) is not in discovered servers: \(browser.discoveredServers.map({ $0.discoveryContext["roomName"] }))")
             return flowIsComplete
@@ -147,6 +244,8 @@ extension SelfSignalCommandCenter {
             browser.requestToJoin(serverOfInterest.serverId)
         )
         debug("\(consoleIdentifier) Did send join request to \(serverAddr)")
+        
+        browser.discoveredServers.removeAll { $0.serverId == serverAddr }
         
         flowIsComplete = true
         
@@ -201,37 +300,9 @@ extension SelfSignalCommandCenter {
         return flowIsComplete
     }
     
-    public func disconnectSelf () {
-        guard let relay else {
-            debug("\(consoleIdentifier) Did fail to disconnect self: relay is missing or not set"); return
-        }
-        
-        guard let playerRuntime = relay.playerRuntime else {
-            debug("\(consoleIdentifier) Did fail to disconnect self: playerRuntime is missing or not set"); return
-        }
-        
-        guard let gameRuntime = relay.gameRuntime else {
-            debug("\(consoleIdentifier) Did fail to disconnect self: gameRuntime is missing or not set"); return
-        }
-        
-        guard let eventBroadcaster = relay.eventBroadcaster else {
-            debug("\(consoleIdentifier) Did fail to disconnect self: eventBroadcaster is missing or not set"); return
-        }
-        
-        guard let browser = relay.browser as? ClientGameBrowser else {
-            debug("\(consoleIdentifier) Did fail to disconnect self: browser is missing or not set"); return
-        }
-        
-        guard let panelRuntime = relay.panelRuntime else {
-            debug("\(consoleIdentifier) Did fail to disconnect self: panelRuntime is missing or not set"); return
-        }
-        
-        eventBroadcaster.ceaseCommunication()
-        playerRuntime.reset()
-        gameRuntime.reset()
-        browser.reset()
-        panelRuntime.reset()
-    }
+}
+
+extension SelfSignalCommandCenter {
     
     public func makeSelfHost () {
         guard let relay else {
@@ -250,7 +321,7 @@ extension SelfSignalCommandCenter {
 // Host-only commands
 extension SelfSignalCommandCenter {
     
-    public func refreshConnectedPlayerNamesFromServer () -> Bool {
+    public func orderConnectedPlayerNames  () -> Bool {
         var flowIsComplete = false
         
         guard let relay else {

@@ -1,6 +1,6 @@
 import GamePantry
 
-public struct ConnectedPlayerNamesResponse : GPEvent, GPReceivableEvent, GPSendableEvent {
+public struct ConnectedPlayersNamesResponse : GPEvent, GPReceivableEvent, GPSendableEvent {
     
     public let connectedPlayerNames : [String]
     public let delimiter             : String = "˛"
@@ -17,7 +17,7 @@ public struct ConnectedPlayerNamesResponse : GPEvent, GPReceivableEvent, GPSenda
     
 }
 
-extension ConnectedPlayerNamesResponse {
+extension ConnectedPlayersNamesResponse {
     
     public enum PayloadKeys : String, CaseIterable {
         case eventId              = "eventId",
@@ -31,7 +31,7 @@ extension ConnectedPlayerNamesResponse {
     
 }
 
-extension ConnectedPlayerNamesResponse {
+extension ConnectedPlayersNamesResponse {
     
     public func representedAsData () -> Data {
         dataFrom {
@@ -45,9 +45,9 @@ extension ConnectedPlayerNamesResponse {
     
 }
 
-extension ConnectedPlayerNamesResponse {
+extension ConnectedPlayersNamesResponse {
     
-    public static func construct ( from payload: [String : Any] ) -> ConnectedPlayerNamesResponse? {
+    public static func construct ( from payload: [String : Any] ) -> ConnectedPlayersNamesResponse? {
         guard
             "ConnectedPlayerNamesResponse" == payload[PayloadKeys.eventId.rawValue] as? String,
             let names = payload[PayloadKeys.connectedPlayerNames.rawValue] as? String,
@@ -63,7 +63,7 @@ extension ConnectedPlayerNamesResponse {
             return nil
         }
         
-        return ConnectedPlayerNamesResponse(names: arrayOfNames)
+        return ConnectedPlayersNamesResponse(names: arrayOfNames)
     }
     
 }

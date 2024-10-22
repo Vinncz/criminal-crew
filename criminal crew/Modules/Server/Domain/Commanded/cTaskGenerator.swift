@@ -8,7 +8,7 @@ public class TaskGenerator {
 
 extension TaskGenerator {
     
-    public func generate ( for panel: GamePanel ) -> GameTask {
+    public func generate ( for panel: ServerGamePanel ) -> GameTask {
         panel.generateSingleTask()
     }
     

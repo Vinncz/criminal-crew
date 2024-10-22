@@ -1,22 +1,42 @@
 import GamePantry
 
-public class ClientSwitchesPanel : GamePanel, ObservableObject {
+public class ClientSwitchesPanel : ClientGamePanel, ObservableObject {
     
-    public var panelId : String = "SwitchesPanel"
+    public let panelId : String = "SwitchesPanel"
     
-    public func generateSingleTask () -> GameTask {
-        GameTask(prompt: "Alpha Romeo Delta Red", completionCriteria: ["Alpha", "Romeo", "Delta", "Red"])
-    }
+    public var firstArray  : [String] = ["Quantum", "Pseudo"]
+    public var secondArray : [String] = ["Encryption", "AIIDS", "Cryptography", "Protocol"]
+    public var leverArray  : [String] = ["Red", "Yellow", "Green", "Blue"]
     
-    public func generateTasks(limit: Int) -> [GameTask] {
-        [generateSingleTask()]
-    }
+    public var pressedButtons: [String] = []
     
-    public required init() {
-        
+    public required init () {
+        firstArray  = firstArray.shuffled()
+        secondArray = secondArray.shuffled()
+        leverArray  = leverArray.shuffled()
     }
     
     private let consoleIdentifier : String = "[C-PSW]"
     public static var panelId : String = "SwitchesPanel"
+    
+}
+
+extension ClientSwitchesPanel {
+    
+    /// CONVENTION
+    /// [ n(#)  ]
+    public func validate ( _ completionCriterias: [String] ) -> Bool {
+        var flowIsCompleted : Bool = false
+        
+        guard
+            Set(pressedButtons) == Set(completionCriterias)
+        else {
+            debug("\(consoleIdentifier) Did fail validation. Pressed buttons contains differing elements from completion criteria: \(pressedButtons) to \(completionCriterias)")
+            return flowIsCompleted
+        }
+        
+        flowIsCompleted = true
+        return flowIsCompleted
+    }
     
 }

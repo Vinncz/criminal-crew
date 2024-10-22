@@ -2,8 +2,8 @@ import GamePantry
 
 public class ServerPanelRuntimeContainer : ObservableObject {
     
-    @Published public var registeredPanels : [GamePanel]
-    @Published public var playerMapping    : [MCPeerID: GamePanel]
+    @Published public var registeredPanels : [ServerGamePanel]
+    @Published public var playerMapping    : [MCPeerID: ServerGamePanel]
     
     public init () {
         self.registeredPanels = []
@@ -15,30 +15,30 @@ public class ServerPanelRuntimeContainer : ObservableObject {
 extension ServerPanelRuntimeContainer {
     
     public struct AvailablePanelTypes {
-        static let cablesPanel   = CablesPanel.self
-        static let symbolsPanel  = SymbolsPanel.self
-        static let switchesPanel = SwitchesPanel.self
+        static let cablesPanel   = ServerWiresPanel.self
+        static let symbolsPanel  = ServerClockPanel.self
+        static let switchesPanel = ServerSwitchesPanel.self
     }
     
-    public static let availablePanelTypes : [GamePanel.Type] = [
-        CablesPanel.self,
-        SymbolsPanel.self,
-        SwitchesPanel.self,
+    public static let availablePanelTypes : [ServerGamePanel.Type] = [
+        ServerWiresPanel.self,
+        ServerClockPanel.self,
+        ServerSwitchesPanel.self,
     ]
     
 }
 
 extension ServerPanelRuntimeContainer {
     
-    public func getRegisteredPanelTypes () -> [GamePanel.Type] {
+    public func getRegisteredPanelTypes () -> [ServerGamePanel.Type] {
         self.registeredPanels.map { type(of: $0) }
     }
     
-    public func getRegisteredPanels () -> [GamePanel] {
+    public func getRegisteredPanels () -> [ServerGamePanel] {
         self.registeredPanels
     }
     
-    public func getPanel ( panelId: String ) -> GamePanel? {
+    public func getPanel ( panelId: String ) -> ServerGamePanel? {
         self.registeredPanels.first { $0.panelId == panelId }
     }
     
@@ -46,7 +46,7 @@ extension ServerPanelRuntimeContainer {
 
 extension ServerPanelRuntimeContainer {
     
-    public func registerPanel ( _ panel: GamePanel ) {
+    public func registerPanel ( _ panel: ServerGamePanel ) {
         self.registeredPanels.append(panel)
     }
     

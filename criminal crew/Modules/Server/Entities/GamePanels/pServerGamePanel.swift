@@ -1,6 +1,6 @@
 import GameController
 
-public protocol GamePanel {
+public protocol ServerGamePanel {
     
     var panelId : String { get }
     
