@@ -62,7 +62,7 @@ extension RoomHostViewController {
     
     private func handle ( _ event: GPEvent ) {
         switch (event) {
-            case let event as ConnectedPlayerNamesResponse:
+            case let event as ConnectedPlayersNamesResponse:
                 debug("Event is recognized as InquiryAboutConnectedPlayersRespondedEvent")
             playerList = event.connectedPlayerNames
             playerTableView.reloadData()

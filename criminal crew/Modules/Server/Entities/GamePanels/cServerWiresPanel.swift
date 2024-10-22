@@ -1,6 +1,6 @@
 import GamePantry
 
-public class CablesPanel : GamePanel {
+public class ServerWiresPanel : ServerGamePanel {
     
     public var leftPairings  : [String: String] = [:]
     public var rightPairings : [String: String] = [:]
@@ -21,7 +21,7 @@ public class CablesPanel : GamePanel {
     
 }
 
-extension CablesPanel {
+extension ServerWiresPanel {
     
     public func generateSingleTask () -> GameTask {
         var newLeftOutlet  : String = ""

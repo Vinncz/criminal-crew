@@ -1,16 +1,15 @@
 import GamePantry
 
-public class ClientWirePanel : GamePanel, ObservableObject {
+public class ClientWirePanel : ClientGamePanel, ObservableObject {
     
-    public var panelId : String = "WirePanel"
+    public let panelId : String = "WirePanel"
     
-    public func generateSingleTask () -> GameTask {
-        GameTask(prompt: "Blue wire to star", completionCriteria: ["blue wire", "star"])
-    }
+    public var leftPanelOriginWires       : [String] = [""]
+    public var leftPanelDestinationWires  : [String] = [""]
+    public var rightPanelOriginWires      : [String] = [""]
+    public var rightPanelDestinationWires : [String] = [""]
     
-    public func generateTasks(limit: Int) -> [GameTask] {
-        [generateSingleTask()]
-    }
+    public var connections : [[String]] = [[]]
     
     public required init() {
         
@@ -18,5 +17,17 @@ public class ClientWirePanel : GamePanel, ObservableObject {
     
     private let consoleIdentifier : String = "[C-PWR]"
     public static var panelId : String = "WirePanel"
+    
+}
+
+extension ClientWirePanel {
+    
+    /// CONVENTION
+    /// [ # # ]
+    public func validate ( _ completionCriterias: [String] ) -> Bool {
+        
+        
+        return false
+    }
     
 }

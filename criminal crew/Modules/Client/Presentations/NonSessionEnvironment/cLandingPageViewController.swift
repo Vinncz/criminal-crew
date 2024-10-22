@@ -91,6 +91,9 @@ extension LandingPageViewController {
                         playerRuntimeContainer  : self.relay?.playerRuntimeContainer, 
                         publicizeRoom: { [weak self] advertContent in
                             self?.relay?.publicizeRoom(advertContent)
+                        }, 
+                        navigate: { [weak self] to in 
+                            self?.relay?.navigate(to)
                         }
                     )
                 relay.navigate(lobbyCreationPage)

@@ -106,4 +106,24 @@ extension UIButton {
         return self
     }
     
+    public func withIcon ( _ icon: UIImage, for role: UIButton.Role = .normal ) -> Self {
+        self.setImage(icon, for: .normal)
+        self.setImage(icon, for: .highlighted)
+        self.setImage(icon, for: .selected)
+        self.setImage(icon, for: .disabled)
+        return self
+    }
+    
+    public func withIcon ( systemName: String ) -> Self {
+        self.setImage(UIImage(systemName: systemName), for: .normal)
+        self.setImage(UIImage(systemName: systemName), for: .highlighted)
+        self.setImage(UIImage(systemName: systemName), for: .selected)
+        self.setImage(UIImage(systemName: systemName), for: .disabled)
+        
+        self.imageView?.contentMode = .center
+        self.imageView?.transform = .init(scaleX: 0.8, y: 0.8)
+        
+        return self
+    }
+    
 }

@@ -1,6 +1,6 @@
 import GamePantry
 
-public class SymbolsPanel : GamePanel {
+public class ServerClockPanel : ServerGamePanel {
     
     public let panelId : String = "SymbolsPanel"
     
@@ -10,7 +10,7 @@ public class SymbolsPanel : GamePanel {
     
 }
 
-extension SymbolsPanel {
+extension ServerClockPanel {
     
     public func generateSingleTask () -> GameTask {
         GameTask (

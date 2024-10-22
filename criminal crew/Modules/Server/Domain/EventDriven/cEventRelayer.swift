@@ -73,7 +73,7 @@ extension EventRelayer {
         
         do {
             try relay.eventBroadcaster?.broadcast (
-                ConnectedPlayerNamesResponse(names: pRegistry.getWhitelistedPartiesAndTheirState().keys.map{$0.displayName}).representedAsData(), 
+                ConnectedPlayersNamesResponse(names: pRegistry.getWhitelistedPartiesAndTheirState().keys.map{$0.displayName}).representedAsData(), 
                 to: [player]
             )
             debug("\(consoleIdentifier) Did relay \(event) to client-host")

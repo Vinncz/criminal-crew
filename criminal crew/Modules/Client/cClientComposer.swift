@@ -122,7 +122,7 @@ extension ClientComposer {
             router.openChannel(for:GPTerminatedEvent.self),
             
             router.openChannel(for:GPAcquaintanceStatusUpdateEvent.self),
-            router.openChannel(for:ConnectedPlayerNamesResponse.self),
+            router.openChannel(for:ConnectedPlayersNamesResponse.self),
             
             router.openChannel(for:PenaltyDidReachLimitEvent.self),
             router.openChannel(for:TaskDidReachLimitEvent.self),
@@ -144,7 +144,7 @@ extension ClientComposer {
         evtUC_serverSignalResponder.placeSubscription(on: HasBeenAssignedTask.self)
         evtUC_serverSignalResponder.placeSubscription(on: PenaltyDidReachLimitEvent.self)
         evtUC_serverSignalResponder.placeSubscription(on: TaskDidReachLimitEvent.self)
-        evtUC_serverSignalResponder.placeSubscription(on: ConnectedPlayerNamesResponse.self)
+        evtUC_serverSignalResponder.placeSubscription(on: ConnectedPlayersNamesResponse.self)
         debug("[C] Placed subscription of ServerSignalResponder to GPAcquaintanceStatusUpdateEvent, HasBeenAssignedHost, HasBeenAssignedPanel, HasBeenAssignedTask, PenaltyDidReachLimitEvent, TaskDidReachLimitEvent, ConnectedPlayerNamesResponse")
     }
     

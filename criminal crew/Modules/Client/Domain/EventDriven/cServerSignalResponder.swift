@@ -63,7 +63,7 @@ extension ServerSignalResponder : GPHandlesEvents {
                 
             case let event as GPGameJoinRequestedEvent:
                 didGetAdmissionRequest(event)
-            case let event as ConnectedPlayerNamesResponse:
+            case let event as ConnectedPlayersNamesResponse:
                 didGetResponseOfConnectedPlayerNames(event)
                 
             default:
@@ -323,7 +323,7 @@ extension ServerSignalResponder {
         playerRuntime.joinRequestedPlayersNames.append(event.subjectName)
     }
     
-    public func didGetResponseOfConnectedPlayerNames ( _ event: ConnectedPlayerNamesResponse ) {
+    public func didGetResponseOfConnectedPlayerNames ( _ event: ConnectedPlayersNamesResponse ) {
         guard let relay else { 
             debug("\(consoleIdentifier) Relay is missing or not set")
             return 

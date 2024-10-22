@@ -2,7 +2,7 @@ import GamePantry
 
 public class ClientPanelRuntimeContainer : ObservableObject {
     
-    @Published public var panelPlayed : GamePanel? {
+    @Published public var panelPlayed : ClientGamePanel? {
         didSet {
             debug("\(consoleIdentifier) Did update played panel to \(panelPlayed?.panelId ?? "none")")
         }
@@ -25,7 +25,7 @@ public class ClientPanelRuntimeContainer : ObservableObject {
 extension ClientPanelRuntimeContainer {
     
     public func playPanel ( _ panelId: String ) {
-        var toBePlayedPanel : GamePanel?
+        var toBePlayedPanel : ClientGamePanel?
         switch panelId {
             case ClientSwitchesPanel.panelId:
                 toBePlayedPanel = ClientSwitchesPanel()

@@ -33,7 +33,7 @@ public class ClientNetworkEventListener : GPGameEventListener {
             if !emit(parsedData) {
                 debug("\(consoleIdentifier) Did receive GPTaskReceivedEvent, but not shared via event router")
             }
-        } else if let parsedData = ConnectedPlayerNamesResponse.construct(from: fromData(data: data)!) {
+        } else if let parsedData = ConnectedPlayersNamesResponse.construct(from: fromData(data: data)!) {
             if !emit(parsedData) {
                 debug("\(consoleIdentifier) Did receive InquiryAboutConnectedPlayersRespondedEvent, but not shared via event router")
             }
