@@ -123,7 +123,7 @@ extension UIButton {
         self.imageView?.contentMode = .center
         self.imageView?.transform = .init(scaleX: 0.8, y: 0.8)
         
-        return self
+        return self 
     }
     
 }
