@@ -62,4 +62,23 @@ extension UITextField {
         return self
     }
     
+    public func withDoneButtonEnabled () -> Self {
+        let doneToolbar          = UIToolbar()
+            doneToolbar.barStyle = .default
+            
+        let flexSpace  = UIBarButtonItem(barButtonSystemItem: .flexibleSpace, target: nil, action: nil)
+        let doneButton = UIBarButtonItem(title: "Done", style: .done, target: self, action: #selector(doneButtonTapped))
+        
+        doneToolbar.items = [flexSpace, doneButton]
+        doneToolbar.sizeToFit()
+        
+        self.inputAccessoryView = doneToolbar
+        
+        return self
+    }
+    
+    @objc func doneButtonTapped () {
+        self.endEditing(true)
+    }
+    
 }

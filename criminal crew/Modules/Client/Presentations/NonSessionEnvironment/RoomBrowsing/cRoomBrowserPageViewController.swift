@@ -14,11 +14,12 @@ public class RoomBrowserPageViewController : UIViewController {
         weak var selfSignalCommandCenter : SelfSignalCommandCenter?
         weak var playerRuntimeContainer  : ClientPlayerRuntimeContainer?
         weak var serverBrowser           : ClientGameBrowser?
+            var navigate                 : ( _ to: UIViewController ) -> Void
     }
     
     override init ( nibName nibNameOrNil: String?, bundle nibBundleOrNil: Bundle? ) {
         self.lPageTitle         = UILabel().labeled("Join Game").styled(.title)
-        self.bRefreshBrowser    = UIButton().titled("Refresh").styled(.secondary).tagged(Self.refreshBrowser).withIcon(systemName: "arrow.trianglehead.clockwise.rotate.90")
+        self.bRefreshBrowser    = UIButton().styled(.secondary).tagged(Self.refreshBrowser).withIcon(systemName: "arrow.trianglehead.clockwise.rotate.90")
         self.tDiscoveredServers = UITableView()
         
         super.init(nibName: nil, bundle: nil)
@@ -88,15 +89,15 @@ extension RoomBrowserPageViewController {
             return
         }
         
-        selfSignalCommandCenter.disconnectSelf()
+//        selfSignalCommandCenter.disconnectSelf()
         _ = selfSignalCommandCenter.resetBrowser()
-        
-        guard let playerRuntimeContainer = relay.playerRuntimeContainer else {
-            debug("\(consoleIdentifier) Did fail to clean up. PlayerRuntimeContainer is missing or not set")
-            return
-        }
-        
-        playerRuntimeContainer.reset()
+//        
+//        guard let playerRuntimeContainer = relay.playerRuntimeContainer else {
+//            debug("\(consoleIdentifier) Did fail to clean up. PlayerRuntimeContainer is missing or not set")
+//            return
+//        }
+//        
+//        playerRuntimeContainer.reset()
     }
     
 }
@@ -200,6 +201,19 @@ extension RoomBrowserPageViewController : UITableViewDelegate, UITableViewDataSo
         
         let selectedServer = serverBrowser.discoveredServers[indexPath.row]
         _ = selfSignalCommandCenter.sendJoinRequest(to: selectedServer.serverId)
+        _ = selfSignalCommandCenter.stopBrowsingForServers()
+        
+        let lobbyViewController = LobbyViewController()
+        lobbyViewController.relay = LobbyViewController.Relay (
+            selfSignalCommandCenter : self.relay?.selfSignalCommandCenter,
+            playerRuntimeContainer  : self.relay?.playerRuntimeContainer,
+            serverBrowser           : self.relay?.serverBrowser,
+            navigate                : { to in
+                debug("lobby view did navigate from room browser")
+                self.relay?.navigate(to)
+            }
+        )
+        relay.navigate(lobbyViewController)
     }
     
 }

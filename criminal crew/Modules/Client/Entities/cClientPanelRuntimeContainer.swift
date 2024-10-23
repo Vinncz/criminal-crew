@@ -31,8 +31,8 @@ extension ClientPanelRuntimeContainer {
                 toBePlayedPanel = ClientSwitchesPanel()
             case ClientClockPanel.panelId:
                 toBePlayedPanel = ClientClockPanel()
-            case ClientWirePanel.panelId:
-                toBePlayedPanel = ClientWirePanel()
+            case ClientWiresPanel.panelId:
+                toBePlayedPanel = ClientWiresPanel()
             default:
                 break
         }

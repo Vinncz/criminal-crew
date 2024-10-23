@@ -36,11 +36,6 @@ public class ClientGameBrowser : GPGameClientBrowser {
         }
     }
     
-    public func reset () {
-        self.stopBrowsing(self)
-        discoveredServers.removeAll()
-    }
-    
     private let consoleIdentifier : String = "[C-BWS]"
     
 }

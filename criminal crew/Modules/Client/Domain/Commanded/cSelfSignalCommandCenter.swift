@@ -205,6 +205,7 @@ extension SelfSignalCommandCenter {
         }
         
         eventBroadcaster.ceaseCommunication()
+        eventBroadcaster.reset()
         playerRuntime.reset()
         gameRuntime.reset()
         browser.reset()
@@ -335,15 +336,9 @@ extension SelfSignalCommandCenter {
         }
         
         guard 
-            let serverAddr = gameRuntime.playedServerAddr,
-            gameRuntime.connectionState == .connected
+            let serverAddr = gameRuntime.playedServerAddr
         else {
             debug("\(consoleIdentifier) Did fail to refresh connected player names: self is not connected to a server")
-            return flowIsComplete
-        }
-        
-        guard gameRuntime.isHost else {
-            debug("\(consoleIdentifier) Did fail to refresh connected player names: self is not the host")
             return flowIsComplete
         }
         

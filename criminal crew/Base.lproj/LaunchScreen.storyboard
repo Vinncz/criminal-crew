@@ -20,7 +20,7 @@
                             <stackView opaque="NO" contentMode="top" axis="vertical" alignment="center" spacingType="standard" translatesAutoresizingMaskIntoConstraints="NO" id="I8x-3c-PSP">
                                 <rect key="frame" x="300.66666666666669" y="162" width="250.66666666666669" height="69.333333333333314"/>
                                 <subviews>
-                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="center" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Criminal Crew" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" minimumScaleFactor="0.5" adjustsFontForContentSizeCategory="YES" translatesAutoresizingMaskIntoConstraints="NO" id="FMY-jc-6Bt">
+                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="center" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Criminal Crew" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" minimumScaleFactor="0.5" translatesAutoresizingMaskIntoConstraints="NO" id="FMY-jc-6Bt">
                                         <rect key="frame" x="0.0" y="0.0" width="250.66666666666666" height="37.333333333333336"/>
                                         <fontDescription key="fontDescription" name="Menlo-Bold" family="Menlo" pointSize="32"/>
                                         <nil key="textColor"/>

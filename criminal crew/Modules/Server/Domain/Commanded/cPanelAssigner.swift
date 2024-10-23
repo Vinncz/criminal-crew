@@ -24,19 +24,29 @@ extension PanelAssigner {
             return false
         }
         
-        guard let playerRuntimeContainer = relay.playerRuntimeContainer else {
-            debug("\(consoleIdentifier) Did fail to distribute panel: playerRuntimeContainer is missing or not set")
-            return false
-        }
-        
         guard let panelRuntimeContainer = relay.panelRuntimeContainer else {
             debug("\(consoleIdentifier) Did fail to distribute panel: panelRuntimeContainer is missing or not set")
             return false
         }
         
+        guard panelRuntimeContainer.registeredPanels.count > 0 else {
+            debug("\(consoleIdentifier) Did fail to distribute panel: no panels are registered \(panelRuntimeContainer.registeredPanels)")
+            return false
+        }
+        
+        guard let playerRuntimeContainer = relay.playerRuntimeContainer else {
+            debug("\(consoleIdentifier) Did fail to distribute panel: playerRuntimeContainer is missing or not set")
+            return false
+        }
+        
+        guard playerRuntimeContainer.getWhitelistedPartiesAndTheirState().count > 0 else {
+            debug("\(consoleIdentifier) Did fail to distribute panel: no players are whitelisted")
+            return false
+        }
+        
         var isSuccessful = true
         
-        let playerComposition : [MCPeerID]       = Array(playerRuntimeContainer.getWhitelistedPartiesAndTheirState().keys)
+        let playerComposition : [MCPeerID]             = Array(playerRuntimeContainer.getWhitelistedPartiesAndTheirState().keys)
         let panelComposition  : [ServerGamePanel.Type] = Array(panelRuntimeContainer.getRegisteredPanelTypes().shuffled().prefix(playerComposition.count))
         
         guard let eventBroadcaster = relay.eventBroadcaster else {
@@ -46,9 +56,8 @@ extension PanelAssigner {
         
         for ( index, player ) in playerComposition.enumerated() {
             let panelForThisPlayer = panelComposition[index].init()
-            let distributePanelOrder = AssignPanelEvent (
-                toPlayerWithDisplayName : player.displayName,
-                panelWithIdOf           : panelForThisPlayer.panelId
+            let distributePanelOrder = HasBeenAssignedPanel (
+                panelId : panelForThisPlayer.panelId
             )
             
             panelRuntimeContainer.registerPanel(panelForThisPlayer)

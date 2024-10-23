@@ -10,7 +10,7 @@ public class ServerWiresPanel : ServerGamePanel {
     public let leftOutletPair    : [String]
     public let rightOutletPair   : [String]
     
-    public let panelId : String = "CablesPanel"
+    public let panelId : String = "WiresPanel"
     
     required public init () {
         leftOutletOrigin  = ["Yellow", "Blue", "Green", "Red"]

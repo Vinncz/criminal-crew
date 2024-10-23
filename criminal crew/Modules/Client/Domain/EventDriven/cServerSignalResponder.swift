@@ -106,6 +106,15 @@ extension ServerSignalResponder {
             if gameRuntime.playedServerAddr == event.subject {
                 gameRuntime.connectionState = event.status
                 consoleMsg = "Did update played server connection state to \(event.status.toString())"
+                
+                if ( event.status == .notConnected ) {
+                    gameRuntime.reset()
+                    gameRuntime.state = .notStarted
+                    relay.playerRuntime?.reset()
+                    relay.panelRuntime?.reset()
+                    relay.eventBroadcaster?.reset()
+                    relay.browser?.reset()
+                }
             } else {
                 consoleMsg = "Ignoring \(event.subject.displayName) connection update since it's not the played server"
             }
@@ -147,6 +156,7 @@ extension ServerSignalResponder {
         }
         
         eventBroadcaster.ceaseCommunication()
+        eventBroadcaster.reset()
         gameRuntime.reset()
         playerRuntime.reset()
         browser.reset()

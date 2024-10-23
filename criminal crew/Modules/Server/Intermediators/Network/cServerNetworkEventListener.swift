@@ -37,7 +37,7 @@ public class ServerNetworkEventListener : GPGameEventListener {
             if !emit(parsedData) {
                 debug("\(consoleIdentifier) Did receive a task report event but not shared via the event router")
             }
-        } else if let parsedData = GPGameJoinRequestedEvent.construct(from: fromData(data: data)!) {
+        } else if let parsedData: GPGameJoinRequestedEvent = GPGameJoinRequestedEvent.construct(from: fromData(data: data)!) {
             if !emit(parsedData) {
                 debug("\(consoleIdentifier) Did receive a game join request event but not shared via the event router")
             }

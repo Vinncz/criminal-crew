@@ -2,7 +2,7 @@ import GamePantry
 
 public class ServerClockPanel : ServerGamePanel {
     
-    public let panelId : String = "SymbolsPanel"
+    public let panelId : String = "ClockPanel"
     
     required public init () {
         

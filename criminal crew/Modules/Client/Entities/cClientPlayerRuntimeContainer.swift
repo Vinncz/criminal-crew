@@ -27,6 +27,7 @@ extension ClientPlayerRuntimeContainer {
     
     public func reset () {
         connectedPlayersNames.removeAll()
+        joinRequestedPlayersNames.removeAll()
         debug("\(consoleIdentifier) Did reset PlayerRuntimeContainer")
     }
     

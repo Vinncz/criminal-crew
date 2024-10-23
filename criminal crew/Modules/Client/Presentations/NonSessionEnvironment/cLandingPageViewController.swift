@@ -10,6 +10,7 @@ public class LandingPageViewController : UIViewController, UsesDependenciesInjec
     public struct Relay : CommunicationPortal {
         weak var selfSignalCommandCenter : SelfSignalCommandCenter?
         weak var playerRuntimeContainer  : ClientPlayerRuntimeContainer?
+        weak var gameRuntimeContainer    : ClientGameRuntimeContainer?
         weak var serverBrowser           : ClientGameBrowser?
              var publicizeRoom           : ( _ advertContent: [String: String] ) -> Void
              var navigate                : ( _ to: UIViewController ) -> Void
@@ -81,7 +82,11 @@ extension LandingPageViewController {
                     serverBrowserPage.relay = RoomBrowserPageViewController.Relay (
                         selfSignalCommandCenter : self.relay?.selfSignalCommandCenter,
                         playerRuntimeContainer  : self.relay?.playerRuntimeContainer,
-                        serverBrowser           : self.relay?.serverBrowser
+                        serverBrowser           : self.relay?.serverBrowser,
+                        navigate                : { to in
+                            debug("browse room did navigate from landing page")
+                            self.relay?.navigate(to)
+                        }
                     )
                 relay.navigate(serverBrowserPage)
             case Self.hostRoomButtonId:
@@ -89,10 +94,12 @@ extension LandingPageViewController {
                     lobbyCreationPage.relay = LobbyCreationPageViewController.Relay (
                         selfSignalCommandCenter : self.relay?.selfSignalCommandCenter,
                         playerRuntimeContainer  : self.relay?.playerRuntimeContainer, 
+                        gameRuntimeContainer    : self.relay?.gameRuntimeContainer,
                         publicizeRoom: { [weak self] advertContent in
                             self?.relay?.publicizeRoom(advertContent)
                         }, 
                         navigate: { [weak self] to in 
+                            debug("host room did navigate from landing page")
                             self?.relay?.navigate(to)
                         }
                     )

@@ -7,6 +7,7 @@ public class LobbyCreationPageViewController : UIViewController, UsesDependencie
     let bExposeRoom       : UIButton
     
     let bRefreshConnectedPlayer : UIButton
+    let bStartGame              : UIButton
     
     let tPermissionToggle : UISwitch
     let lPermissionLabel  : UILabel
@@ -23,14 +24,17 @@ public class LobbyCreationPageViewController : UIViewController, UsesDependencie
     public struct Relay : CommunicationPortal {
         weak var selfSignalCommandCenter : SelfSignalCommandCenter?
         weak var playerRuntimeContainer  : ClientPlayerRuntimeContainer?
+        weak var gameRuntimeContainer    : ClientGameRuntimeContainer?
              var publicizeRoom : ( _ advertContent: [String: String] ) -> Void
              var navigate      : ( _ to: UIViewController ) -> Void
     }
     
     override init ( nibName nibNameOrNil: String?, bundle nibBundleOrNil: Bundle? ) {
-        self.tRoomName    = UITextField().placeholder("Unnamed Room").styled(.bordered)
+        self.tRoomName    = UITextField().placeholder("Unnamed Room").styled(.bordered).withDoneButtonEnabled()
         self.bExposeRoom  = UIButton().titled("Open room").styled(.borderedProminent).tagged(Self.openRoomButtonId)
-        self.bRefreshConnectedPlayer = UIButton().titled("Refresh connected players").styled(.secondary).tagged(Self.sendMessageButtonId)
+        
+        self.bRefreshConnectedPlayer = UIButton().styled(.secondary).tagged(Self.sendMessageButtonId).withIcon(systemName: "arrow.trianglehead.clockwise.rotate.90")
+        self.bStartGame              = UIButton().titled("Start game").styled(.borderedProminent).tagged(Self.startGameButtonId)
         
         self.tPermissionToggle = UISwitch().turnedOn()
         self.lPermissionLabel  = UILabel().labeled("Require approval to join").styled(.subtitle)
@@ -59,6 +63,7 @@ extension LobbyCreationPageViewController {
         
         _ = bExposeRoom.executes(self, action: #selector(exposeRoom), for: .touchUpInside)
         _ = bRefreshConnectedPlayer.executes(self, action: #selector(refreshConnectedPlayersFromServer), for: .touchUpInside)
+        _ = bStartGame.executes(self, action: #selector(startGame), for: .touchUpInside)
         _ = tPermissionToggle.executes(target: self, action: #selector(updateJoinPermission(_:)), for: .touchUpInside)
         
         let roomNamingTextField = Self.makeStack(direction: .horizontal)
@@ -76,6 +81,13 @@ extension LobbyCreationPageViewController {
                                                 .padded(UIViewConstants.Paddings.large)
                                                 .withCornerRadius(UIViewConstants.CornerRadiuses.normal)
                                                 .withBackgroundColor(.gray.withAlphaComponent(0.25))
+        let roomControls = Self.makeStack(direction: .horizontal)
+                                .thatHolds(
+                                    autoAllowJoinRequestToglleHStack,
+                                    bStartGame,
+                                    bRefreshConnectedPlayer
+                                )
+                                .withMaxHeight(60)
         let playersStack = Self.makeStack(direction: .horizontal, distribution: .fillEqually)
                             .thatHolds(
                                 Self.makeStack(direction: .vertical)
@@ -83,16 +95,15 @@ extension LobbyCreationPageViewController {
                                         UILabel().labeled("Requesting Players"),
                                         tPendingPlayers
                                     )
-                                    .padded(UIViewConstants.Paddings.normal)
-                                    .withMinHeight(200),
+                                    .padded(UIViewConstants.Paddings.normal),
                                 Self.makeStack(direction: .vertical)
                                     .thatHolds(
                                         UILabel().labeled("Joined Players"),
                                         tJoinedPlayers
                                     )
                                     .padded(UIViewConstants.Paddings.normal)
-                                    .withMinHeight(200)
                             )
+                            .withMinHeight(150)
         
         tPendingPlayers.register(PlayerCell.self, forCellReuseIdentifier: PlayerCell.identifier)
         tPendingPlayers.delegate   = pendingPlayersRefresher
@@ -105,8 +116,7 @@ extension LobbyCreationPageViewController {
         let vstack = Self.makeStack(direction: .vertical, distribution: .fillProportionally)
             .thatHolds(
                 roomNamingTextField, 
-                bRefreshConnectedPlayer, 
-                autoAllowJoinRequestToglleHStack,
+                roomControls,
                 playersStack
             )
             .padded(UIViewConstants.Paddings.huge)
@@ -115,9 +125,9 @@ extension LobbyCreationPageViewController {
         
         NSLayoutConstraint.activate([
             vstack.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
+            vstack.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor),
             vstack.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor),
-            vstack.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor),
-            playersStack.heightAnchor.constraint(equalToConstant: 300)
+            vstack.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor)
         ])
         
         pendingPlayersRefresher.relay = PendingPlayerRefresher.Relay (
@@ -148,9 +158,8 @@ extension LobbyCreationPageViewController {
             return
         }
         
-        selfSignalCommandCenter.stopBrowsingForServers()
-        selfSignalCommandCenter.disconnectSelf()
-        selfSignalCommandCenter.resetBrowser()
+        _ = selfSignalCommandCenter.stopBrowsingForServers()
+        _ = selfSignalCommandCenter.resetBrowser()
         
         guard let playerRuntimeContainer = relay.playerRuntimeContainer else {
             debug("\(consoleIdentifer) Did fail to clean up. PlayerRuntimeContainer is missing or not set")
@@ -158,6 +167,17 @@ extension LobbyCreationPageViewController {
         }
         
         playerRuntimeContainer.reset()
+        
+        guard let gameRuntimeContainer = relay.gameRuntimeContainer else {
+            debug("\(consoleIdentifer) Did fail to clean up. GameRuntimeContainer is missing or not set")
+            return
+        }
+        
+        guard gameRuntimeContainer.isHost else {
+            selfSignalCommandCenter.disconnectSelf()
+            return
+        }
+        
     }
     
 }
@@ -243,12 +263,27 @@ extension LobbyCreationPageViewController {
         tPendingPlayers.reloadData()
     }
     
+    @objc private func startGame () {
+        guard let relay else {
+            debug("\(consoleIdentifer) Did fail to refresh connected players. Relay is missing or not set")
+            return
+        }
+        
+        guard let selfSignalCommandCenter = relay.selfSignalCommandCenter else {
+            debug("\(consoleIdentifer) Did fail to update the join permission. SelfSignalCommandCenter is missing or not set")
+            return
+        }
+        
+        selfSignalCommandCenter.startGame()
+    }
+    
 }
 
 extension LobbyCreationPageViewController {
     
     fileprivate static let openRoomButtonId = 0
     fileprivate static let sendMessageButtonId = 1
+    fileprivate static let startGameButtonId = 2
     
 }
 

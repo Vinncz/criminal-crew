@@ -53,6 +53,10 @@ public class ClientNetworkEventListener : GPGameEventListener {
             if !emit(parsedData) {
                 debug("\(consoleIdentifier) Did receive GPGameJoinRequestedEvent, but not shared via event router")
             }
+        } else if let parsedData = GPTerminatedEvent.construct(from: fromData(data: data)!) {
+            if !emit(parsedData) {
+                debug("\(consoleIdentifier) Did receive GPTerminatedEvent, but not shared via event router")
+            }
         } else {
             debug("\(consoleIdentifier) Did receive data, but could not parse it")
         }

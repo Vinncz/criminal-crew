@@ -1,8 +1,8 @@
 import GamePantry
 
-public class ClientWirePanel : ClientGamePanel, ObservableObject {
+public class ClientWiresPanel : ClientGamePanel, ObservableObject {
     
-    public let panelId : String = "WirePanel"
+    public let panelId : String = "WiresPanel"
     
     public var leftPanelOriginWires       : [String] = [""]
     public var leftPanelDestinationWires  : [String] = [""]
@@ -16,11 +16,11 @@ public class ClientWirePanel : ClientGamePanel, ObservableObject {
     }
     
     private let consoleIdentifier : String = "[C-PWR]"
-    public static var panelId : String = "WirePanel"
+    public static var panelId : String = "WiresPanel"
     
 }
 
-extension ClientWirePanel {
+extension ClientWiresPanel {
     
     /// CONVENTION
     /// [ # # ]

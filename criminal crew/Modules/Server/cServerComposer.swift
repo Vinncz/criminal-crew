@@ -78,14 +78,19 @@ extension ServerComposer {
     private final func openRouterToEvents () {
         guard
             router.openChannel(for:GPGameJoinRequestedEvent.self),
+            router.openChannel(for:GPGameJoinVerdictDeliveredEvent.self),
+            
             router.openChannel(for:GPUnableToBrowseEvent.self),
+            
             router.openChannel(for:GPGameStartRequestedEvent.self),
             router.openChannel(for:GPGameEndRequestedEvent.self),
-            router.openChannel(for:GPGameJoinVerdictDeliveredEvent.self),
+            
             router.openChannel(for:GPBlacklistedEvent.self),
             router.openChannel(for:GPTerminatedEvent.self),
+            
             router.openChannel(for:TaskReportEvent.self),
             router.openChannel(for:GPAcquaintanceStatusUpdateEvent.self),
+            
             router.openChannel(for:InquiryAboutConnectedPlayersRequestedEvent.self)
         else {
             debug("[S] Did fail to open all required channels for EventRouter")

@@ -89,17 +89,18 @@ extension HostSignalResponder {
             return
         }
         
-        guard let host = playerRuntimeContainer.hostAddr else {
-            debug("\(consoleIdentifier) Did fail to respond to game start request: host is missing or not set")
-            return
-        }
-        
         let playerNames: [String] = playerRuntimeContainer.getWhitelistedPartiesAndTheirState().map { val in
             val.key.displayName
         }
         
+        let requestor = playerRuntimeContainer.getPlayer(named: event.signingKey)
+        guard let requestor else {
+            debug("\(consoleIdentifier) Did fail to respond to connected player names request: request came from someone who isn't a member of the game or has been kicked/disconnected since")
+            return
+        }
+        
         do {
-            try relay.eventBroadcaster?.broadcast(ConnectedPlayersNamesResponse(names: playerNames).representedAsData(), to: [host])
+            try relay.eventBroadcaster?.broadcast(ConnectedPlayersNamesResponse(names: playerNames).representedAsData(), to: [requestor.player])
             debug("\(consoleIdentifier) Responded with names of connected players")
         } catch {
             debug("\(consoleIdentifier) Did fail to respond with names of connected players: \(error)")
@@ -113,39 +114,69 @@ extension HostSignalResponder {
             return
         }
         
-        let gameState = relay.gameRuntimeContainer!.state
-        guard ( gameState != .playing || gameState != .paused ) else {
+        guard let gameRuntimeContainer = relay.gameRuntimeContainer else {
+            debug("\(consoleIdentifier) Unable to respond to game start request: gameRuntimeContainer is missing or not set")
+            return
+        }
+        
+        guard gameRuntimeContainer.state != .playing || gameRuntimeContainer.state != .paused else {
             debug("\(consoleIdentifier) Game is already in progress or paused, ignoring the request..")
             return
         }
         
-        let players = relay.playerRuntimeContainer!.getWhitelistedPartiesAndTheirState()
-        let playerCount = players.count
+        guard let playerRuntimeContainer = relay.playerRuntimeContainer else {
+            debug("\(consoleIdentifier) Unable to respond to game start request: playerRuntimeContainer is missing or not set")
+            return
+        }
         
-        guard ( playerCount >= relay.gameProcessConfig!.minPlayerCount ) else {
+        guard 
+            let host = playerRuntimeContainer.hostAddr,
+                host.displayName == event.signingKey 
+        else {
+            debug("\(consoleIdentifier) Initiator is not the host, ignoring the request..")
+            return
+        }
+        
+        guard 
+            let minPlayerCount = relay.gameProcessConfig?.minPlayerCount,
+            playerRuntimeContainer.getWhitelistedPartiesAndTheirState().count >= minPlayerCount 
+        else {
             debug("\(consoleIdentifier) Not enough players to start the game, ignoring the request..")
             return
         }
         
-        // - Check if the initiator is the host
-        if 
-            let host = relay.playerRuntimeContainer!.getWhitelistedPartiesAndTheirState().first?.key,
-            event.signingKey == host.displayName 
-        {   
-            // - Check if each player has been assigned a panel
-            if ( relay.panelAssigner!.distributePanel() ) {
-                let panels = relay.panelRuntimeContainer!.getRegisteredPanels()
-                let playersAndPanels = zip(players.keys, panels)
-                
-                for (player, panel) in playersAndPanels {
-                    let generatedTask = relay.taskGenerator!.generate(for: panel)
-                    relay.taskAssigner?.assignToSpecificAndPush(task: generatedTask, to: player)
-                }
-                
-            }
-            
+        guard let panelRuntimeContainer = relay.panelRuntimeContainer else {
+            debug("\(consoleIdentifier) Unable to respond to game start request: panelRuntimeContainer is missing or not set")
+            return
         }
         
+        let validPanels = ServerPanelRuntimeContainer.availablePanelTypes
+        validPanels.forEach { panelType in
+            let panel = panelType.init()
+            relay.panelRuntimeContainer?.registerPanel(panel)
+        }
+        
+        guard let panelAssigner = relay.panelAssigner else {
+            debug("\(consoleIdentifier) Unable to respond to game start request: panelAssigner is missing or not set")
+            return
+        }
+        
+        guard panelAssigner.distributePanel() else {
+            debug("\(consoleIdentifier) Unable to start the game: not all players have been assigned a panel")
+            return
+        }
+        
+        let players = playerRuntimeContainer.getWhitelistedPartiesAndTheirState()
+        let panels = panelRuntimeContainer.getRegisteredPanels()
+        
+        let playersAndPanels = zip(players.keys, panels)
+        
+        for (player, panel) in playersAndPanels {
+            let generatedTask = relay.taskGenerator!.generate(for: panel)
+            relay.taskAssigner?.assignToSpecificAndPush(task: generatedTask, to: player)
+        }
+        
+        gameRuntimeContainer.state = .playing
     }
     
     private func respondToGameEndRequest ( _ event: GPGameEndRequestedEvent) {

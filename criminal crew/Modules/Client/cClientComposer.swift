@@ -138,6 +138,7 @@ extension ClientComposer {
     
     private final func subscribeUCsToEvents () {
         evtUC_serverSignalResponder.placeSubscription(on: GPAcquaintanceStatusUpdateEvent.self)
+        evtUC_serverSignalResponder.placeSubscription(on: GPTerminatedEvent.self)
         evtUC_serverSignalResponder.placeSubscription(on: GPGameJoinRequestedEvent.self)
         evtUC_serverSignalResponder.placeSubscription(on: HasBeenAssignedHost.self)
         evtUC_serverSignalResponder.placeSubscription(on: HasBeenAssignedPanel.self)
@@ -153,6 +154,7 @@ extension ClientComposer {
             landingPage.relay = LandingPageViewController.Relay (
                 selfSignalCommandCenter: self.comUC_selfSignalCommandCenter, 
                 playerRuntimeContainer: self.ent_playerRuntimeContainer,
+                gameRuntimeContainer: self.ent_gameRuntimeContainer,
                 serverBrowser: (self.networkManager.browser as! ClientGameBrowser),
                 publicizeRoom: { [weak self] advertContent in 
                     guard let self, let serverAddr = self.relay?.makeServerVisible(advertContent) else {
@@ -172,8 +174,8 @@ extension ClientComposer {
                     
                     relay?.placeJobToAdmitHost(self.networkManager.myself)
                 }, 
-                navigate: { [weak self] to in 
-                    self?.navigate(to: to)
+                navigate: { to in 
+                    self.navigate(to: to)
                 }
             )
         
