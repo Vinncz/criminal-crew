@@ -118,7 +118,7 @@ open class BaseGameViewController: UIViewController, GameContentProvider {
     
     private func addContentToPromptView() {
         
-        promptStackView.promptLabelView.promptLabel.text = "Red, Quantum Encryption, Pseudo AIIDS"
+        promptStackView.promptLabelView.promptLabel.text = "Long : Æ, Short: Ë, Switch : æ, Ø"
         
         promptView.addSubview(promptStackView)
         promptStackView.translatesAutoresizingMaskIntoConstraints = false
