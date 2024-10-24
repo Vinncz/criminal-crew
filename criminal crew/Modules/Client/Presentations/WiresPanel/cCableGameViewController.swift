@@ -55,6 +55,12 @@ public class CableGameViewController: BaseGameViewController {
         setupViewsForSecondPanel()
         randomizePositionsForSecondPanel(for: landscapeContainerView)
         
+        let screenWidth = UIScreen.main.bounds.width
+        let screenWidthInMm = screenWidth / UIScreen.main.scale
+        
+        print("hello")
+        print("screen width used:\(screenWidthInMm)")
+        
         let landscapeBackgroundImage = ViewFactory.addBackgroundImageView("client.panels.cables-panel.panel-background-center")
         landscapeContainerView.insertSubview(landscapeBackgroundImage, at: 0)
         landscapeBackgroundImage.translatesAutoresizingMaskIntoConstraints = false
@@ -126,6 +132,8 @@ public class CableGameViewController: BaseGameViewController {
         CableManager.shared.secondCableYellowHead.image = UIImage(named: "client.panels.cables-panel.cable-head.horizontal")
         CableManager.shared.secondCableGreenHead.image = UIImage(named: "client.panels.cables-panel.cable-head.horizontal")
         
+        CableManager.shared.cableLever.image = UIImage(named: "client.panels.cables-panel.cable-lever")
+        
         [CableManager.shared.secondCableRedStart,
          CableManager.shared.secondCableBlueStart,
          CableManager.shared.secondCableYellowStart,
@@ -137,7 +145,8 @@ public class CableGameViewController: BaseGameViewController {
          CableManager.shared.secondCableRedHead,
          CableManager.shared.secondCableBlueHead,
          CableManager.shared.secondCableYellowHead,
-         CableManager.shared.secondCableGreenHead].forEach {
+         CableManager.shared.secondCableGreenHead,
+         CableManager.shared.cableLever].forEach {
             $0.contentMode = .scaleAspectFit
             $0.translatesAutoresizingMaskIntoConstraints = false
             if let landscapeContainerView = landscapeContainerView {
@@ -171,29 +180,61 @@ public class CableGameViewController: BaseGameViewController {
             let cableHead = pair.head
             let endPoint = shuffledEndPoints[index]
             
+            let screenWidth = UIScreen.main.bounds.width
+            let screenWidthInMm = screenWidth / UIScreen.main.scale
+
+            var startPointLeadingConstant: CGFloat = 0.0
+            
+            
+
+            if screenWidthInMm >= 318 {
+                
+                startPointLeadingConstant = screenWidth * 0.02
+               
+               
+                
+            } else if screenWidthInMm >= 291{
+                
+                startPointLeadingConstant = screenWidth * 0.005
+                
+                
+                
+            } else if screenWidthInMm >= 284{
+                
+                startPointLeadingConstant = screenWidth * 0.001
+                
+                
+                
+            }
+
             NSLayoutConstraint.activate([
-                
+                // Start Point Constraints
                 startPoint.bottomAnchor.constraint(equalTo: target.safeAreaLayoutGuide.bottomAnchor, constant: -40),
-                startPoint.leadingAnchor.constraint(equalTo: target.leadingAnchor, constant: CGFloat(16 + (index * 70))),
-                startPoint.widthAnchor.constraint(equalToConstant: 50),
+                startPoint.leadingAnchor.constraint(equalTo: target.leadingAnchor, constant: CGFloat(CGFloat(16 + (index * 70)) + startPointLeadingConstant)),  // Responsive leading
+                startPoint.widthAnchor.constraint(equalToConstant: 50 ),
                 startPoint.heightAnchor.constraint(equalToConstant: 50),
-                
+
+                // End Point Constraints
                 endPoint.topAnchor.constraint(equalTo: target.safeAreaLayoutGuide.topAnchor),
-                endPoint.leadingAnchor.constraint(equalTo: target.leadingAnchor, constant: CGFloat(16 + (index * 70))),
+                endPoint.leadingAnchor.constraint(equalTo: target.leadingAnchor, constant: CGFloat(CGFloat(16 + (index * 70)) + startPointLeadingConstant)), // Responsive leading
                 endPoint.widthAnchor.constraint(equalToConstant: 50),
                 endPoint.heightAnchor.constraint(equalToConstant: 50),
-                
+
+                // Cable Head Constraints
                 cableHead.centerXAnchor.constraint(equalTo: startPoint.centerXAnchor),
-                cableHead.centerYAnchor.constraint(equalTo: startPoint.centerYAnchor, constant: -25),
+                cableHead.centerYAnchor.constraint(equalTo: startPoint.centerYAnchor, constant: -25),  // Responsive vertical offset
                 cableHead.widthAnchor.constraint(equalToConstant: 40),
                 cableHead.heightAnchor.constraint(equalToConstant: 40),
             ])
+
             
             endPoint.transform = CGAffineTransform(rotationAngle: .pi)
         }
     }
     
     func randomizePositionsForSecondPanel(for target: UIView) {
+        
+        let cableLever = CableManager.shared.cableLever
         
         let startPointsAndHeads: [(start: UIView, head: UIView)] = [
             (CableManager.shared.secondCableRedStart, CableManager.shared.secondCableRedHead),
@@ -217,15 +258,43 @@ public class CableGameViewController: BaseGameViewController {
             let startPoint = pair.start
             let cableHead = pair.head
             let endPoint = shuffledEndPoints[index]
-            
+
+            let screenWidth = UIScreen.main.bounds.width
+            let screenWidthInMm = screenWidth / UIScreen.main.scale
+
+            var startPointLeadingConstant: CGFloat = 0.0
+            var endPointTrailingConstant: CGFloat = 0.0
+            var cableLeverLeadingConstant: CGFloat = 0.0
+
+            if screenWidthInMm >= 318 {
+                
+                startPointLeadingConstant = screenWidth * 0.1
+                endPointTrailingConstant = screenWidth * -0.2999
+                cableLeverLeadingConstant = screenWidth * 0.12
+                
+            } else if screenWidthInMm >= 291{
+                
+                startPointLeadingConstant = screenWidth * 0.1
+                endPointTrailingConstant = screenWidth * -0.31
+                cableLeverLeadingConstant = screenWidth * 0.12
+                
+            } else if screenWidthInMm >= 284{
+                
+                startPointLeadingConstant = screenWidth * 0.1
+                endPointTrailingConstant = screenWidth * -0.315
+                cableLeverLeadingConstant = screenWidth * 0.12
+                
+            }
+
             NSLayoutConstraint.activate([
+
                 startPoint.centerYAnchor.constraint(equalTo: target.centerYAnchor, constant: CGFloat(-70 + (index * 47))),
-                startPoint.leadingAnchor.constraint(equalTo: target.leadingAnchor, constant: 40),
+                startPoint.leadingAnchor.constraint(equalTo: target.leadingAnchor, constant: startPointLeadingConstant - 50),
                 startPoint.widthAnchor.constraint(equalToConstant: 40),
                 startPoint.heightAnchor.constraint(equalToConstant: 40),
 
                 endPoint.centerYAnchor.constraint(equalTo: startPoint.centerYAnchor),
-                endPoint.trailingAnchor.constraint(equalTo: target.trailingAnchor, constant: -145),
+                endPoint.trailingAnchor.constraint(equalTo: target.trailingAnchor, constant: endPointTrailingConstant + 125),
                 endPoint.widthAnchor.constraint(equalToConstant: 40),
                 endPoint.heightAnchor.constraint(equalToConstant: 40),
 
@@ -233,7 +302,13 @@ public class CableGameViewController: BaseGameViewController {
                 cableHead.centerXAnchor.constraint(equalTo: startPoint.centerXAnchor, constant: 15),
                 cableHead.widthAnchor.constraint(equalToConstant: 30),
                 cableHead.heightAnchor.constraint(equalToConstant: 30),
+
+                cableLever.widthAnchor.constraint(equalToConstant: 70),
+                cableLever.heightAnchor.constraint(equalToConstant: 70),
+                cableLever.bottomAnchor.constraint(equalTo: target.safeAreaLayoutGuide.bottomAnchor, constant: -20),
+                cableLever.leadingAnchor.constraint(equalTo: endPoint.leadingAnchor, constant: cableLeverLeadingConstant)
             ])
+
 
             startPoint.transform = CGAffineTransform(rotationAngle: .pi / 2)
             
@@ -273,6 +348,11 @@ public class CableGameViewController: BaseGameViewController {
         let secondGreenPanGesture = UIPanGestureRecognizer(target: self, action: #selector(handleCablePan(_:)))
         CableManager.shared.secondCableGreenHead.isUserInteractionEnabled = true
         CableManager.shared.secondCableGreenHead.addGestureRecognizer(secondGreenPanGesture)
+        
+        let cableLeverTapGesture = UITapGestureRecognizer(target: self, action: #selector(handleCableLeverTap(_:)))
+        CableManager.shared.cableLever.isUserInteractionEnabled = true
+        CableManager.shared.cableLever.addGestureRecognizer(cableLeverTapGesture)
+        
     }
     
     func assignIDs() {
@@ -292,20 +372,20 @@ public class CableGameViewController: BaseGameViewController {
         cableHeads["yellowStartID"] = CableManager.shared.cableYellowHead
         cableHeads["greenStartID"] = CableManager.shared.cableGreenHead
         
-        secondStartPointIDs[CableManager.shared.secondCableRedStart] = "secondRedStartID"
-        secondStartPointIDs[CableManager.shared.secondCableBlueStart] = "secondBlueStartID"
-        secondStartPointIDs[CableManager.shared.secondCableYellowStart] = "secondYellowStartID"
-        secondStartPointIDs[CableManager.shared.secondCableGreenStart] = "secondGreenStartID"
+        secondStartPointIDs[CableManager.shared.secondCableRedStart] = "RPRedStartID"
+        secondStartPointIDs[CableManager.shared.secondCableBlueStart] = "RPBlueStartID"
+        secondStartPointIDs[CableManager.shared.secondCableYellowStart] = "RPYellowStartID"
+        secondStartPointIDs[CableManager.shared.secondCableGreenStart] = "RPGreenStartID"
         
-        secondEndPointIDs[CableManager.shared.secondCableRedEnd] = "secondRedEndID"
-        secondEndPointIDs[CableManager.shared.secondCableBlueEnd] = "secondBlueEndID"
-        secondEndPointIDs[CableManager.shared.secondCableYellowEnd] = "secondYellowEndID"
-        secondEndPointIDs[CableManager.shared.secondCableGreenEnd] = "secondGreenEndID"
+        secondEndPointIDs[CableManager.shared.secondCableRedEnd] = "RPRedEndID"
+        secondEndPointIDs[CableManager.shared.secondCableBlueEnd] = "RPBlueEndID"
+        secondEndPointIDs[CableManager.shared.secondCableYellowEnd] = "RPYellowEndID"
+        secondEndPointIDs[CableManager.shared.secondCableGreenEnd] = "RPGreenEndID"
         
-        secondCableHeads["secondRedStartID"] = CableManager.shared.secondCableRedHead
-        secondCableHeads["secondBlueStartID"] = CableManager.shared.secondCableBlueHead
-        secondCableHeads["secondYellowStartID"] = CableManager.shared.secondCableYellowHead
-        secondCableHeads["secondGreenStartID"] = CableManager.shared.secondCableGreenHead
+        secondCableHeads["RPRedStartID"] = CableManager.shared.secondCableRedHead
+        secondCableHeads["RPBlueStartID"] = CableManager.shared.secondCableBlueHead
+        secondCableHeads["RPYellowStartID"] = CableManager.shared.secondCableYellowHead
+        secondCableHeads["RPGreenStartID"] = CableManager.shared.secondCableGreenHead
         
     }
     
@@ -354,7 +434,12 @@ public class CableGameViewController: BaseGameViewController {
                cableHead == CableManager.shared.secondCableYellowHead ||
                cableHead == CableManager.shared.secondCableGreenHead
     }
-
+    
+    @objc func handleCableLeverTap(_ sender: UITapGestureRecognizer) {
+        
+        print("Cable lever tapped!")
+        
+    }
 
     @objc func handleCablePan(_ gesture: UIPanGestureRecognizer) {
         guard let cableHead = gesture.view as? UIImageView else { return }
@@ -367,7 +452,16 @@ public class CableGameViewController: BaseGameViewController {
 
         let translation = gesture.translation(in: containerView)
         
-        
+        let endPoints = [
+            CableManager.shared.cableBlueEnd,
+            CableManager.shared.cableYellowEnd,
+            CableManager.shared.cableGreenEnd,
+            CableManager.shared.cableRedEnd,
+            CableManager.shared.secondCableRedHead,
+            CableManager.shared.secondCableBlueHead,
+            CableManager.shared.secondCableGreenHead,
+            CableManager.shared.secondCableYellowHead
+        ]
         
         let secondTranslation = gesture.translation(in: landscapeContainerView)
         var cableStart: CGPoint?
@@ -378,7 +472,7 @@ public class CableGameViewController: BaseGameViewController {
         case CableManager.shared.cableRedHead:
             cableStart = CableManager.shared.cableRedStart.center
             if CableManager.shared.redCableLayer == nil {
-                createCableLayers(for: CableManager.shared.cableRedHead, at: CableManager.shared.cableRedStart)
+                createCableLayers(for: CableManager.shared.cableRedHead, at: CableManager.shared.cableRedStart, above: endPoints)
                 
             }
             cableLayer = CableManager.shared.redCableLayer
@@ -387,7 +481,7 @@ public class CableGameViewController: BaseGameViewController {
         case CableManager.shared.cableBlueHead:
             cableStart = CableManager.shared.cableBlueStart.center
             if CableManager.shared.blueCableLayer == nil {
-                createCableLayers(for: CableManager.shared.cableBlueHead, at: CableManager.shared.cableBlueStart)
+                createCableLayers(for: CableManager.shared.cableBlueHead, at: CableManager.shared.cableBlueStart, above: endPoints)
             }
             cableLayer = CableManager.shared.blueCableLayer
             cableBorderLayer = CableManager.shared.blueBorderLayer
@@ -395,7 +489,7 @@ public class CableGameViewController: BaseGameViewController {
         case CableManager.shared.cableYellowHead:
             cableStart = CableManager.shared.cableYellowStart.center
             if CableManager.shared.yellowCableLayer == nil {
-                createCableLayers(for: CableManager.shared.cableYellowHead, at: CableManager.shared.cableYellowStart)
+                createCableLayers(for: CableManager.shared.cableYellowHead, at: CableManager.shared.cableYellowStart, above: endPoints)
             }
             cableLayer = CableManager.shared.yellowCableLayer
             cableBorderLayer = CableManager.shared.yellowBorderLayer
@@ -403,7 +497,7 @@ public class CableGameViewController: BaseGameViewController {
         case CableManager.shared.cableGreenHead:
             cableStart = CableManager.shared.cableGreenStart.center
             if CableManager.shared.greenCableLayer == nil {
-                createCableLayers(for: CableManager.shared.cableGreenHead, at: CableManager.shared.cableGreenStart)
+                createCableLayers(for: CableManager.shared.cableGreenHead, at: CableManager.shared.cableGreenStart, above: endPoints)
             }
             cableLayer = CableManager.shared.greenCableLayer
             cableBorderLayer = CableManager.shared.greenBorderLayer
@@ -413,7 +507,7 @@ public class CableGameViewController: BaseGameViewController {
         case CableManager.shared.secondCableRedHead:
             cableStart = CableManager.shared.secondCableRedStart.center
             if CableManager.shared.secondRedCableLayer == nil {
-                createCableLayers(for: CableManager.shared.secondCableRedHead, at: CableManager.shared.secondCableRedStart)
+                createCableLayers(for: CableManager.shared.secondCableRedHead, at: CableManager.shared.secondCableRedStart, above: endPoints)
                 
             }
             cableLayer = CableManager.shared.secondRedCableLayer
@@ -422,7 +516,7 @@ public class CableGameViewController: BaseGameViewController {
         case CableManager.shared.secondCableBlueHead:
             cableStart = CableManager.shared.secondCableBlueStart.center
             if CableManager.shared.secondBlueCableLayer == nil {
-                createCableLayers(for: CableManager.shared.secondCableBlueHead, at: CableManager.shared.secondCableBlueStart)
+                createCableLayers(for: CableManager.shared.secondCableBlueHead, at: CableManager.shared.secondCableBlueStart, above: endPoints)
             }
             cableLayer = CableManager.shared.secondBlueCableLayer
             cableBorderLayer = CableManager.shared.secondBlueBorderLayer
@@ -430,7 +524,7 @@ public class CableGameViewController: BaseGameViewController {
         case CableManager.shared.secondCableYellowHead:
             cableStart = CableManager.shared.secondCableYellowStart.center
             if CableManager.shared.secondYellowCableLayer == nil {
-                createCableLayers(for: CableManager.shared.secondCableYellowHead, at: CableManager.shared.secondCableYellowStart)
+                createCableLayers(for: CableManager.shared.secondCableYellowHead, at: CableManager.shared.secondCableYellowStart, above: endPoints)
             }
             cableLayer = CableManager.shared.secondYellowCableLayer
             cableBorderLayer = CableManager.shared.secondYellowBorderLayer
@@ -438,7 +532,7 @@ public class CableGameViewController: BaseGameViewController {
         case CableManager.shared.secondCableGreenHead:
             cableStart = CableManager.shared.secondCableGreenStart.center
             if CableManager.shared.secondGreenCableLayer == nil {
-                createCableLayers(for: CableManager.shared.secondCableGreenHead, at: CableManager.shared.secondCableGreenStart)
+                createCableLayers(for: CableManager.shared.secondCableGreenHead, at: CableManager.shared.secondCableGreenStart, above: endPoints)
             }
             cableLayer = CableManager.shared.secondGreenCableLayer
             cableBorderLayer = CableManager.shared.secondGreenBorderLayer
@@ -454,8 +548,20 @@ public class CableGameViewController: BaseGameViewController {
 
             if isPrimaryCableAsset(cableHead) {
                 let newHeadPosition = CGPoint(x: start.x + translation.x, y: start.y + translation.y)
+  
+                let restrictedY = min(newHeadPosition.y, start.y - 30)
                 
-                cableHead.center = CGPoint(x: newHeadPosition.x, y: min(newHeadPosition.y, start.y - 20))
+                if let containerView = containerView, let portraitBackgroundImage = containerView.subviews.first(where: { $0 is UIImageView }) {
+                    let maxX = portraitBackgroundImage.frame.maxX - cableHead.frame.width / 2
+                    let minX = portraitBackgroundImage.frame.minX + cableHead.frame.width / 2
+                    let maxY = portraitBackgroundImage.frame.maxY - cableHead.frame.height / 2
+                    let minY = portraitBackgroundImage.frame.minY + cableHead.frame.height / 2
+
+                    cableHead.center = CGPoint(
+                        x: min(max(newHeadPosition.x, minX), maxX),
+                        y: min(max(restrictedY, minY), maxY)
+                    )
+                }
 
                 updateCableTrail(from: start, to: cableHead.center, cableLayer: layer, borderLayer: borderLayer)
 
@@ -466,30 +572,39 @@ public class CableGameViewController: BaseGameViewController {
                 
                 let newHeadPosition = CGPoint(x: start.x + secondTranslation.x, y: start.y + secondTranslation.y)
                 
-                let restrictedX = max(newHeadPosition.x, start.x)
-                cableHead.center = CGPoint(x: restrictedX, y: newHeadPosition.y)
+                let restrictedX = max(newHeadPosition.x, start.x + 20)
+                
+                if let landscapeContainerView = landscapeContainerView, let landscapeBackgroundImage = landscapeContainerView.subviews.first(where: { $0 is UIImageView }) {
+                    let maxX = landscapeBackgroundImage.frame.maxX - cableHead.frame.width / 2
+                    let minX = landscapeBackgroundImage.frame.minX + cableHead.frame.width / 2
+                    let maxY = landscapeBackgroundImage.frame.maxY - cableHead.frame.height / 2
+                    let minY = landscapeBackgroundImage.frame.minY + cableHead.frame.height / 2
+
+                    cableHead.center = CGPoint(
+                        x: min(max(restrictedX, minX), maxX),
+                        y: min(max(newHeadPosition.y, minY), maxY)
+                    )
+                }
 
                 updateCableTrailForSecond(from: start, to: cableHead.center, cableLayer: layer, borderLayer: borderLayer)
 
-                
                 let angle = atan2(cableHead.center.y - start.y, cableHead.center.x - start.x)
                 cableHead.transform = CGAffineTransform(rotationAngle: angle)
             }
 
-
         case .ended, .cancelled:
             if let nearestEndPoint = findNearestEndPoint(to: cableHead),
                let startPoint = findStartPoint(for: cableHead) {
-                // Ensure the nearest end point is not already connected
+                
                 if !isEndPointAlreadyConnected(endPoint: nearestEndPoint) {
-                    // Connect the cable only if the IDs match, handled in the connectCable method
+                    
                     connectCable(startHead: startPoint, endPoint: nearestEndPoint)
                 } else {
-                    // Reset position if the end point is already connected
+                    
                     resetCablePosition(cableHead)
                 }
             } else {
-                // Reset the cable head position if no valid end point is found
+                
                 resetCablePosition(cableHead)
             }
 
@@ -533,8 +648,6 @@ public class CableGameViewController: BaseGameViewController {
         print("Cable disconnected. Current connections: \(connections)")
     }
 
-
-    
     func updateCableLayerAfterConnection(cableHead: UIImageView, cableLayer: CAShapeLayer, borderLayer: CAShapeLayer) {
         
         guard let startPoint = findStartPoint(for: cableHead) else { return }
@@ -556,108 +669,137 @@ public class CableGameViewController: BaseGameViewController {
         }
     }
 
-    func createCableLayers(for cableHead: UIImageView, at startPoint: UIImageView) {
-        
-        let cableColorMap: [UIImageView: String] = [
-            CableManager.shared.cableRedHead: "#F82609",
-            CableManager.shared.cableBlueHead: "#2942FF",
-            CableManager.shared.cableYellowHead: "#FFE33A",
-            CableManager.shared.cableGreenHead: "#4EE973",
-            CableManager.shared.secondCableRedHead: "#F82609",
-            CableManager.shared.secondCableBlueHead: "#2942FF",
-            CableManager.shared.secondCableYellowHead: "#FFE33A",
-            CableManager.shared.secondCableGreenHead: "#4EE973"
-        ]
-
-        guard let hexColor = cableColorMap[cableHead],
-              let color = HexColorConverter.color(from: hexColor) else { return }
-
-        let borderLayer = CAShapeLayer()
-        borderLayer.strokeColor = UIColor.black.cgColor
-        borderLayer.lineWidth = 24
-
-        let cableLayer = CAShapeLayer()
-        cableLayer.strokeColor = color.cgColor
-        cableLayer.lineWidth = 21
-
-        let primaryCableHeads = [
-            CableManager.shared.cableRedHead,
-            CableManager.shared.cableBlueHead,
-            CableManager.shared.cableYellowHead,
-            CableManager.shared.cableGreenHead
-        ]
-
-        let secondaryCableHeads = [
-            CableManager.shared.secondCableRedHead,
-            CableManager.shared.secondCableBlueHead,
-            CableManager.shared.secondCableYellowHead,
-            CableManager.shared.secondCableGreenHead
-        ]
-
-        if primaryCableHeads.contains(cableHead) {
-            containerView?.layer.insertSublayer(borderLayer, above: startPoint.layer)
-            containerView?.layer.insertSublayer(cableLayer, above: borderLayer)
-        } else if secondaryCableHeads.contains(cableHead) {
-            landscapeContainerView?.layer.insertSublayer(borderLayer, above: startPoint.layer)
-            landscapeContainerView?.layer.insertSublayer(cableLayer, above: borderLayer)
-        } else {
-         
-            return
-        }
-
-        switch cableHead {
-        case CableManager.shared.cableRedHead:
-            CableManager.shared.redCableLayer = cableLayer
-            CableManager.shared.redBorderLayer = borderLayer
+    func createCableLayers(for cableHead: UIImageView, at startPoint: UIImageView, above endPoints: [UIImageView]) {
             
-        case CableManager.shared.cableBlueHead:
-            CableManager.shared.blueCableLayer = cableLayer
-            CableManager.shared.blueBorderLayer = borderLayer
-            
-        case CableManager.shared.cableYellowHead:
-            CableManager.shared.yellowCableLayer = cableLayer
-            CableManager.shared.yellowBorderLayer = borderLayer
-            
-        case CableManager.shared.cableGreenHead:
-            CableManager.shared.greenCableLayer = cableLayer
-            CableManager.shared.greenBorderLayer = borderLayer
-            
-        case CableManager.shared.secondCableRedHead:
-            CableManager.shared.secondRedCableLayer = cableLayer
-            CableManager.shared.secondRedBorderLayer = borderLayer
-            
-        case CableManager.shared.secondCableBlueHead:
-            CableManager.shared.secondBlueCableLayer = cableLayer
-            CableManager.shared.secondBlueBorderLayer = borderLayer
-            
-        case CableManager.shared.secondCableYellowHead:
-            CableManager.shared.secondYellowCableLayer = cableLayer
-            CableManager.shared.secondYellowBorderLayer = borderLayer
-            
-        case CableManager.shared.secondCableGreenHead:
-            CableManager.shared.secondGreenCableLayer = cableLayer
-            CableManager.shared.secondGreenBorderLayer = borderLayer
-            
-        default:
-            break
-        }
-    }
+            let cableColorMap: [UIImageView: String] = [
+                CableManager.shared.cableRedHead: "#F82609",
+                CableManager.shared.cableBlueHead: "#2942FF",
+                CableManager.shared.cableYellowHead: "#FFE33A",
+                CableManager.shared.cableGreenHead: "#4EE973",
+                CableManager.shared.secondCableRedHead: "#F82609",
+                CableManager.shared.secondCableBlueHead: "#2942FF",
+                CableManager.shared.secondCableYellowHead: "#FFE33A",
+                CableManager.shared.secondCableGreenHead: "#4EE973"
+            ]
 
+            guard let hexColor = cableColorMap[cableHead],
+                  let color = HexColorConverter.color(from: hexColor) else { return }
 
+            let borderLayer = CAShapeLayer()
+            borderLayer.strokeColor = UIColor.black.cgColor
 
-    
-    func isEndPointAlreadyConnected(endPoint: UIImageView) -> Bool {
-        let endID = endPointIDs[endPoint]
-        for connection in connections {
-            if connection.contains(endID ?? "") {
-                return true
+            let cableLayer = CAShapeLayer()
+            cableLayer.strokeColor = color.cgColor
+
+            let path = UIBezierPath()
+            path.move(to: startPoint.center)
+
+            for endPoint in endPoints {
+                path.addLine(to: endPoint.center)
+            }
+
+            let primaryCableHeads = [
+                CableManager.shared.cableRedHead,
+                CableManager.shared.cableBlueHead,
+                CableManager.shared.cableYellowHead,
+                CableManager.shared.cableGreenHead
+            ]
+
+            let secondaryCableHeads = [
+                CableManager.shared.secondCableRedHead,
+                CableManager.shared.secondCableBlueHead,
+                CableManager.shared.secondCableYellowHead,
+                CableManager.shared.secondCableGreenHead
+            ]
+
+            if primaryCableHeads.contains(cableHead) {
+                
+                for endPoint in endPoints {
+                    containerView?.layer.insertSublayer(borderLayer, above: endPoint.layer)
+                    containerView?.layer.insertSublayer(cableLayer, above: borderLayer)
+                    containerView?.layer.insertSublayer(borderLayer, below: cableHead.layer)
+                    containerView?.layer.insertSublayer(cableLayer, below: cableHead.layer)
+                }
+                
+                borderLayer.lineWidth = 24
+                cableLayer.lineWidth = 21
+                
+            } else if secondaryCableHeads.contains(cableHead) {
+                
+                for endPoint in endPoints {
+                    landscapeContainerView?.layer.insertSublayer(borderLayer, above: endPoint.layer)
+                    landscapeContainerView?.layer.insertSublayer(cableLayer, above: borderLayer)
+                    landscapeContainerView?.layer.insertSublayer(borderLayer, below: cableHead.layer)
+                    landscapeContainerView?.layer.insertSublayer(cableLayer, below: cableHead.layer)
+                }
+                
+                borderLayer.lineWidth = 20
+                cableLayer.lineWidth = 17
+                
+            } else {
+                
+                return
+                
+            }
+
+            switch cableHead {
+            case CableManager.shared.cableRedHead:
+                CableManager.shared.redCableLayer = cableLayer
+                CableManager.shared.redBorderLayer = borderLayer
+                
+            case CableManager.shared.cableBlueHead:
+                CableManager.shared.blueCableLayer = cableLayer
+                CableManager.shared.blueBorderLayer = borderLayer
+                
+            case CableManager.shared.cableYellowHead:
+                CableManager.shared.yellowCableLayer = cableLayer
+                CableManager.shared.yellowBorderLayer = borderLayer
+                
+            case CableManager.shared.cableGreenHead:
+                CableManager.shared.greenCableLayer = cableLayer
+                CableManager.shared.greenBorderLayer = borderLayer
+                
+            case CableManager.shared.secondCableRedHead:
+                CableManager.shared.secondRedCableLayer = cableLayer
+                CableManager.shared.secondRedBorderLayer = borderLayer
+                
+            case CableManager.shared.secondCableBlueHead:
+                CableManager.shared.secondBlueCableLayer = cableLayer
+                CableManager.shared.secondBlueBorderLayer = borderLayer
+                
+            case CableManager.shared.secondCableYellowHead:
+                CableManager.shared.secondYellowCableLayer = cableLayer
+                CableManager.shared.secondYellowBorderLayer = borderLayer
+                
+            case CableManager.shared.secondCableGreenHead:
+                CableManager.shared.secondGreenCableLayer = cableLayer
+                CableManager.shared.secondGreenBorderLayer = borderLayer
+                
+            default:
+                break
             }
         }
+
+    func isEndPointAlreadyConnected(endPoint: UIImageView) -> Bool {
+        
+        if let endID = endPointIDs[endPoint]{
+            for connection in connections {
+                if connection.contains(endID) {
+                    return true
+                }
+            }
+        } else if let endID = secondEndPointIDs[endPoint]{
+            for connection in connections {
+                if connection.contains(endID) {
+                    return true
+                }
+            }
+        }
+        
         return false
     }
 
     func findNearestEndPoint(to cableHead: UIImageView) -> UIImageView? {
-        // Identify the relevant end points based on the cable head
         let relevantEndPoints: [UIImageView]
         
         switch cableHead {
@@ -673,7 +815,6 @@ public class CableGameViewController: BaseGameViewController {
             return nil
         }
 
-        // Return the nearest relevant end point
         return relevantEndPoints.min(by: { distance(from: $0, to: cableHead) < distance(from: $1, to: cableHead) })
     }
 
@@ -688,28 +829,24 @@ public class CableGameViewController: BaseGameViewController {
             return
         }
 
-        // Calculate the distance between the cable head and the end point
         let distanceToEndpoint = distance(from: cableHead, to: endPoint)
 
-        // Only connect if the cable head is close enough to the end point
         if distanceToEndpoint < 20 {
-            // Check if the start head and end point IDs match for valid connections
+            
             if let startID = startPointIDs[startHead],
                let endID = endPointIDs[endPoint]{
 
-                // Connect primary cable and update the connection list
                 connections.append([startID, endID])
                 print("Current connections: \(connections)")
 
             } else if let startID = secondStartPointIDs[startHead],
                       let endID = secondEndPointIDs[endPoint]{
 
-                // Connect secondary cable and update the connection list
                 connections.append([startID, endID])
                 print("Current connections: \(connections)")
 
             } else {
-                // If no valid connection, reset the cable position
+                
                 print("Invalid connection attempt")
                 resetCablePosition(cableHead)
                 return
@@ -717,16 +854,12 @@ public class CableGameViewController: BaseGameViewController {
 
             let newCenter = CGPoint(x: endPoint.center.x, y: endPoint.center.y)
             cableHead.center = newCenter
-
-            // Mark the cable head as connected
             connectedCableHeads.insert(cableHead)
 
-            // Enable tap gesture on the connected cable head
             let tapGesture = UITapGestureRecognizer(target: self, action: #selector(handleCableHeadTap(_:)))
             cableHead.addGestureRecognizer(tapGesture)
             cableHead.isUserInteractionEnabled = true
 
-            // Update the cable layers after the connection
             switch startHead {
             case CableManager.shared.cableRedStart:
                 updateCableLayerAfterConnection(cableHead: CableManager.shared.cableRedHead, cableLayer: CableManager.shared.redCableLayer!, borderLayer: CableManager.shared.redBorderLayer!)
@@ -751,7 +884,7 @@ public class CableGameViewController: BaseGameViewController {
             }
 
         } else {
-            // Reset the cable position if too far from the end point
+            
             resetCablePosition(cableHead)
         }
     }
@@ -817,7 +950,7 @@ public class CableGameViewController: BaseGameViewController {
 
 
     func updateCableTrail(from start: CGPoint, to end: CGPoint, cableLayer: CAShapeLayer, borderLayer: CAShapeLayer) {
-        let adjustedStart = CGPoint(x: start.x, y: start.y)
+        let adjustedStart = CGPoint(x: start.x + 0.5, y: start.y)
         let fixedAngle: CGFloat = -CGFloat.pi / 2
         let fixedLength: CGFloat = 10
 

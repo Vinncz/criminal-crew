@@ -36,6 +36,8 @@ class CableManager {
     
     var panelLayer = UIImageView()
     var secondPanelLayer = UIImageView()
+    
+    var cableLever = UIImageView()
 
     var redCableLayer: CAShapeLayer?
     var blueCableLayer: CAShapeLayer?
@@ -57,22 +59,22 @@ class CableManager {
     var secondYellowBorderLayer: CAShapeLayer?
     var secondGreenBorderLayer: CAShapeLayer?
     
+    
+    
     private init() {}
 }
 
 class HexColorConverter {
-    // Static function to convert a hex string to UIColor
+    
     static func color(from hex: String, alpha: CGFloat = 1.0) -> UIColor? {
         var hexFormatted = hex.trimmingCharacters(in: .whitespacesAndNewlines).uppercased()
         
-        // Ensure the string has the correct format
         if hexFormatted.hasPrefix("#") {
             hexFormatted.remove(at: hexFormatted.startIndex)
         }
         
-        // The hex code should be 6 or 8 characters long
         if hexFormatted.count == 6 {
-            hexFormatted.append("FF") // Add alpha if not present
+            hexFormatted.append("FF") 
         }
         
         guard hexFormatted.count == 8 else {
