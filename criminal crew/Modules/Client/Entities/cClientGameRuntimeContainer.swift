@@ -39,6 +39,7 @@ public class ClientGameRuntimeContainer : ObservableObject {
     public enum GameState : String {
         case notStarted,
              searchingForServers,
+             creatingLobby,
              inLobby,
              playing,
              paused,

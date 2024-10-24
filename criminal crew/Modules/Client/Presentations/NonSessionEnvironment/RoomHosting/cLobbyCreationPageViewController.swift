@@ -142,42 +142,13 @@ extension LobbyCreationPageViewController {
         
         _ = self.relay?.selfSignalCommandCenter?.startBrowsingForServers()
         enableUpdateJobForConnectedNames()
+        
+        self.relay?.gameRuntimeContainer?.state = .creatingLobby
     } 
     
     override public func viewDidDisappear ( _ animated: Bool ) {
         super.viewDidDisappear(animated)
         subscriptions.forEach { $0.cancel() }
-        
-        guard let relay else {
-            debug("\(consoleIdentifer) Did fail to clean up. Relay is missing or not set")
-            return
-        }
-        
-        guard let selfSignalCommandCenter = relay.selfSignalCommandCenter else {
-            debug("\(consoleIdentifer) Did fail to clean up. SelfSignalCommandCenter is missing or not set")
-            return
-        }
-        
-        _ = selfSignalCommandCenter.stopBrowsingForServers()
-        _ = selfSignalCommandCenter.resetBrowser()
-        
-        guard let playerRuntimeContainer = relay.playerRuntimeContainer else {
-            debug("\(consoleIdentifer) Did fail to clean up. PlayerRuntimeContainer is missing or not set")
-            return
-        }
-        
-        playerRuntimeContainer.reset()
-        
-        guard let gameRuntimeContainer = relay.gameRuntimeContainer else {
-            debug("\(consoleIdentifer) Did fail to clean up. GameRuntimeContainer is missing or not set")
-            return
-        }
-        
-        guard gameRuntimeContainer.isHost else {
-            selfSignalCommandCenter.disconnectSelf()
-            return
-        }
-        
     }
     
 }
@@ -245,7 +216,7 @@ extension LobbyCreationPageViewController {
         selfSignalCommandCenter.updateAdmissionPolicy(to: resolve)
     }
     
-    @objc private func refreshConnectedPlayersFromServer (  ) {
+    @objc private func refreshConnectedPlayersFromServer () {
         guard let relay else {
             debug("\(consoleIdentifer) Did fail to refresh connected players. Relay is missing or not set")
             return
@@ -257,7 +228,7 @@ extension LobbyCreationPageViewController {
         }
         
         if !selfSignalCommandCenter.orderConnectedPlayerNames () {
-            debug("\(consoleIdentifer) Did fail to refresh connected players.")
+            debug("\(consoleIdentifer) Did fail to refresh connected players")
         }
         
         tPendingPlayers.reloadData()
@@ -274,7 +245,9 @@ extension LobbyCreationPageViewController {
             return
         }
         
-        selfSignalCommandCenter.startGame()
+        if !selfSignalCommandCenter.startGame() {
+            debug("\(consoleIdentifer) Did fail to start the game")
+        }
     }
     
 }

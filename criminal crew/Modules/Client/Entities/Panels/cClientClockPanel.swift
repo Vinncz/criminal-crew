@@ -7,7 +7,7 @@ public class ClientClockPanel : ClientGamePanel, ObservableObject {
     public var clockSymbols  : [String] = ["Æ", "Ë", "ß", "æ", "Ø", "ɧ", "ɶ", "Ψ", "Ω", "Ђ", "б", "Ӭ"]
     public var switchSymbols : [String] = ["Æ", "Ë", "ß", "æ", "Ø", "ɧ", "ɶ", "Σ", "Φ", "Ψ", "Ω", "Ђ", "б", "Ӭ"]
     
-    @Published public var currentTurnedOnSwitches : [String]
+    @Published public var currentTurnedOnSwitches : Set<String>
     @Published public var currentShortHandSymbol  : String
     @Published public var currentLongHandSymbol   : String
     
@@ -20,6 +20,24 @@ public class ClientClockPanel : ClientGamePanel, ObservableObject {
     
     private let consoleIdentifier : String = "[C-PCL]"
     public static var panelId : String = "ClockPanel"
+    
+}
+
+extension ClientClockPanel {
+    
+    public func flipSwitch ( _ switchSymbol: String ) -> Bool {
+        if currentTurnedOnSwitches.contains(switchSymbol) {
+            currentTurnedOnSwitches.remove(switchSymbol)
+            return false
+        } else {
+            currentTurnedOnSwitches.insert(switchSymbol)
+            return true
+        }
+    }
+    
+    public func checkSwitch ( _ switchSymbol: String ) -> Bool {
+        currentTurnedOnSwitches.contains(switchSymbol)
+    }
     
 }
 

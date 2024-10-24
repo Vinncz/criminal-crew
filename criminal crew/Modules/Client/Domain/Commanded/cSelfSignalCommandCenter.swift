@@ -45,6 +45,7 @@ extension SelfSignalCommandCenter {
 
 extension SelfSignalCommandCenter {
     
+    /// Stops browser from browsing, removes all discovered servers, and resets it to state before `startBrowsing()` was called
     public func resetBrowser () -> Bool {
         
         var flowIsComplete = false
@@ -137,6 +138,7 @@ extension SelfSignalCommandCenter {
 
 extension SelfSignalCommandCenter {
     
+    /// Empties the played panel's entity representation's progress, along with tasks which completion are pending
     public func resetPanelRuntime () -> Bool {
         var flowIsComplete = false
         
@@ -158,6 +160,8 @@ extension SelfSignalCommandCenter {
         return flowIsComplete
     }
     
+    
+    /// Empties connected players names, along with requests of players who wants to join
     public func resetPlayerRuntime () -> Bool {
         var flowIsComplete = false
         
@@ -179,6 +183,8 @@ extension SelfSignalCommandCenter {
         return flowIsComplete
     }
     
+    
+    /// Leaves the current session, then resets broadcacster, player runtime, game runtime, browser, and panel runtime respectively
     public func disconnectSelf () {
         guard let relay else {
             debug("\(consoleIdentifier) Did fail to disconnect self: relay is missing or not set"); return

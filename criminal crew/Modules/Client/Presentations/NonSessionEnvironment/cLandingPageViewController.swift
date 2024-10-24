@@ -1,3 +1,4 @@
+import GamePantry
 import UIKit
 
 public class LandingPageViewController : UIViewController, UsesDependenciesInjector {
@@ -8,9 +9,11 @@ public class LandingPageViewController : UIViewController, UsesDependenciesInjec
     
     public var relay    : Relay?
     public struct Relay : CommunicationPortal {
+        weak var eventBroadcaster        : GamePantry.GPGameEventBroadcaster?
         weak var selfSignalCommandCenter : SelfSignalCommandCenter?
         weak var playerRuntimeContainer  : ClientPlayerRuntimeContainer?
         weak var gameRuntimeContainer    : ClientGameRuntimeContainer?
+        weak var panelRuntimeContainer   : ClientPanelRuntimeContainer?
         weak var serverBrowser           : ClientGameBrowser?
              var publicizeRoom           : ( _ advertContent: [String: String] ) -> Void
              var navigate                : ( _ to: UIViewController ) -> Void
@@ -36,6 +39,12 @@ public class LandingPageViewController : UIViewController, UsesDependenciesInjec
 extension LandingPageViewController {
     
     override public func viewDidLoad () {
+        self.relay?.gameRuntimeContainer?.reset()
+        self.relay?.panelRuntimeContainer?.reset()
+        self.relay?.playerRuntimeContainer?.reset()
+        self.relay?.serverBrowser?.reset()
+        self.relay?.eventBroadcaster?.reset()
+        
         _ = bBrowseRooms.executes(self, action: #selector(cueToNavigate(sender:)), for: .touchUpInside)
         _ = bHostRoom.executes(self, action: #selector(cueToNavigate(sender:)), for: .touchUpInside)
         
@@ -83,9 +92,11 @@ extension LandingPageViewController {
                         selfSignalCommandCenter : self.relay?.selfSignalCommandCenter,
                         playerRuntimeContainer  : self.relay?.playerRuntimeContainer,
                         serverBrowser           : self.relay?.serverBrowser,
-                        navigate                : { to in
+                        panelRuntimeContainer   : self.relay?.panelRuntimeContainer,
+                        gameRuntimeContainer    : self.relay?.gameRuntimeContainer,
+                        navigate                : { [weak self] to in
                             debug("browse room did navigate from landing page")
-                            self.relay?.navigate(to)
+                            self?.relay?.navigate(to)
                         }
                     )
                 relay.navigate(serverBrowserPage)

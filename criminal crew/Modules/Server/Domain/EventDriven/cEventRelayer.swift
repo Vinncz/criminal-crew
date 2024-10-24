@@ -65,7 +65,7 @@ extension EventRelayer {
         
         guard 
             let pRegistry = relay.playerRegistry,
-            let player = pRegistry.getAcquaintancedPartiesAndTheirState().keys.first 
+            let player = pRegistry.hostAddr
         else {
             debug("\(consoleIdentifier) Did fail to respond to \(event): player is missing or not set or empty")
             return

@@ -192,8 +192,7 @@ extension ServerSignalResponder {
         }
         
         guard 
-            let gameRuntime = relay.gameRuntime,
-            gameRuntime.state == .notStarted || gameRuntime.state == .over || gameRuntime.state == .lose || gameRuntime.state == .win
+            let gameRuntime = relay.gameRuntime
         else {
             debug("\(consoleIdentifier) Did fail to handle didGetAssignedPanel since GameRuntime is missing or not set, or game is not in notStarted or over state")
             return

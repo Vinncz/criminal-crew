@@ -14,7 +14,9 @@ public class RoomBrowserPageViewController : UIViewController {
         weak var selfSignalCommandCenter : SelfSignalCommandCenter?
         weak var playerRuntimeContainer  : ClientPlayerRuntimeContainer?
         weak var serverBrowser           : ClientGameBrowser?
-            var navigate                 : ( _ to: UIViewController ) -> Void
+        weak var panelRuntimeContainer   : ClientPanelRuntimeContainer?
+        weak var gameRuntimeContainer    : ClientGameRuntimeContainer?
+             var navigate                : ( _ to: UIViewController ) -> Void
     }
     
     override init ( nibName nibNameOrNil: String?, bundle nibBundleOrNil: Bundle? ) {
@@ -41,6 +43,7 @@ extension RoomBrowserPageViewController {
     
     public override func viewDidLoad () {
         super.viewDidLoad()
+        self.relay?.gameRuntimeContainer?.state = .searchingForServers
         
         _ = bRefreshBrowser.executes(self, action: #selector(refreshServerBrowser), for: .touchUpInside)
         
@@ -89,15 +92,7 @@ extension RoomBrowserPageViewController {
             return
         }
         
-//        selfSignalCommandCenter.disconnectSelf()
         _ = selfSignalCommandCenter.resetBrowser()
-//        
-//        guard let playerRuntimeContainer = relay.playerRuntimeContainer else {
-//            debug("\(consoleIdentifier) Did fail to clean up. PlayerRuntimeContainer is missing or not set")
-//            return
-//        }
-//        
-//        playerRuntimeContainer.reset()
     }
     
 }
@@ -145,6 +140,7 @@ extension RoomBrowserPageViewController {
     
 }
 
+// TODO: Refac
 extension RoomBrowserPageViewController : UITableViewDelegate, UITableViewDataSource {
     
     public func tableView ( _ tableView: UITableView, numberOfRowsInSection section: Int ) -> Int {
@@ -207,12 +203,15 @@ extension RoomBrowserPageViewController : UITableViewDelegate, UITableViewDataSo
         lobbyViewController.relay = LobbyViewController.Relay (
             selfSignalCommandCenter : self.relay?.selfSignalCommandCenter,
             playerRuntimeContainer  : self.relay?.playerRuntimeContainer,
+            panelRuntimeContainer   : self.relay?.panelRuntimeContainer,
+            gameRuntimeContainer    : self.relay?.gameRuntimeContainer,
             serverBrowser           : self.relay?.serverBrowser,
-            navigate                : { to in
+            navigate                : { [weak self] to in
                 debug("lobby view did navigate from room browser")
-                self.relay?.navigate(to)
+                self?.relay?.navigate(to)
             }
         )
+        
         relay.navigate(lobbyViewController)
     }
     

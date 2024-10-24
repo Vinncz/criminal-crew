@@ -5,6 +5,7 @@ public class LobbyViewController : UIViewController {
     
     let lPageTitle          : UILabel
     let lPageDesc           : UILabel
+    let lConnectionStatus   : UILabel
     let bRefreshPlayerNames : UIButton
     let tPlayerNames        : UITableView
     
@@ -15,13 +16,15 @@ public class LobbyViewController : UIViewController {
         weak var selfSignalCommandCenter : SelfSignalCommandCenter?
         weak var playerRuntimeContainer  : ClientPlayerRuntimeContainer?
         weak var panelRuntimeContainer   : ClientPanelRuntimeContainer?
+        weak var gameRuntimeContainer    : ClientGameRuntimeContainer?
         weak var serverBrowser           : ClientGameBrowser?
-            var navigate                 : ( _ to: UIViewController ) -> Void
+             var navigate                : ( _ to: UIViewController ) -> Void
     }
     
     override init ( nibName nibNameOrNil: String?, bundle nibBundleOrNil: Bundle? ) {
         self.lPageTitle          = UILabel().labeled("Waiting Room").styled(.title).aligned(.left)
-        self.lPageDesc           = UILabel().labeled("Awaiting the host to start the game").styled(.caption).aligned(.left).withAlpha(of: 0.5)
+        self.lPageDesc           = UILabel().labeled("Awaiting the host to start the game •").styled(.caption).aligned(.left).withAlpha(of: 0.5)
+        self.lConnectionStatus   = UILabel().labeled("Not connected").styled(.caption).aligned(.left).withAlpha(of: 0.5)
         self.bRefreshPlayerNames = UIButton().styled(.secondary).tagged(Self.refreshNames).withIcon(systemName: "arrow.trianglehead.clockwise.rotate.90")
         self.tPlayerNames        = UITableView()
         
@@ -44,6 +47,7 @@ extension LobbyViewController {
     
     override public func viewDidLoad () {
         super.viewDidLoad()
+        self.relay?.gameRuntimeContainer?.state = .inLobby
         
         _ = bRefreshPlayerNames.executes(self, action: #selector(refreshConnectedPlayersFromServer), for: .touchUpInside)
         
@@ -54,7 +58,11 @@ extension LobbyViewController {
                                     Self.makeStack(direction: .vertical, distribution: .equalCentering)
                                         .thatHolds(
                                             lPageTitle,
-                                            lPageDesc
+                                            Self.makeStack(direction: .horizontal, distribution: .fillEqually)
+                                                .thatHolds(
+                                                    lPageDesc,
+                                                    lConnectionStatus
+                                                )
                                         ),
                                     Self.makeStack(direction: .horizontal, distribution: .equalCentering)
                                         .thatHolds(
@@ -81,6 +89,7 @@ extension LobbyViewController {
         
         enableUpdateJobForConnectedNames()
         enablePushToGameViewJob()
+        enableUpdateJobForConnection()
     }
     
 }
@@ -113,38 +122,54 @@ extension LobbyViewController {
         }
         
         guard let panelRuntimeContainer = relay.panelRuntimeContainer else {
-            debug("\(consoleIdentifier) Did fail to set up actions for list of connected players. PanelRuntimeContainer is missing or not set")
+            debug("\(consoleIdentifier) Did fail to set up actions for enablePushToGameViewJob. PanelRuntimeContainer is missing or not set")
             return
         }
         
         var vc : UIViewController? = nil
         panelRuntimeContainer.$panelPlayed
+            .receive(on: DispatchQueue.main)
             .sink { panel in
-                debug("lobby did navigate")
-                guard let panel else {
-                    return
-                }
-                switch panel {
-                    case is ClientClockPanel:
-                        vc = ClockGameViewController()
-                        debug("Did set up ClockGameViewController")
-                    case is ClientWiresPanel:
-                        vc = CableGameViewController()
-                        debug("Did set up CableGameViewController")
-                    case is ClientSwitchesPanel:
-                        vc = SwitchGameViewController()
-                        debug("Did set up SwitchGameViewController")
-                    default:
-                        debug("Did fail to set up game view controller")
-                        break
-                }
-                
-                if let vc {
-                    debug("Did navigate to game view controller")
-                    relay.navigate(vc)
+                // delay 1 sec to make sure the panel is there
+                DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
+                    switch panel {
+                        case is ClientClockPanel:
+                            vc = ClockGameViewController().withRelay(of: .init(panelEntity: panelRuntimeContainer.panelPlayed as? ClientClockPanel))
+                        case is ClientWiresPanel:
+                            vc = CableGameViewController()/*.withRelay(of: .init(panelEntity: panelRuntimeContainer.panelPlayed as? ClientWiresPanel))*/
+                        case is ClientSwitchesPanel:
+                            vc = SwitchGameViewController()/*.withRelay(of: .init(panelEntity: panelRuntimeContainer.panelPlayed as? ClientSwitchesPanel))*/
+                        default:
+                            debug("Did fail to set up game view controller")
+                            break
+                    }
+                    
+                    if let vc {
+                        relay.navigate(vc)
+                    }
                 }
             }
             .store(in: &subscriptions)
+    }
+    
+    private func enableUpdateJobForConnection () {
+        guard let relay else {
+            debug("\(consoleIdentifier) Did fail to set up actions for list of connected players. Relay is missing or not set")
+            return
+        }
+        
+        guard let gameRuntimeContainer = relay.gameRuntimeContainer else {
+            debug("\(consoleIdentifier) Did fail to enable connection status update job. Game Runtime Container is missing or not set")
+            return
+        }
+        
+        gameRuntimeContainer.$connectionState
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] conStatus in 
+                self?.lConnectionStatus.text = conStatus.toString()
+                
+                self?.tPlayerNames.reloadData()
+            }.store(in: &subscriptions)
     }
     
 }
@@ -173,6 +198,7 @@ extension LobbyViewController {
 
 extension LobbyViewController : UITableViewDelegate, UITableViewDataSource {
     
+    // TODO: Refac
     public func tableView ( _ tableView: UITableView, numberOfRowsInSection section: Int ) -> Int {
         guard let relay = self.relay else {
             debug("\(consoleIdentifier) Did fail to get number of rows in section: relay is missing or not set"); return 0
@@ -182,12 +208,10 @@ extension LobbyViewController : UITableViewDelegate, UITableViewDataSource {
             debug("\(consoleIdentifier) Did fail to get number of rows in section: playerRuntimeContainer is missing or not set"); return 0
         }
         
-        debug("Table delegate did return \(playerRuntimeContainer.connectedPlayersNames) rows")
         return playerRuntimeContainer.connectedPlayersNames.count
     }
     
     public func tableView ( _ tableView: UITableView, cellForRowAt indexPath: IndexPath ) -> UITableViewCell {
-        print("did get called for cell for row at index path")
         guard let cell = tableView.dequeueReusableCell(withIdentifier: RoomCell.identifier, for: indexPath) as? RoomCell else {
             return UITableViewCell()
         }
@@ -200,8 +224,11 @@ extension LobbyViewController : UITableViewDelegate, UITableViewDataSource {
             debug("\(consoleIdentifier) Did fail to get cell for row at index path: playerRuntimeContainer is missing or not set"); return cell
         }
         
-        debug("Did try to access conencted player names array at index \(indexPath.row)")
-        let name      = playerRuntimeContainer.connectedPlayersNames[indexPath.row]
+        var name = playerRuntimeContainer.connectedPlayersNames[indexPath.row]
+        
+        if ( relay.selfSignalCommandCenter?.whoAmI() == name ) {
+            name += " (You)"
+        }
         
         cell.configure(roomName: name)
         return cell
