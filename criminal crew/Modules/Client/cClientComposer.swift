@@ -94,7 +94,8 @@ extension ClientComposer {
             browser          : networkManager.browser as? ClientGameBrowser,
             gameRuntime      : ent_gameRuntimeContainer,
             panelRuntime     : ent_panelRuntimeContainer,
-            playerRuntime    : ent_playerRuntimeContainer
+            playerRuntime    : ent_playerRuntimeContainer,
+            navController    : navigationController
         )
         debug("[C] ServerSignalResponder relay has been set up")
         

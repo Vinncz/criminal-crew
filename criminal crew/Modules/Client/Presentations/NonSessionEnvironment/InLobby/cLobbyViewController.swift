@@ -92,6 +92,10 @@ extension LobbyViewController {
         enableUpdateJobForConnection()
     }
     
+    override public func viewDidDisappear ( _ animated: Bool ) {
+        subscriptions.forEach { $0.cancel() }
+    }
+    
 }
 
 extension LobbyViewController {
@@ -102,10 +106,17 @@ extension LobbyViewController {
             return
         }
         
+        guard let selfCommandCenter = relay.selfSignalCommandCenter else {
+            debug("\(consoleIdentifier) Did fail to set up actions for list of connected players. PlayerRuntimeContainer is missing or not set")
+            return
+        }
+        
         guard let playerRuntimeContainer = relay.playerRuntimeContainer else {
             debug("\(consoleIdentifier) Did fail to set up actions for list of connected players. PlayerRuntimeContainer is missing or not set")
             return
         }
+        
+        _ = selfCommandCenter.orderConnectedPlayerNames()
             
         playerRuntimeContainer.$connectedPlayersNames
             .receive(on: DispatchQueue.main)

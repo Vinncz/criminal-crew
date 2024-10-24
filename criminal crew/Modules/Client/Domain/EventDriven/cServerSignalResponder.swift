@@ -12,6 +12,7 @@ public class ServerSignalResponder : UseCase {
         weak var gameRuntime      : ClientGameRuntimeContainer?
         weak var panelRuntime     : ClientPanelRuntimeContainer?
         weak var playerRuntime    : ClientPlayerRuntimeContainer?
+        weak var navController    : UINavigationController?
     }
     
     public init () {
@@ -107,14 +108,18 @@ extension ServerSignalResponder {
                 gameRuntime.connectionState = event.status
                 consoleMsg = "Did update played server connection state to \(event.status.toString())"
                 
-                if ( event.status == .notConnected ) {
-                    gameRuntime.reset()
-                    gameRuntime.state = .notStarted
-                    relay.playerRuntime?.reset()
-                    relay.panelRuntime?.reset()
-                    relay.eventBroadcaster?.reset()
-                    relay.browser?.reset()
-                }
+               if ( event.status == .notConnected ) {
+                   gameRuntime.reset()
+                   gameRuntime.state = .notStarted
+                   relay.playerRuntime?.reset()
+                   relay.panelRuntime?.reset()
+                   relay.eventBroadcaster?.reset()
+                   relay.browser?.reset()
+                   
+                   Task { @MainActor in
+                       relay.navController?.popToRootViewController(animated: true)
+                   }
+               }
             } else {
                 consoleMsg = "Ignoring \(event.subject.displayName) connection update since it's not the played server"
             }
@@ -145,6 +150,11 @@ extension ServerSignalResponder {
             return
         }
         
+        guard let panelRuntime = relay.panelRuntime else {
+            debug("\(consoleIdentifier) Did fail to handle didGetTermination since PanelRuntime is missing or not set")
+            return
+        }
+        
         guard let eventBroadcaster = relay.eventBroadcaster else {
             debug("\(consoleIdentifier) Did fail to handle didGetTermination since EventBroadcaster is missing or not set")
             return
@@ -158,6 +168,7 @@ extension ServerSignalResponder {
         eventBroadcaster.ceaseCommunication()
         eventBroadcaster.reset()
         gameRuntime.reset()
+        panelRuntime.reset()
         playerRuntime.reset()
         browser.reset()
     }

@@ -81,18 +81,18 @@ extension RoomBrowserPageViewController {
     override public func viewDidDisappear ( _ animated: Bool ) {
         super.viewDidDisappear(animated)
         subscriptions.forEach { $0.cancel() }
-        
-        guard let relay else {
-            debug("\(consoleIdentifier) Did fail to clean up. Relay is missing or not set")
-            return
-        }
-        
-        guard let selfSignalCommandCenter = relay.selfSignalCommandCenter else {
-            debug("\(consoleIdentifier) Did fail to clean up. SelfSignalCommandCenter is missing or not set")
-            return
-        }
-        
-        _ = selfSignalCommandCenter.resetBrowser()
+//        
+//        guard let relay else {
+//            debug("\(consoleIdentifier) Did fail to clean up. Relay is missing or not set")
+//            return
+//        }
+//        
+//        guard let selfSignalCommandCenter = relay.selfSignalCommandCenter else {
+//            debug("\(consoleIdentifier) Did fail to clean up. SelfSignalCommandCenter is missing or not set")
+//            return
+//        }
+//        
+//        _ = selfSignalCommandCenter.resetBrowser()
     }
     
 }
