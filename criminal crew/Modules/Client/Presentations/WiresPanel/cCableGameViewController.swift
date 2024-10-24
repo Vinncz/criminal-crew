@@ -372,20 +372,20 @@ public class CableGameViewController: BaseGameViewController {
         cableHeads["yellowStartID"] = CableManager.shared.cableYellowHead
         cableHeads["greenStartID"] = CableManager.shared.cableGreenHead
         
-        secondStartPointIDs[CableManager.shared.secondCableRedStart] = "secondRedStartID"
-        secondStartPointIDs[CableManager.shared.secondCableBlueStart] = "secondBlueStartID"
-        secondStartPointIDs[CableManager.shared.secondCableYellowStart] = "secondYellowStartID"
-        secondStartPointIDs[CableManager.shared.secondCableGreenStart] = "secondGreenStartID"
+        secondStartPointIDs[CableManager.shared.secondCableRedStart] = "RPRedStartID"
+        secondStartPointIDs[CableManager.shared.secondCableBlueStart] = "RPBlueStartID"
+        secondStartPointIDs[CableManager.shared.secondCableYellowStart] = "RPYellowStartID"
+        secondStartPointIDs[CableManager.shared.secondCableGreenStart] = "RPGreenStartID"
         
-        secondEndPointIDs[CableManager.shared.secondCableRedEnd] = "secondRedEndID"
-        secondEndPointIDs[CableManager.shared.secondCableBlueEnd] = "secondBlueEndID"
-        secondEndPointIDs[CableManager.shared.secondCableYellowEnd] = "secondYellowEndID"
-        secondEndPointIDs[CableManager.shared.secondCableGreenEnd] = "secondGreenEndID"
+        secondEndPointIDs[CableManager.shared.secondCableRedEnd] = "RPRedEndID"
+        secondEndPointIDs[CableManager.shared.secondCableBlueEnd] = "RPBlueEndID"
+        secondEndPointIDs[CableManager.shared.secondCableYellowEnd] = "RPYellowEndID"
+        secondEndPointIDs[CableManager.shared.secondCableGreenEnd] = "RPGreenEndID"
         
-        secondCableHeads["secondRedStartID"] = CableManager.shared.secondCableRedHead
-        secondCableHeads["secondBlueStartID"] = CableManager.shared.secondCableBlueHead
-        secondCableHeads["secondYellowStartID"] = CableManager.shared.secondCableYellowHead
-        secondCableHeads["secondGreenStartID"] = CableManager.shared.secondCableGreenHead
+        secondCableHeads["RPRedStartID"] = CableManager.shared.secondCableRedHead
+        secondCableHeads["RPBlueStartID"] = CableManager.shared.secondCableBlueHead
+        secondCableHeads["RPYellowStartID"] = CableManager.shared.secondCableYellowHead
+        secondCableHeads["RPGreenStartID"] = CableManager.shared.secondCableGreenHead
         
     }
     
