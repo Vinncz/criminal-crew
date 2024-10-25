@@ -261,8 +261,8 @@ extension ClientComposer {
         )
         switchRepository.placeSubscription(on: GPTaskReceivedEvent.self)
         // ---------------------------------------------------
-        
-        navigationController.pushViewController(mmvc, animated: true)
+        let switchView = SwitchGameViewController()
+        navigationController.pushViewController(switchView, animated: true)
     }
     
     public func navigate ( to destination: UIViewController ) {

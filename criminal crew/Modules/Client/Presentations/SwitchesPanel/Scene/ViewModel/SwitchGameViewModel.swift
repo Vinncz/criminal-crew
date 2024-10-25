@@ -1,10 +1,3 @@
-//
-//  SwitchGameViewModel.swift
-//  CriminalCrew
-//
-//  Created by Hansen Yudistira on 27/09/24.
-//
-
 import Foundation
 import Combine
 
@@ -17,6 +10,7 @@ internal class SwitchGameViewModel {
     internal var taskCompletionStatus: PassthroughSubject<Bool, Never> = PassthroughSubject<Bool, Never>()
     internal var changePrompt: PassthroughSubject<String, Never> = PassthroughSubject<String, Never>()
     internal var finishGameAlert: PassthroughSubject<String, Never> = PassthroughSubject<String, Never>()
+    internal var timeIntervalSubject: PassthroughSubject<TimeInterval, Never> = PassthroughSubject<TimeInterval, Never>()
     
     init(switchGameUseCase: SwitchGameUseCase) {
         self.switchGameUseCase = switchGameUseCase
@@ -49,6 +43,10 @@ internal class SwitchGameViewModel {
     
     private func changePromptLabel(_ prompt: String) {
         changePrompt.send(prompt)
+    }
+    
+    internal func updateTimerInterval(to newInterval: TimeInterval) {
+        timeIntervalSubject.send(newInterval)
     }
     
     private func toggleButton(label: String) {
