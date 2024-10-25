@@ -29,10 +29,10 @@ extension PanelAssigner {
             return false
         }
         
-        guard panelRuntimeContainer.registeredPanels.count > 0 else {
-            debug("\(consoleIdentifier) Did fail to distribute panel: no panels are registered \(panelRuntimeContainer.registeredPanels)")
-            return false
-        }
+//        guard panelRuntimeContainer.registeredPanels.count > 0 else {
+//            debug("\(consoleIdentifier) Did fail to distribute panel: no panels are registered \(panelRuntimeContainer.registeredPanels)")
+//            return false
+//        }
         
         guard let playerRuntimeContainer = relay.playerRuntimeContainer else {
             debug("\(consoleIdentifier) Did fail to distribute panel: playerRuntimeContainer is missing or not set")
@@ -47,7 +47,7 @@ extension PanelAssigner {
         var isSuccessful = true
         
         let playerComposition : [MCPeerID]             = Array(playerRuntimeContainer.getWhitelistedPartiesAndTheirState().keys)
-        let panelComposition  : [ServerGamePanel.Type] = Array(panelRuntimeContainer.getRegisteredPanelTypes().shuffled().prefix(playerComposition.count))
+        let panelComposition  : [ServerGamePanel.Type] = Array(ServerPanelRuntimeContainer.availablePanelTypes.shuffled().prefix(playerComposition.count))
         
         guard let eventBroadcaster = relay.eventBroadcaster else {
             debug("\(consoleIdentifier) Did fail to distribute panel: eventBroadcaster is missing or not set")
@@ -61,6 +61,7 @@ extension PanelAssigner {
             )
             
             panelRuntimeContainer.registerPanel(panelForThisPlayer)
+            panelRuntimeContainer.assignPanel(panelForThisPlayer, to: player)
             
             do {
                 try eventBroadcaster.broadcast(distributePanelOrder.representedAsData(), to: [player])

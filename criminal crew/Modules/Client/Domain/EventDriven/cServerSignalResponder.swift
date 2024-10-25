@@ -165,12 +165,21 @@ extension ServerSignalResponder {
             return
         }
         
+        guard let navigation = relay.navController else {
+            debug("\(consoleIdentifier) Did fail to handle didGetTermination since NavigationController is missing or not set")
+            return
+        }
+        
         eventBroadcaster.ceaseCommunication()
         eventBroadcaster.reset()
         gameRuntime.reset()
         panelRuntime.reset()
         playerRuntime.reset()
         browser.reset()
+        
+        Task { @MainActor in
+            navigation.popToRootViewController(animated: true)
+        }
     }
     
 }

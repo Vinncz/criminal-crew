@@ -2,51 +2,54 @@ import GamePantry
 
 public class ServerWiresPanel : ServerGamePanel {
     
-    public var leftPairings  : [String: String] = [:]
-    public var rightPairings : [String: String] = [:]
+    public let panelId       :  String  = "WiresPanel"
     
-    public let leftOutletOrigin  : [String]
-    public let rightOutletOrigin : [String]
-    public let leftOutletPair    : [String]
-    public let rightOutletPair   : [String]
+    public var leftPanelOriginWires       : [String] = ["LPRedStartID", "LPBlueStartID", "LPYellowStartID", "LPGreenStartID"]
+    public var leftPanelDestinationWires  : [String] = ["LPRedEndID", "LPBlueEndID", "LPYellowEndID", "LPGreenEndID"]
     
-    public let panelId : String = "WiresPanel"
+    public var rightPanelOriginWires      : [String] = ["RPRedStartID", "RPBlueStartID", "RPYellowStartID", "RPGreenStartID"]
+    public var rightPanelDestinationWires : [String] = ["RPRedEndID", "RPBlueEndID", "RPYellowEndID", "RPGreenEndID"]
     
     required public init () {
-        leftOutletOrigin  = ["Yellow", "Blue", "Green", "Red"]
-        rightOutletOrigin = ["Yellow", "Blue", "Green", "Red"]
-        leftOutletPair    = ["Yellow", "Blue", "Green", "Red"]
-        rightOutletPair   = ["Star", "Circle", "Square", "Triangle"]
+        leftPanelOriginWires = leftPanelOriginWires.shuffled()
+        leftPanelDestinationWires = leftPanelDestinationWires.shuffled()
+        rightPanelOriginWires = rightPanelOriginWires.shuffled()
+        rightPanelDestinationWires = rightPanelDestinationWires.shuffled()
     }
     
+    private let consoleIdentifier : String = "[S-PWR]"
+    public static var panelId     : String = "WiresPanel"
 }
 
 extension ServerWiresPanel {
     
     public func generateSingleTask () -> GameTask {
-        var newLeftOutlet  : String = ""
-        var newLeftPair    : String = ""
-        var newRightOutlet : String = ""
-        var newRightPair   : String = ""
+        let leftPanelOriginSet       = Set(leftPanelOriginWires)
+        let leftPanelDestinationSet  = Set(leftPanelDestinationWires)
         
-        var generationMode = true
-        while generationMode {
-            newLeftOutlet  = leftOutletOrigin.randomElement()!
-            newLeftPair    = leftOutletPair.randomElement()!
-            
-            newRightOutlet = rightOutletOrigin.randomElement()!
-            newRightPair   = rightOutletPair.randomElement()!
-            if 
-                leftPairings.contains(where: { key, val in newLeftOutlet == key && newLeftPair == val })
-                || rightPairings.contains(where: { key, val in newRightOutlet == key && newRightPair == val })
-            {
-                generationMode = false
-            }
-        }
+        let rightPanelOriginSet      = Set(rightPanelOriginWires)
+        let rightPanelDestinationSet = Set(rightPanelDestinationWires)
+        
+        let leftPanelOriginWires      = Array(leftPanelOriginSet.shuffled().prefix(2))
+        let leftPanelDestinationWires = Array(leftPanelDestinationSet.shuffled().prefix(2))
+        
+        let rightPanelOriginWires      = Array(rightPanelOriginSet.shuffled().prefix(2))
+        let rightPanelDestinationWires = Array(rightPanelDestinationSet.shuffled().prefix(2))
+        
+        let leftPanelConnection  = "\(leftPanelOriginWires.joined(separator: ",")),\(leftPanelDestinationWires.joined(separator: ","))"
+        let rightPanelConnection = "\(rightPanelOriginWires.joined(separator: ",")),\(rightPanelDestinationWires.joined(separator: ","))"
+        
+        // to map which wire is connected to which
+        let connectionMap = [
+            leftPanelOriginWires[0] : leftPanelDestinationWires[0],
+            leftPanelOriginWires[1] : leftPanelDestinationWires[1],
+            rightPanelOriginWires[0] : rightPanelDestinationWires[0],
+            rightPanelOriginWires[1] : rightPanelDestinationWires[1]
+        ]
         
         return GameTask (
-            prompt: "Connect \(newLeftOutlet) to \(newLeftPair) and \(newRightOutlet) to \(newRightPair)", 
-            completionCriteria: ["\(newLeftOutlet) \(newLeftPair)", "\(newRightOutlet) \(newRightPair)"]
+            prompt: "\(connectionMap)",
+            completionCriteria: [leftPanelConnection, rightPanelConnection]
         )
     }
 

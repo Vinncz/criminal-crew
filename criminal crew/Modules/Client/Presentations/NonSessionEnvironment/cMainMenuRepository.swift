@@ -35,11 +35,11 @@ public class MainMenuRepository: GPHandlesEvents, UsesDependenciesInjector {
     
     private func handle(_ event: GPEvent) {
         switch (event) {
-            case let event as GPPanelReceivedEvent:
-                debug("Event is recognized as GPTaskReceivedEvent")
-                let panelId = event.panelId
-                getPanelFromPeer(panelId: panelId)
-                break
+//            case let event as GPPanelReceivedEvent:
+//                debug("Event is recognized as GPTaskReceivedEvent")
+//                let panelId = event.panelId
+//                getPanelFromPeer(panelId: panelId)
+//                break
             default :
                 break
         }

@@ -93,6 +93,7 @@ extension LobbyViewController {
     }
     
     override public func viewDidDisappear ( _ animated: Bool ) {
+        super.viewDidDisappear(animated)
         subscriptions.forEach { $0.cancel() }
     }
     
@@ -179,7 +180,11 @@ extension LobbyViewController {
             .sink { [weak self] conStatus in 
                 self?.lConnectionStatus.text = conStatus.toString()
                 
-                self?.tPlayerNames.reloadData()
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                    if ( relay.playerRuntimeContainer?.connectedPlayersNames.count ?? 0 >= 1 ) {
+                        self?.tPlayerNames.reloadData()
+                    } 
+                }
             }.store(in: &subscriptions)
     }
     

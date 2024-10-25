@@ -2,13 +2,23 @@ import GamePantry
 
 public class ServerPanelRuntimeContainer : ObservableObject {
     
-    @Published public var registeredPanels : [ServerGamePanel]
-    @Published public var playerMapping    : [MCPeerID: ServerGamePanel]
+    @Published public var registeredPanels : [ServerGamePanel] {
+        didSet {
+            debug("\(consoleIdentifier) Did update registered panels to: \(registeredPanels)")
+        }
+    }
+    @Published public var playerMapping    : [MCPeerID: ServerGamePanel] {
+        didSet {
+            debug("\(consoleIdentifier) Did update player mapping to: \(playerMapping)")
+        }
+    }
     
     public init () {
         self.registeredPanels = []
         self.playerMapping    = [:]
     }
+    
+    private let consoleIdentifier : String = "[S-SPR]"
     
 }
 
@@ -48,6 +58,10 @@ extension ServerPanelRuntimeContainer {
     
     public func registerPanel ( _ panel: ServerGamePanel ) {
         self.registeredPanels.append(panel)
+    }
+    
+    public func assignPanel ( _ panel: ServerGamePanel, to player: MCPeerID ) {
+        self.playerMapping[player] = panel
     }
     
 }

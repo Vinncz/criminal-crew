@@ -37,7 +37,13 @@ extension TaskAssigner {
         
         do {
             try eventBroadcaster.broadcast (
-                AssignTaskEvent(to: selectedPlayer, task).representedAsData(),
+                HasBeenAssignedTask(
+                    taskId: task.id.uuidString, 
+                    prompt: task.prompt, 
+                    completionCriteria: task.completionCriteria, 
+                    duration: 20,
+                    delimiter: "˛"
+                ).representedAsData(),
                 to: [selectedPlayer]
             )
         } catch {
@@ -104,9 +110,16 @@ extension TaskAssigner {
             }
             
             try eventBroadcaster.broadcast (
-                AssignTaskEvent(to: player, task).representedAsData(),
+                HasBeenAssignedTask(
+                    taskId: task.id.uuidString, 
+                    prompt: task.prompt, 
+                    completionCriteria: task.completionCriteria, 
+                    duration: 20,
+                    delimiter: "˛"
+                ).representedAsData(),
                 to: [player]
             )
+            debug("\(consoleIdentifier) Did assign \(task) to \(player)")
         } catch {
             debug("\(consoleIdentifier) Did fail to assign task [S] to \(player)")
         }

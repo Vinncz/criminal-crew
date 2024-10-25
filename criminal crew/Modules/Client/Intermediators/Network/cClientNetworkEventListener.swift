@@ -29,11 +29,7 @@ public class ClientNetworkEventListener : GPGameEventListener {
     public func heardData ( from peer: MCPeerID, _ data: Data ) {
         debug("\(consoleIdentifier) Did receive the following data: \(data.toString() ?? "<error>Invalid data</error>")")
         
-        if let parsedData = GPTaskReceivedEvent.construct(from: fromData(data: data)!) {
-            if !emit(parsedData) {
-                debug("\(consoleIdentifier) Did receive GPTaskReceivedEvent, but not shared via event router")
-            }
-        } else if let parsedData = ConnectedPlayersNamesResponse.construct(from: fromData(data: data)!) {
+        if let parsedData = ConnectedPlayersNamesResponse.construct(from: fromData(data: data)!) {
             if !emit(parsedData) {
                 debug("\(consoleIdentifier) Did receive InquiryAboutConnectedPlayersRespondedEvent, but not shared via event router")
             }

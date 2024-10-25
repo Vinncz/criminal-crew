@@ -144,6 +144,10 @@ extension LobbyCreationPageViewController {
         enableUpdateJobForConnectedNames()
         
         self.relay?.gameRuntimeContainer?.state = .creatingLobby
+        
+        if ( self.relay?.gameRuntimeContainer?.playedServerAddr != nil ) {
+            bExposeRoom.setTitle("Open room", for: .disabled)
+        } 
     } 
     
     override public func viewDidDisappear ( _ animated: Bool ) {

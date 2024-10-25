@@ -53,8 +53,8 @@ extension ClientClockPanel {
             return flowIsCompleted
         }
         
-        let clockRequirements = completionCriterias[0].split(separator: "˛") 
-        let switchesRequirements = completionCriterias[1].split(separator: "˛")
+        let clockRequirements = completionCriterias[0].split(separator: ",") 
+        let switchesRequirements = completionCriterias[1].split(separator: ",")
         
         let shorthandClockRequirements = clockRequirements[0]
         let longhandClockRequirements  = clockRequirements[1]

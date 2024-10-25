@@ -1,4 +1,5 @@
 import GamePantry
+import os
 
 public class HostSignalResponder : UseCase {
     
@@ -150,12 +151,6 @@ extension HostSignalResponder {
             return
         }
         
-        let validPanels = ServerPanelRuntimeContainer.availablePanelTypes
-        validPanels.forEach { panelType in
-            let panel = panelType.init()
-            relay.panelRuntimeContainer?.registerPanel(panel)
-        }
-        
         guard let panelAssigner = relay.panelAssigner else {
             debug("\(consoleIdentifier) Unable to respond to game start request: panelAssigner is missing or not set")
             return
@@ -166,14 +161,31 @@ extension HostSignalResponder {
             return
         }
         
-        let players = playerRuntimeContainer.getWhitelistedPartiesAndTheirState()
-        let panels = panelRuntimeContainer.getRegisteredPanels()
+        guard let taskGenerator = relay.taskGenerator else {
+            debug("\(consoleIdentifier) Unable to start the game: task generator is missing or not set")
+            return
+        }
         
-        let playersAndPanels = zip(players.keys, panels)
+        guard let taskAssigner = relay.taskAssigner else {
+            debug("\(consoleIdentifier) Unable to start the game: task assigner is missing or not set")
+            return
+        }
         
-        for (player, panel) in playersAndPanels {
-            let generatedTask = relay.taskGenerator!.generate(for: panel)
-            relay.taskAssigner?.assignToSpecificAndPush(task: generatedTask, to: player)
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
+            let players = playerRuntimeContainer.getWhitelistedPartiesAndTheirState()
+            let panels = panelRuntimeContainer.getRegisteredPanels()
+            
+            let playersAndPanels = players.keys.map { player in
+                return (player, panels.randomElement()!)
+            }
+            
+            playersAndPanels.forEach { player, panel in
+                let task = taskGenerator.generate(for: panel)
+                taskAssigner.assignToSpecificAndPush (
+                    task: task, 
+                    to: player
+                )
+            }
         }
         
         gameRuntimeContainer.state = .playing

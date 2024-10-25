@@ -1,8 +1,12 @@
 import GamePantry
 
-@Observable public class PenaltiesProgression : UsesDependenciesInjector, ObservableObject {
+public class PenaltiesProgression : UsesDependenciesInjector, ObservableObject {
     
-    public var progress : Int { didSet { progress$ = progress } }
+    @Published public var progress : Int {
+        didSet {
+            debug("\(consoleIdentifier) Did update penalty progresstion to: \(progress)")
+        }
+    }
     
     public let limit    : Int
     public var relay    : Relay?
@@ -11,14 +15,13 @@ import GamePantry
         self.limit     = limit
         
         self.progress  = startingAt
-        self.progress$ = startingAt
     }
     
     public struct Relay : CommunicationPortal {
         weak var eventRouter : GPEventRouter?
     }
     
-    @ObservationIgnored @Published public var progress$ : Int
+    private let consoleIdentifier : String = "[S-PEN]"
     
 }
 

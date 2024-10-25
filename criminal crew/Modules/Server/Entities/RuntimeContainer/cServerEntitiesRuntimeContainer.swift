@@ -1,12 +1,12 @@
 import GamePantry
 
-@Observable public class ServerEntitiesRuntimeContainer : ObservableObject {
+public class ServerEntitiesRuntimeContainer : ObservableObject {
     
-    private let configuration          : GPGameProcessConfiguration
+    private let configuration : GPGameProcessConfiguration
     
-    public  var panelRuntimeContainer  : ServerPanelRuntimeContainer  { didSet { panelRuntimeContainer$  = panelRuntimeContainer  } }
-    public  var gameRuntimeContainer   : ServerGameRuntimeContainer   { didSet { gameRuntimeContainer$   = gameRuntimeContainer   } }
-    public  var playerRuntimeContainer : ServerPlayerRuntimeContainer { didSet { playerRuntimeContainer$ = playerRuntimeContainer } }
+    @Published public  var panelRuntimeContainer  : ServerPanelRuntimeContainer 
+    @Published public  var gameRuntimeContainer   : ServerGameRuntimeContainer  
+    @Published public  var playerRuntimeContainer : ServerPlayerRuntimeContainer
     
     public init ( config: GPGameProcessConfiguration ) {
         configuration          = config
@@ -18,13 +18,6 @@ import GamePantry
         panelRuntimeContainer  = prc
         gameRuntimeContainer   = grc
         playerRuntimeContainer = plc
-        
-        panelRuntimeContainer$  = prc
-        gameRuntimeContainer$   = grc
-        playerRuntimeContainer$ = plc
     }
     
-    @ObservationIgnored @Published public var panelRuntimeContainer$  : ServerPanelRuntimeContainer
-    @ObservationIgnored @Published public var gameRuntimeContainer$   : ServerGameRuntimeContainer
-    @ObservationIgnored @Published public var playerRuntimeContainer$ : ServerPlayerRuntimeContainer
 }

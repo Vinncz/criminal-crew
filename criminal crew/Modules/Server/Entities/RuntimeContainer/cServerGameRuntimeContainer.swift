@@ -1,10 +1,22 @@
 import GamePantry
 
-@Observable public class ServerGameRuntimeContainer : ObservableObject {
+public class ServerGameRuntimeContainer : ObservableObject {
     
-    public var state                : GameState            { didSet { state$                = state                } }
-    public var penaltiesProgression : PenaltiesProgression { didSet { penaltiesProgression$ = penaltiesProgression } }
-    public var tasksProgression     : TasksProgression     { didSet { tasksProgression$     = tasksProgression     } }
+    @Published public var state : GameState { 
+        didSet {
+            debug("\(consoleIdentifier) Did update game state to: \(state)")
+        } 
+    }
+    @Published public var penaltiesProgression : PenaltiesProgression { 
+        didSet {
+            debug("\(consoleIdentifier) Did update penalties progression to: \(penaltiesProgression)")
+        } 
+    }
+    @Published public var tasksProgression : TasksProgression { 
+        didSet { 
+            debug("\(consoleIdentifier) Did update task progression to: \(tasksProgression)")
+        } 
+    }
     
     public init ( taskLimit: Int = 0, penaltyLimit: Int = 0 ) {
         let pp = PenaltiesProgression (limit: penaltyLimit)
@@ -14,15 +26,7 @@ import GamePantry
         state  = gs
         penaltiesProgression = pp
         tasksProgression     = tp
-        
-        state$ = gs
-        penaltiesProgression$ = pp
-        tasksProgression$     = tp
     }
-    
-    @ObservationIgnored @Published public var state$                : GameState
-    @ObservationIgnored @Published public var penaltiesProgression$ : PenaltiesProgression
-    @ObservationIgnored @Published public var tasksProgression$     : TasksProgression
     
     public enum GameState {
         case notStarted,
@@ -30,4 +34,6 @@ import GamePantry
              paused,
              stopped
     }
+    
+    private let consoleIdentifier : String = "[S-GRC]"
 }

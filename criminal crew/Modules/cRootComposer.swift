@@ -50,8 +50,8 @@ import UIKit
                         }
                     }
                 }
-                let queuedJobToCancelHostAdmissionJob = self.serverComposer.ent_playerRuntimeContainer.$acquaintancedParties.sink { parties in
-                    if ( parties.keys.first == hostID ) {
+                let queuedJobToCancelHostAdmissionJob = self.serverComposer.ent_playerRuntimeContainer.$hostAddr.sink { host in
+                    if let host {
                         self.queuedJobToAdmitTheHost?.cancel()
                         debug("[S-ADV] Cancelled the job to admit the host, as the host has been admitted")
                     } else {

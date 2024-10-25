@@ -1,5 +1,6 @@
 import GamePantry
 
+@available(*, deprecated)
 /// Usable by the server, always directed to a client, to assign a task to a player
 public struct AssignTaskEvent : GPEvent, GPSendableEvent {
     
