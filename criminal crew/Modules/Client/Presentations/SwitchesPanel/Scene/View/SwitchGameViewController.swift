@@ -1,10 +1,3 @@
-//
-//  SwitchGameViewController.swift
-//  CriminalCrew
-//
-//  Created by Hansen Yudistira on 27/09/24.
-//
-
 import UIKit
 import Combine
 
@@ -87,6 +80,20 @@ internal class SwitchGameViewController: BaseGameViewController {
         self.viewModel = SwitchGameViewModel(switchGameUseCase: useCase)
         
         bindViewModel()
+        
+        if let viewModel = viewModel {
+            DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
+                print("calling the update timer function")
+                viewModel.updateTimerInterval(to: 5.0)
+                self.updateLossCondition(intensity: 0.5)
+            }
+            
+            DispatchQueue.main.asyncAfter(deadline: .now() + 12.0) {
+                print("calling the update timer function again")
+                viewModel.updateTimerInterval(to: 5.0)
+                self.updateLossCondition(intensity: 0.8)
+            }
+        }
     }
     
     private func bindViewModel() {
@@ -111,6 +118,14 @@ internal class SwitchGameViewController: BaseGameViewController {
             .receive(on: DispatchQueue.main)
             .sink { [weak self] message in
                 self?.showAlert(message)
+            }
+            .store(in: &cancellables)
+        viewModel.timeIntervalSubject
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] timeInterval in
+                if let timerView = self?.promptStackView.arrangedSubviews[0] as? PromptView {
+                    timerView.timerInterval = timeInterval
+                }
             }
             .store(in: &cancellables)
     }

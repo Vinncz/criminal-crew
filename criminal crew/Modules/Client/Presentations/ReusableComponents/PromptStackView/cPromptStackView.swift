@@ -1,10 +1,3 @@
-//
-//  cPromptStackView.swift
-//  CriminalCrew
-//
-//  Created by Hansen Yudistira on 13/10/24.
-//
-
 import UIKit
 
 open class PromptStackView: UIStackView {

@@ -1,15 +1,19 @@
-//
-//  cPromptView.swift
-//  CriminalCrew
-//
-//  Created by Hansen Yudistira on 13/10/24.
-//
-
 import UIKit
 
 open class PromptView: UIView {
     
     public var promptLabel: UILabel = UILabel()
+    
+    private let timerRectangle: UIView = UIView()
+    public var timerInterval: TimeInterval? {
+        didSet {
+            layoutSubviews()
+        }
+    }
+    
+    private var countdownTimer: Timer?
+    
+    private let promptBackground = UIImageView(image: UIImage(named: "Prompt"))
     
     init(label: String) {
         super.init(frame: .zero)
@@ -21,29 +25,84 @@ open class PromptView: UIView {
     }
     
     private func setupView(_ label: String) {
-        let promptBackground = UIImageView(image: UIImage(named: "Prompt"))
         promptBackground.contentMode = .scaleToFill
         promptBackground.translatesAutoresizingMaskIntoConstraints = false
+        
         promptLabel = ViewFactory.createLabel(text: label)
+        promptLabel.textAlignment = .left
         promptLabel.numberOfLines = 0
         promptLabel.translatesAutoresizingMaskIntoConstraints = false
         
-        addSubview(promptBackground)
-        addSubview(promptLabel)
+        timerRectangle.backgroundColor = .red
+        timerRectangle.alpha = 0.2
+        timerRectangle.translatesAutoresizingMaskIntoConstraints = false
+        
+        insertSubview(promptBackground, at: 0)
+        promptBackground.addSubview(promptLabel)
+        insertSubview(timerRectangle, at: 1)
         
         NSLayoutConstraint.activate([
-            promptBackground.topAnchor.constraint(equalTo: topAnchor, constant: 8),
+            promptBackground.topAnchor.constraint(equalTo: topAnchor),
             promptBackground.leadingAnchor.constraint(equalTo: leadingAnchor),
-            promptBackground.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -8),
-            promptBackground.bottomAnchor.constraint(equalTo: bottomAnchor, constant: -8),
+            promptBackground.trailingAnchor.constraint(equalTo: trailingAnchor),
+            promptBackground.bottomAnchor.constraint(equalTo: bottomAnchor),
+            promptBackground.widthAnchor.constraint(equalTo: widthAnchor),
+            promptBackground.heightAnchor.constraint(equalTo: heightAnchor),
             
-            promptLabel.topAnchor.constraint(equalTo: topAnchor, constant: 8),
-            promptLabel.bottomAnchor.constraint(equalTo: bottomAnchor, constant: -8),
-            promptLabel.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 16),
-            promptLabel.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -16),
-            promptLabel.centerXAnchor.constraint(equalTo: centerXAnchor),
-            promptLabel.centerYAnchor.constraint(equalTo: centerYAnchor)
+            promptLabel.topAnchor.constraint(equalTo: promptBackground.topAnchor, constant: 8),
+            promptLabel.bottomAnchor.constraint(equalTo: promptBackground.bottomAnchor, constant: -8),
+            promptLabel.leadingAnchor.constraint(equalTo: promptBackground.leadingAnchor, constant: 16),
+            promptLabel.trailingAnchor.constraint(equalTo: promptBackground.trailingAnchor, constant: -16),
+            
+            timerRectangle.topAnchor.constraint(equalTo: topAnchor),
+            timerRectangle.leadingAnchor.constraint(equalTo: leadingAnchor),
+            timerRectangle.trailingAnchor.constraint(equalTo: trailingAnchor),
+            timerRectangle.bottomAnchor.constraint(equalTo: bottomAnchor),
+            timerRectangle.widthAnchor.constraint(equalTo: widthAnchor),
+            timerRectangle.heightAnchor.constraint(equalTo: heightAnchor),
         ])
+    }
+    
+    private func startTimer() {
+        if let timerInterval = timerInterval {
+            countdownTimer?.invalidate()
+            animateTimer()
+            countdownTimer = Timer.scheduledTimer(timeInterval: timerInterval, target: self, selector: #selector(animateTimer), userInfo: nil, repeats: false)
+        }
+    }
+    
+    @objc private func animateTimer() {
+        if let timerInterval = timerInterval {
+            let originalWidth = timerRectangle.frame.width
+            let targetWidth: CGFloat = 0.0
+            UIView.animate(withDuration: timerInterval, delay: 0, options: [.curveLinear], animations: {
+                self.timerRectangle.frame.size.width = targetWidth
+            }, completion: { _ in
+                self.resetTimer(originalWidth: originalWidth)
+                self.timerInterval = nil
+            })
+        }
+    }
+    
+    private func resetTimer(originalWidth: CGFloat) {
+        self.timerRectangle.frame.size.width = originalWidth
+    }
+    
+    override open func layoutSubviews() {
+        super.layoutSubviews()
+        applyMask()
+        startTimer()
+    }
+    
+    private func applyMask() {
+        guard let maskImage = promptBackground.image?.cgImage else { return }
+        
+        let maskLayer = CALayer()
+        maskLayer.contents = maskImage
+        maskLayer.frame = promptBackground.bounds
+        
+        timerRectangle.layer.mask = maskLayer
+        timerRectangle.layer.masksToBounds = true
     }
     
 }

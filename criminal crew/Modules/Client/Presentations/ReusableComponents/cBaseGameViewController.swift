@@ -16,12 +16,12 @@ open class BaseGameViewController: UIViewController, GameContentProvider {
         return UIView()
     }
     
-    
     public var contentProvider: GameContentProvider?
     
     private let firstPanelView = UIView()
     private let secondPanelView = UIView()
     private let promptView = UIView()
+    private let loseIndicatorView: LoseIndicatorView = LoseIndicatorView()
     
     public let mainStackView: UIStackView = UIStackView()
     public let rightStackView: UIStackView = UIStackView()
@@ -44,22 +44,26 @@ open class BaseGameViewController: UIViewController, GameContentProvider {
         super.viewDidLoad()
         setupView()
         setupGameContent()
-        
-    }
-    
-    open override func viewDidAppear(_ animated: Bool) {
-        super.viewDidAppear(animated)
-        print(promptView.frame)
-        print(mainStackView.frame)
-        print(rightStackView.frame)
-        print(promptStackView.frame)
     }
     
     private func setupView() {
+        view.backgroundColor = .systemBackground
+        loseIndicatorView.translatesAutoresizingMaskIntoConstraints = false
+        loseIndicatorView.isUserInteractionEnabled = false
+        view.addSubview(loseIndicatorView)
+        
+        NSLayoutConstraint.activate([
+            loseIndicatorView.topAnchor.constraint(equalTo: view.topAnchor),
+            loseIndicatorView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
+            loseIndicatorView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            loseIndicatorView.trailingAnchor.constraint(equalTo: view.trailingAnchor)
+        ])
+        
+        loseIndicatorView.updateLossEffect(intensity: 0.2)
+        
         mainStackView.axis = .horizontal
         mainStackView.translatesAutoresizingMaskIntoConstraints = false
         rightStackView.axis = .vertical
-        view.backgroundColor = .systemBackground
         view.addSubview(mainStackView)
         
         NSLayoutConstraint.activate([
@@ -87,11 +91,14 @@ open class BaseGameViewController: UIViewController, GameContentProvider {
             secondPanelView.heightAnchor.constraint(equalTo: rightStackView.heightAnchor, multiplier: 0.6),
             secondPanelView.widthAnchor.constraint(equalTo: rightStackView.widthAnchor)
         ])
-        
     }
     
     open func setupGameContent() {
         /// for subclass to override to fill their game settings
+    }
+    
+    public func updateLossCondition(intensity: CGFloat) {
+        loseIndicatorView.updateLossEffect(intensity: intensity)
     }
     
     public func addContentToFirstPanelView(_ view: UIView) {
@@ -118,7 +125,7 @@ open class BaseGameViewController: UIViewController, GameContentProvider {
     
     private func addContentToPromptView() {
         
-        promptStackView.promptLabelView.promptLabel.text = "Red, Quantum Encryption, Pseudo AIIDS"
+        promptStackView.promptLabelView.promptLabel.text = "Red -> Red, Green -> Circle"
         
         promptView.addSubview(promptStackView)
         promptStackView.translatesAutoresizingMaskIntoConstraints = false
@@ -130,7 +137,7 @@ open class BaseGameViewController: UIViewController, GameContentProvider {
         ])
     }
     
-    private func createPromptView() -> UIStackView {
+    private func createPromptView() -> UIView {
         return promptStackView
     }
     
