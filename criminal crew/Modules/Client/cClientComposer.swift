@@ -151,36 +151,36 @@ extension ClientComposer {
     }
     
     private func placeInitialView () -> Void {
-        let landingPage = LandingPageViewController()
-            landingPage.relay = LandingPageViewController.Relay (
-                eventBroadcaster: self.networkManager.eventBroadcaster,
-                selfSignalCommandCenter: self.comUC_selfSignalCommandCenter, 
-                playerRuntimeContainer: self.ent_playerRuntimeContainer,
-                gameRuntimeContainer: self.ent_gameRuntimeContainer,
-                panelRuntimeContainer: self.ent_panelRuntimeContainer,
-                serverBrowser: (self.networkManager.browser as! ClientGameBrowser),
-                publicizeRoom: { [weak self] advertContent in 
-                    guard let self, let serverAddr = self.relay?.makeServerVisible(advertContent) else {
-                        debug("[C] ClientComposer relay is missing or not set")
-                        return
-                    }
-                    
-                    cancellableForAutoJoinSelfCreatedServer = self.networkManager.browser.$discoveredServers.sink { servers in
-                        servers.forEach { serv in
-                            if ( serv.serverId == serverAddr ) {
-                                self.networkManager.eventBroadcaster.approve(
-                                    self.networkManager.browser.requestToJoin(serv.serverId)
-                                )
-                            }
-                        }
-                    }
-                    
-                    relay?.placeJobToAdmitHost(self.networkManager.myself)
-                }, 
-                navigate: { [weak self] to in 
-                    self?.navigate(to: to)
-                }
-            )
+        let landingPage = CableGameViewController()
+//            landingPage.relay = LandingPageViewController.Relay (
+//                eventBroadcaster: self.networkManager.eventBroadcaster,
+//                selfSignalCommandCenter: self.comUC_selfSignalCommandCenter, 
+//                playerRuntimeContainer: self.ent_playerRuntimeContainer,
+//                gameRuntimeContainer: self.ent_gameRuntimeContainer,
+//                panelRuntimeContainer: self.ent_panelRuntimeContainer,
+//                serverBrowser: (self.networkManager.browser as! ClientGameBrowser),
+//                publicizeRoom: { [weak self] advertContent in 
+//                    guard let self, let serverAddr = self.relay?.makeServerVisible(advertContent) else {
+//                        debug("[C] ClientComposer relay is missing or not set")
+//                        return
+//                    }
+//                    
+//                    cancellableForAutoJoinSelfCreatedServer = self.networkManager.browser.$discoveredServers.sink { servers in
+//                        servers.forEach { serv in
+//                            if ( serv.serverId == serverAddr ) {
+//                                self.networkManager.eventBroadcaster.approve(
+//                                    self.networkManager.browser.requestToJoin(serv.serverId)
+//                                )
+//                            }
+//                        }
+//                    }
+//                    
+//                    relay?.placeJobToAdmitHost(self.networkManager.myself)
+//                }, 
+//                navigate: { [weak self] to in 
+//                    self?.navigate(to: to)
+//                }
+//            )
         
         navigationController.pushViewController(landingPage, animated: true)
     }
