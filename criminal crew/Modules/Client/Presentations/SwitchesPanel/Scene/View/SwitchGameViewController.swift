@@ -199,7 +199,3 @@ extension SwitchGameViewController: ButtonTappedDelegate {
     }
     
 }
-
-#Preview {
-    SwitchGameViewController()
-}
