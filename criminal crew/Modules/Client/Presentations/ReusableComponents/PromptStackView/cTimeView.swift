@@ -19,7 +19,7 @@ open class TimeView: UIImageView {
     }
     
     private func setupView () {
-        let timeImage = UIImage(named: "Timer")
+        let timeImage = UIImage(named: "Earpiece")
         image = timeImage
         contentMode = .scaleToFill
     }

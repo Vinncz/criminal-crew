@@ -30,4 +30,5 @@ class LoseIndicatorView: UIView {
     func updateLossEffect(intensity: CGFloat) {
         gradientLayer.opacity = Float(intensity)
     }
+    
 }

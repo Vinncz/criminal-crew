@@ -8,13 +8,6 @@
 import UIKit
 
 open class BaseGameViewController: UIViewController, GameContentProvider {
-    open func createFirstPanelView() -> UIView {
-        return UIView()
-    }
-    
-    open func createSecondPanelView() -> UIView {
-        return UIView()
-    }
     
     public var contentProvider: GameContentProvider?
     
@@ -97,8 +90,20 @@ open class BaseGameViewController: UIViewController, GameContentProvider {
         /// for subclass to override to fill their game settings
     }
     
+    open func createFirstPanelView() -> UIView {
+        return UIView()
+    }
+    
+    open func createSecondPanelView() -> UIView {
+        return UIView()
+    }
+    
     public func updateLossCondition(intensity: CGFloat) {
         loseIndicatorView.updateLossEffect(intensity: intensity)
+    }
+    
+    public func updatePromptText(_ text: String) {
+        promptStackView.promptLabelView.promptLabel.text = text
     }
     
     public func addContentToFirstPanelView(_ view: UIView) {
@@ -124,9 +129,6 @@ open class BaseGameViewController: UIViewController, GameContentProvider {
     }
     
     private func addContentToPromptView() {
-        
-        promptStackView.promptLabelView.promptLabel.text = "Red -> Red, Green -> Circle"
-        
         promptView.addSubview(promptStackView)
         promptStackView.translatesAutoresizingMaskIntoConstraints = false
         NSLayoutConstraint.activate([
