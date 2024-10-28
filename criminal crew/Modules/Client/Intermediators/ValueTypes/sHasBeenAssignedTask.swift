@@ -70,7 +70,6 @@ extension HasBeenAssignedTask {
             let delimiter = payload[PayloadKeys.delimiter.rawValue] as? String
         else {
             debug("Construction of HasBeenAssignedTask failed: Payload is missing required keys.")
-            debug("received payload: \(payload)")
             return nil
         }
         

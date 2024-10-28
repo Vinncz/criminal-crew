@@ -12,6 +12,11 @@ internal class SwitchGameViewController: BaseGameViewController {
     
     private let didPressedButton: PassthroughSubject = PassthroughSubject<String, Never>()
     
+    public var relay: Relay?
+    public struct Relay : CommunicationPortal {
+        weak var panelRuntimeContainer: ClientPanelRuntimeContainer?
+    }
+    
     override func createFirstPanelView() -> UIView {
         let firstPanelContainerView = UIView()
         
@@ -196,6 +201,15 @@ extension SwitchGameViewController: ButtonTappedDelegate {
             sender.toggleButtonState()
         }
         
+    }
+    
+}
+
+extension SwitchGameViewController {
+    
+    func withRelay ( of relay: Relay ) -> Self {
+        self.relay = relay
+        return self
     }
     
 }

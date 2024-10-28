@@ -172,15 +172,11 @@ extension HostSignalResponder {
         }
         
         DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
-            let players = playerRuntimeContainer.getWhitelistedPartiesAndTheirState()
-            let panels = panelRuntimeContainer.getRegisteredPanels()
+            let playersAndPanels = panelRuntimeContainer.playerMapping
             
-            let playersAndPanels = players.keys.map { player in
-                return (player, panels.randomElement()!)
-            }
-            
-            playersAndPanels.forEach { player, panel in
+            playersAndPanels.forEach { (player, panel) in
                 let task = taskGenerator.generate(for: panel)
+                debug("\(self.consoleIdentifier) Did generate \(task) for \(player.displayName) playing \(panel.panelId)")
                 taskAssigner.assignToSpecificAndPush (
                     task: task, 
                     to: player

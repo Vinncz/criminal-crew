@@ -146,11 +146,14 @@ extension LobbyViewController {
                 DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
                     switch panel {
                         case is ClientClockPanel:
-                            vc = ClockGameViewController().withRelay(of: .init(panelEntity: panelRuntimeContainer.panelPlayed as? ClientClockPanel))
+                            vc = ClockGameViewController()
+                                .withRelay(of: .init(panelRuntimeContainer: panelRuntimeContainer, selfSignalCommandCenter: self.relay?.selfSignalCommandCenter))
                         case is ClientWiresPanel:
-                            vc = CableGameViewController()/*.withRelay(of: .init(panelEntity: panelRuntimeContainer.panelPlayed as? ClientWiresPanel))*/
+                            vc = CableGameViewController()
+                                    .withRelay(of: .init(panelRuntimeContainer: panelRuntimeContainer))
                         case is ClientSwitchesPanel:
-                            vc = SwitchGameViewController()/*.withRelay(of: .init(panelEntity: panelRuntimeContainer.panelPlayed as? ClientSwitchesPanel))*/
+                            vc = SwitchGameViewController()
+                                    .withRelay(of: .init(panelRuntimeContainer: panelRuntimeContainer))
                         default:
                             debug("Did fail to set up game view controller")
                             break

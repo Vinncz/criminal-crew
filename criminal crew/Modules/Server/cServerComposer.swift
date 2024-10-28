@@ -168,7 +168,10 @@ extension ServerComposer {
         
         evtUC_taskReportResponder.relay = PlayerTaskReportResponder.Relay (
             eventRouter          : self.router,
-            gameRuntimeContainer : self.ent_gameRuntimeContainer
+            gameRuntimeContainer : self.ent_gameRuntimeContainer,
+            panelRuntimeContainer: self.ent_panelRuntimeContainer,
+            taskAssigner: self.comUC_taskAssigner,
+            taskGenerator: self.comUC_taskGenerator
         )
         debug("[S] PlayerTaskReportResponder relay has been set up")
         

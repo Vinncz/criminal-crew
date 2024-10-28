@@ -14,21 +14,24 @@ internal class ClockGameViewController: BaseGameViewController, UsesDependencies
     var switchButtons : [UIButton] = []
     
     var timer         : Timer?
-    var currentPrompt : (shortSymbol: String, longSymbol: String, switchSymbol: [String])?
     
     let portraitBackgroundImage = ViewFactory.addBackgroundImageView("BG Portrait")
     
     var relay: Relay?
     struct Relay : CommunicationPortal {
-        weak var panelEntity : ClientClockPanel?
+//        weak var panelEntity : ClientClockPanel?
+        weak var panelRuntimeContainer : ClientPanelRuntimeContainer?
+        weak var selfSignalCommandCenter : SelfSignalCommandCenter?
     }
     
     override func createFirstPanelView() -> UIView {
         guard 
             let relay,
-            let panelEntity = relay.panelEntity
+//            let panelEntity = relay.panelEntity
+            let panelPlayed = relay.panelRuntimeContainer?.panelPlayed,
+            let panelEntity = panelPlayed as? ClientClockPanel
         else {
-            debug("\(consoleIdentifier) Did fail to create first panel view. Relay and/or some of its attribute is missing or not set")
+            debug("\(consoleIdentifier) Did fail to create first panel view. Relay and/or some of its attribute is missing or not set; or wrong panel entity type is set")
             return UIView()
         }
         
@@ -133,7 +136,7 @@ internal class ClockGameViewController: BaseGameViewController, UsesDependencies
         return secondPanelContainerView
     }
     
-    private let consoleIdentifier : String = "[C-PAN-CLOCK]"
+    private let consoleIdentifier : String = "[C-PCL-VC]"
     
 }
 
@@ -191,9 +194,10 @@ extension ClockGameViewController : ButtonTappedDelegate {
     @objc func switchTapped ( _ sender: UIButton ) {
         guard 
             let relay,
-            let panelEntity = relay.panelEntity
+            let panelRuntimeContainer = relay.panelRuntimeContainer,
+            let panelEntity = panelRuntimeContainer.panelPlayed as? ClientClockPanel
         else {
-            debug("\(consoleIdentifier) Did fail to create first panel view. Relay and/or some of its attribute is missing or not set")
+            debug("\(consoleIdentifier) Did fail to handle switch tapped. Relay and/or some of its attribute is missing or not set")
             return
         }
         
@@ -203,6 +207,8 @@ extension ClockGameViewController : ButtonTappedDelegate {
         print(" \(tappedSymbol) is on \(isOn)")
         let imageName = isOn ? "Switch On" : "Switch Off"
         sender.setBackgroundImage(UIImage(named: imageName), for: .normal)
+        
+        checkSituationAndReportCompletionIfApplicable()
     }
     
           func buttonTapped ( sender: UIButton ) {
@@ -225,10 +231,32 @@ extension ClockGameViewController : ButtonTappedDelegate {
 
 extension ClockGameViewController {
     
+    func checkSituationAndReportCompletionIfApplicable () {
+        guard 
+            let relay,
+            let panelRuntimeContainer = relay.panelRuntimeContainer,
+            let selfSignalCommandCenter = relay.selfSignalCommandCenter
+        else {
+            debug("\(consoleIdentifier) Did fail to checkSituationAndReportCompletionIfApplicable. Relay and/or some of its attribute is missing or not set, or wrong panel type being assigned to this view controller")
+            return
+        }
+        
+        if let completedTaskId = panelRuntimeContainer.checkTaskCompletion() {
+            if !selfSignalCommandCenter.sendTaskReport (
+                taskId: completedTaskId, 
+                isAccomplished: true, 
+                penaltiesGiven: 0
+            ) {
+                debug("\(consoleIdentifier) Did fail to tell server that self has completed a task")
+            }
+        }
+    }
+    
     func currentSymbol ( for hand: UIView ) -> String? {
         guard 
             let relay,
-            let panelEntity = relay.panelEntity
+            let panelPlayed = relay.panelRuntimeContainer?.panelPlayed,
+            let panelEntity = panelPlayed as? ClientClockPanel
         else {
             debug("\(consoleIdentifier) Did fail to get current hand symbol. Relay and/or some of its attribute is missing or not set")
             return nil
@@ -249,7 +277,9 @@ extension ClockGameViewController {
     func setCurrentSymbol ( _ symbol: String, for hand: UIView ) {
         guard 
             let relay,
-            let panelEntity = relay.panelEntity
+            let panelRuntimeContainer = relay.panelRuntimeContainer,
+            let panelPlayed = panelRuntimeContainer.panelPlayed,
+            let panelEntity = panelPlayed as? ClientClockPanel
         else {
             debug("\(consoleIdentifier) Did fail to create first panel view. Relay and/or some of its attribute is missing or not set")
             return
@@ -294,14 +324,16 @@ extension ClockGameViewController {
             let nearestSymbol = getNearestSymbolForAngle(angle: snappedAngle)
 
             setCurrentSymbol(nearestSymbol, for: hand)
-//            checkIfMatched()
+            checkSituationAndReportCompletionIfApplicable()
         }
     }
     
     func snapToNearestSymbol ( angle: CGFloat ) -> CGFloat {
         guard 
             let relay,
-            let panelEntity = relay.panelEntity
+            let panelRuntimeContainer = relay.panelRuntimeContainer,
+            let panelPlayed = panelRuntimeContainer.panelPlayed,
+            let panelEntity = panelPlayed as? ClientClockPanel
         else {
             debug("\(consoleIdentifier) Did fail to snap to nearest symbol. Relay and/or some of its attribute is missing or not set")
             return -1
@@ -316,7 +348,9 @@ extension ClockGameViewController {
     func getNearestSymbolForAngle ( angle: CGFloat ) -> String {
         guard 
             let relay,
-            let panelEntity = relay.panelEntity
+            let panelRuntimeContainer = relay.panelRuntimeContainer,
+            let panelPlayed = panelRuntimeContainer.panelPlayed,
+            let panelEntity = panelPlayed as? ClientClockPanel
         else {
             debug("\(consoleIdentifier) Did fail to snap to nearest symbol. Relay and/or some of its attribute is missing or not set")
             return ""
@@ -324,7 +358,7 @@ extension ClockGameViewController {
         
         let symbolCount = panelEntity.clockSymbols.count
         
-        let symbolIndex = (Int(round(angle / (2 * .pi) * CGFloat(symbolCount))) % symbolCount + symbolCount) % symbolCount
+        let symbolIndex = (Int(round(angle / (2 * .pi) * CGFloat(symbolCount)) + 3) % symbolCount + symbolCount) % symbolCount
         if let label = symbols[symbolIndex].subviews.first as? UILabel {
             return label.text ?? ""
         }
@@ -338,7 +372,9 @@ extension ClockGameViewController {
     func createSwitchAreaView () -> UIView {
         guard 
             let relay,
-            let panelEntity = relay.panelEntity
+            let panelRuntimeContainer = relay.panelRuntimeContainer,
+            let panelPlayed = panelRuntimeContainer.panelPlayed,
+            let panelEntity = panelPlayed as? ClientClockPanel
         else {
             debug("\(consoleIdentifier) Did fail to create first panel view. Relay and/or some of its attribute is missing or not set")
             return UIView()

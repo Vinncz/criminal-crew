@@ -68,7 +68,7 @@ extension ClientClockPanel {
         }
         
         guard
-            currentTurnedOnSwitches.contains(switchesRequirements.map{ String.init($0) })
+            currentTurnedOnSwitches == Set(switchesRequirements.map{ String($0) })
         else {
             debug("\(consoleIdentifier) Did fail validation. Switches do not match: \(currentTurnedOnSwitches) to \(switchesRequirements)")
             return flowIsCompleted

@@ -7,15 +7,15 @@ public class ClientPanelRuntimeContainer : ObservableObject {
             debug("\(consoleIdentifier) Did update played panel to \(panelPlayed?.panelId ?? "none")")
         }
     }
-    @Published public var tasks       : [GameTask] {
+    @Published public var task        : GameTask? {
         didSet {
-            debug("\(consoleIdentifier) Did update panel task array to \(tasks.map{$0.prompt})")
+            debug("\(consoleIdentifier) Did update panel task to \(String(describing: task))")
         }
     }
     
     public init () {
         panelPlayed = nil
-        tasks = []
+        task = nil
     }
     
     private let consoleIdentifier : String = "[C-PAN]"
@@ -45,13 +45,46 @@ extension ClientPanelRuntimeContainer {
         panelPlayed = toBePlayedPanel
     }
     
-    public func addTask ( _ task: GameTask ) {
-        tasks.append(task)
+    public func attachTask ( _ task: GameTask ) -> Bool {
+        // should it fills an empty task slot, return true -- otherwise, let it overwrite the old one, yet return false
+        if let task = self.task {
+            self.task = task
+            return false
+        }
+        
+        self.task = task
+        return true
     }
     
     public func reset () {
         panelPlayed = nil
-        tasks = []
+        task = nil
+    }
+    
+}
+
+extension ClientPanelRuntimeContainer {
+    
+    public func checkTaskCompletion () -> String? {
+        var completedTaskId : String? = nil
+        
+        guard let panelPlayed else {
+            debug("\(consoleIdentifier) Did fail to check for task completion: No panel is being played")
+            self.task = nil
+            return completedTaskId
+        }
+        
+        guard let task else {
+            debug("\(consoleIdentifier) Did fail to check for task completion: No task is being played")
+            return completedTaskId
+        }
+        
+        if ( panelPlayed.validate(task.completionCriteria) ) {
+            completedTaskId = task.id.uuidString
+            self.task = nil
+        }
+        
+        return completedTaskId
     }
     
 }

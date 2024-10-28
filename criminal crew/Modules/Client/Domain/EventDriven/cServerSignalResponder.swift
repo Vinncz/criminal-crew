@@ -241,13 +241,19 @@ extension ServerSignalResponder {
             return
         }
         
-        panelRuntime.addTask (
+        let notOverwriting = panelRuntime.attachTask (
             GameTask (
                 prompt: event.prompt, 
                 completionCriteria: event.completionCriteria,
                 duration: event.duration
             )
         )
+        
+        if notOverwriting {
+            debug("\(consoleIdentifier) Did sucessfully attached new task")
+        } else {
+            debug("\(consoleIdentifier) Did overwrite old task")
+        }
     }
     
 }
