@@ -7,18 +7,24 @@ public class ClientPanelRuntimeContainer : ObservableObject {
             debug("\(consoleIdentifier) Did update played panel to \(panelPlayed?.panelId ?? "none")")
         }
     }
-    @Published public var task        : GameTask? {
+    @Published public var instructions : [GameTaskInstruction] {
         didSet {
-            debug("\(consoleIdentifier) Did update panel task to \(String(describing: task))")
+            debug("\(consoleIdentifier) Did update instructions to \(instructions)")
+        }
+    }
+    @Published public var criterias : [GameTaskCriteria] {
+        didSet {
+            debug("\(consoleIdentifier) Did update criterias to \(criterias)")
         }
     }
     
     public init () {
-        panelPlayed = nil
-        task = nil
+        panelPlayed  = nil
+        instructions = []
+        criterias    = []
     }
     
-    private let consoleIdentifier : String = "[C-PAN]"
+    private let consoleIdentifier : String = "[C-PRN]"
     
 }
 
@@ -45,46 +51,36 @@ extension ClientPanelRuntimeContainer {
         panelPlayed = toBePlayedPanel
     }
     
-    public func attachTask ( _ task: GameTask ) -> Bool {
-        // should it fills an empty task slot, return true -- otherwise, let it overwrite the old one, yet return false
-        if let task = self.task {
-            self.task = task
-            return false
-        }
-        
-        self.task = task
-        return true
-    }
-    
     public func reset () {
-        panelPlayed = nil
-        task = nil
+        panelPlayed  = nil
+        instructions = []
+        criterias    = []
     }
     
 }
 
 extension ClientPanelRuntimeContainer {
     
-    public func checkTaskCompletion () -> String? {
-        var completedTaskId : String? = nil
+    public func checkCriteriaCompletion () -> [String] {
+        var criteriaId : [String] = []
         
         guard let panelPlayed else {
             debug("\(consoleIdentifier) Did fail to check for task completion: No panel is being played")
-            self.task = nil
-            return completedTaskId
+            return criteriaId
         }
         
-        guard let task else {
-            debug("\(consoleIdentifier) Did fail to check for task completion: No task is being played")
-            return completedTaskId
+        guard criterias.count > 0 else {
+            debug("\(consoleIdentifier) Did fail to check for task completion: No criterias are set")
+            return criteriaId
         }
         
-        if ( panelPlayed.validate(task.completionCriteria) ) {
-            completedTaskId = task.id.uuidString
-            self.task = nil
+        criterias.forEach { criteria in
+            if panelPlayed.validate(criteria.requirement) {
+                criteriaId.append(criteria.id.uuidString)
+            }
         }
         
-        return completedTaskId
+        return criteriaId
     }
     
 }

@@ -2,11 +2,11 @@ import GamePantry
 
 public struct HasBeenAssignedTask : GPEvent, GPSendableEvent, GPReceivableEvent {
     
-    public let taskId             : String
-    public let prompt             : String
-    public let completionCriteria : [String]
-    public var delimiter          : String = "˛"
-    public let duration           : TimeInterval
+    public let taskId      : String
+    public let instruction : String
+    public let criteria    : [String]
+    public var delimiter   : String = "˛"
+    public let duration    : TimeInterval
     
     public let id              : String = "HasBeenAssignedTask"
     public let purpose         : String = "A notification that self had been assigned to a task"
@@ -14,12 +14,12 @@ public struct HasBeenAssignedTask : GPEvent, GPSendableEvent, GPReceivableEvent 
     
     public var payload: [String : Any]
     
-    public init ( taskId: String, prompt: String, completionCriteria: [String], duration: TimeInterval = 20, delimiter: String = "˛" ) {
-        self.taskId             = taskId
-        self.prompt             = prompt
-        self.completionCriteria = completionCriteria
-        self.duration           = duration
-        self.delimiter          = delimiter
+    public init ( taskId: String, instruction: String, criteria: [String], duration: TimeInterval = 20, delimiter: String = "˛" ) {
+        self.taskId      = taskId
+        self.instruction = instruction
+        self.criteria    = criteria
+        self.duration    = duration
+        self.delimiter   = delimiter
         payload = [:]
     }
     
@@ -28,12 +28,12 @@ public struct HasBeenAssignedTask : GPEvent, GPSendableEvent, GPReceivableEvent 
 extension HasBeenAssignedTask {
     
     public enum PayloadKeys : String, CaseIterable {
-        case eventId            = "eventId",
-             taskId             = "taskId",
-             prompt             = "prompt",
-             completionCriteria = "completionCriteria",
-             duration           = "duration",
-             delimiter          = "delimiter"
+        case eventId     = "eventId",
+             taskId      = "taskId",
+             instruction = "instruction",
+             criteria    = "criteria",
+             duration    = "duration",
+             delimiter   = "delimiter"
     }
     
     public func value(for key: PayloadKeys) -> Any? {
@@ -47,12 +47,12 @@ extension HasBeenAssignedTask {
     public func representedAsData () -> Data {
         dataFrom {
             [
-                PayloadKeys.eventId.rawValue            : self.id,
-                PayloadKeys.taskId.rawValue             : self.taskId,
-                PayloadKeys.prompt.rawValue             : self.prompt,
-                PayloadKeys.completionCriteria.rawValue : self.completionCriteria.joined(separator: self.delimiter),
-                PayloadKeys.duration.rawValue           : self.duration.description,
-                PayloadKeys.delimiter.rawValue          : self.delimiter
+                PayloadKeys.eventId.rawValue     : self.id,
+                PayloadKeys.taskId.rawValue      : self.taskId,
+                PayloadKeys.instruction.rawValue : self.instruction,
+                PayloadKeys.criteria.rawValue    : self.criteria.joined(separator: self.delimiter),
+                PayloadKeys.duration.rawValue    : self.duration.description,
+                PayloadKeys.delimiter.rawValue   : self.delimiter
             ]
         } ?? Data()
     }
@@ -65,8 +65,8 @@ extension HasBeenAssignedTask {
         guard
             "HasBeenAssignedTask" == payload[PayloadKeys.eventId.rawValue] as? String,
             let taskId = payload[PayloadKeys.taskId.rawValue] as? String,
-            let prompt = payload[PayloadKeys.prompt.rawValue] as? String,
-            let completionCriteria = payload[PayloadKeys.completionCriteria.rawValue] as? String,
+            let instruction = payload[PayloadKeys.instruction.rawValue] as? String,
+            let rawCriteria = payload[PayloadKeys.criteria.rawValue] as? String,
             let delimiter = payload[PayloadKeys.delimiter.rawValue] as? String
         else {
             debug("Construction of HasBeenAssignedTask failed: Payload is missing required keys.")
@@ -78,13 +78,14 @@ extension HasBeenAssignedTask {
             durationAsTimeInterval = TimeInterval(duration) ?? TimeInterval(20)
         }
         
-        let separatedCompletionCriteria = completionCriteria.split(separator: delimiter).map { String.init($0) }
+        let separatedCompletionCriteria = rawCriteria.split(separator: delimiter).map { String.init($0) }
         
         return HasBeenAssignedTask (
-            taskId: taskId,
-            prompt: prompt,
-            completionCriteria: separatedCompletionCriteria,
-            duration: durationAsTimeInterval
+            taskId      : taskId, 
+            instruction : instruction, 
+            criteria    : separatedCompletionCriteria,
+            duration    : durationAsTimeInterval,
+            delimiter   : delimiter
         )
     }
     

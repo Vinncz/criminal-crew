@@ -24,6 +24,8 @@ public class HostSignalResponder : UseCase {
         weak var panelRuntimeContainer  : ServerPanelRuntimeContainer?
         weak var playerRuntimeContainer : ServerPlayerRuntimeContainer?
         weak var gameRuntimeContainer   : ServerGameRuntimeContainer?
+        weak var taskRuntimeContainer   : ServerTaskRuntimeContainer?
+        
              var admitPlayer            : (String, Bool) -> Void
              var terminatePlayer        : (GPTerminatedEvent) -> Void
     }
@@ -161,6 +163,11 @@ extension HostSignalResponder {
             return
         }
         
+        guard let taskRuntimeContainer = relay.taskRuntimeContainer else {
+            debug("\(consoleIdentifier) Unable to start the game: taskRuntimeContainer is missing or not set")
+            return
+        }
+        
         guard let taskGenerator = relay.taskGenerator else {
             debug("\(consoleIdentifier) Unable to start the game: task generator is missing or not set")
             return
@@ -176,7 +183,11 @@ extension HostSignalResponder {
             
             playersAndPanels.forEach { (player, panel) in
                 let task = taskGenerator.generate(for: panel)
+                taskRuntimeContainer.registerTask(task)
+                taskRuntimeContainer.registerTaskCriteria(task.criteria, to: player.displayName)
+                
                 debug("\(self.consoleIdentifier) Did generate \(task) for \(player.displayName) playing \(panel.panelId)")
+                
                 taskAssigner.assignToSpecificAndPush (
                     task: task, 
                     to: player

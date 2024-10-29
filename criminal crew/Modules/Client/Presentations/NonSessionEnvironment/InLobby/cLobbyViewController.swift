@@ -107,24 +107,29 @@ extension LobbyViewController {
             return
         }
         
-        guard let selfCommandCenter = relay.selfSignalCommandCenter else {
-            debug("\(consoleIdentifier) Did fail to set up actions for list of connected players. PlayerRuntimeContainer is missing or not set")
-            return
+        switch relay.check(\.selfSignalCommandCenter, \.playerRuntimeContainer) {
+            case .success():
+                guard 
+                    let selfCommandCenter = relay.selfSignalCommandCenter,
+                    let playerRuntimeContainer = relay.playerRuntimeContainer
+                else {
+                    return
+                }
+                
+                _ = selfCommandCenter.orderConnectedPlayerNames()
+                    
+                playerRuntimeContainer.$connectedPlayersNames
+                    .receive(on: DispatchQueue.main)
+                    .sink { [weak self] names in
+                        self?.tPlayerNames.reloadData()
+                        debug("Reloading joined players list with \(names)")
+                    }.store(in: &subscriptions)
+                
+            case .failure(let missingAttributes):
+                debug("\(consoleIdentifier) Did fail to set up actions for list of connected players. Attributes [\(missingAttributes)] is missing or not set")
+                return
         }
         
-        guard let playerRuntimeContainer = relay.playerRuntimeContainer else {
-            debug("\(consoleIdentifier) Did fail to set up actions for list of connected players. PlayerRuntimeContainer is missing or not set")
-            return
-        }
-        
-        _ = selfCommandCenter.orderConnectedPlayerNames()
-            
-        playerRuntimeContainer.$connectedPlayersNames
-            .receive(on: DispatchQueue.main)
-            .sink { [weak self] names in
-                self?.tPlayerNames.reloadData()
-                debug("Reloading joined players list with \(names)")
-            }.store(in: &subscriptions)
     }
     
     private func enablePushToGameViewJob () {

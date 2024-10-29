@@ -241,7 +241,8 @@ extension ClockGameViewController {
             return
         }
         
-        if let completedTaskId = panelRuntimeContainer.checkTaskCompletion() {
+        let completedTaskIds = panelRuntimeContainer.checkCriteriaCompletion()
+        completedTaskIds.forEach { completedTaskId in
             if !selfSignalCommandCenter.sendTaskReport (
                 taskId: completedTaskId, 
                 isAccomplished: true, 

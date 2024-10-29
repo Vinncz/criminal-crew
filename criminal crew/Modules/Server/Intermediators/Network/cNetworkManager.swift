@@ -17,7 +17,7 @@ public class ServerNetworkManager : GPGameServerNetworkManager, ObservableObject
         self.myself = myself
         
         let el = ServerNetworkEventListener(router: router)
-        let eb = NetworkEventBroadcaster(serves: myself, router: router)
+        let eb = ServerNetworkEventBroadcaster(serves: myself, router: router)
         let ad = GameServerAdvertiser(serves: myself, configuredWith: configuration, router: router)
         
         self.eventListener     = el

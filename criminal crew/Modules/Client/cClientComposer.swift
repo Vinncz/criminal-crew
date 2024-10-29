@@ -130,7 +130,9 @@ extension ClientComposer {
             
             router.openChannel(for:HasBeenAssignedHost.self),
             router.openChannel(for:HasBeenAssignedPanel.self),
-            router.openChannel(for:HasBeenAssignedTask.self)
+            router.openChannel(for:HasBeenAssignedTask.self),
+            router.openChannel(for:HasBeenAssignedInstruction.self),
+            router.openChannel(for:HasBeenAssignedCriteria.self)
         else {
             debug("[C] Did fail to open all required channels for EventRouter")
             return
@@ -140,10 +142,15 @@ extension ClientComposer {
     private final func subscribeUCsToEvents () {
         evtUC_serverSignalResponder.placeSubscription(on: GPAcquaintanceStatusUpdateEvent.self)
         evtUC_serverSignalResponder.placeSubscription(on: GPTerminatedEvent.self)
+        
         evtUC_serverSignalResponder.placeSubscription(on: GPGameJoinRequestedEvent.self)
+        
         evtUC_serverSignalResponder.placeSubscription(on: HasBeenAssignedHost.self)
         evtUC_serverSignalResponder.placeSubscription(on: HasBeenAssignedPanel.self)
         evtUC_serverSignalResponder.placeSubscription(on: HasBeenAssignedTask.self)
+        evtUC_serverSignalResponder.placeSubscription(on: HasBeenAssignedInstruction.self)
+        evtUC_serverSignalResponder.placeSubscription(on: HasBeenAssignedCriteria.self)
+        
         evtUC_serverSignalResponder.placeSubscription(on: PenaltyDidReachLimitEvent.self)
         evtUC_serverSignalResponder.placeSubscription(on: TaskDidReachLimitEvent.self)
         evtUC_serverSignalResponder.placeSubscription(on: ConnectedPlayersNamesResponse.self)

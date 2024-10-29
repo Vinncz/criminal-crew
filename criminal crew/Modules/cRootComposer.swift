@@ -60,16 +60,16 @@ import UIKit
                 }
             },
             sendMockDataFromServer: { [weak self] in
-                guard let self else { return }
-                do {
-                    try self.serverComposer.networkManager.eventBroadcaster.broadcast(
-                        AssignTaskEvent(to: MCPeerID(displayName: "MOCK CLIENT"), GameTask(prompt: "SPIN AROUND 5X", completionCriteria: ["Dizzy", "Fell Down"])).representedAsData(), 
-                        to: self.serverComposer.networkManager.eventBroadcaster.getPeers()
-                    )
-                    debug("Prompted to send data to client")
-                } catch {
-                    debug("\(error)")
-                }
+//                guard let self else { return }
+//                do {
+//                    try self.serverComposer.networkManager.eventBroadcaster.broadcast(
+//                        AssignTaskEvent(to: MCPeerID(displayName: "MOCK CLIENT"), GameTask(instruction: "SPIN AROUND 5X", completionCriteria: ["Dizzy", "Fell Down"])).representedAsData(), 
+//                        to: self.serverComposer.networkManager.eventBroadcaster.getPeers()
+//                    )
+//                    debug("Prompted to send data to client")
+//                } catch {
+//                    debug("\(error)")
+//                }
             }
         )
         

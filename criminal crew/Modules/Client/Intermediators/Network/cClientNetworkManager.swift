@@ -17,7 +17,7 @@ public class ClientNetworkManager : GPGameClientNetworkManager, ObservableObject
         self.myself = myself
         
         let el = ClientNetworkEventListener(router: router)
-        let eb = NetworkEventBroadcaster(serves: myself, router: router)
+        let eb = ServerNetworkEventBroadcaster(serves: myself, router: router)
         let br = ClientGameBrowser(serves: myself, configuredWith: configuration, router: router)
         
         self.eventListener     = el

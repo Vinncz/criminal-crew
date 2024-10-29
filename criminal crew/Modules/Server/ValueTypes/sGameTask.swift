@@ -2,19 +2,17 @@ import GamePantry
 
 public struct GameTask : Identifiable, Hashable, Sendable {
     
-    public let id = UUID()
-    public let prompt             : String
-    public let completionCriteria : [String]
-    public let duration           : TimeInterval
+    public let id : UUID = UUID()
     
-    public init (
-        prompt             : String,
-        completionCriteria : [String],
-        duration           : TimeInterval = 20
-    ) {
-        self.prompt             = prompt
-        self.completionCriteria = completionCriteria
-        self.duration           = duration
+    public var instruction : GameTaskInstruction
+    public var criteria    : GameTaskCriteria
+    
+    public init ( instruction: GameTaskInstruction, completionCriteria: GameTaskCriteria ) {
+        self.instruction = instruction
+        self.criteria    = completionCriteria
+        
+        self.instruction.associate(with: self.id)
+        self.criteria.associate(with: self.id)
     }
     
 }

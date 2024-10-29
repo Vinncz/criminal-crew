@@ -35,6 +35,7 @@ final public class ServerComposer : UsesDependenciesInjector {
     public let ent_playerRuntimeContainer : ServerPlayerRuntimeContainer
     public let ent_panelRuntimeContainer  : ServerPanelRuntimeContainer
     public let ent_gameRuntimeContainer   : ServerGameRuntimeContainer
+    public let ent_taskRuntimeContainer   : ServerTaskRuntimeContainer
     
     public init () {
         router                   = GamePantry.GPEventRouter()
@@ -57,6 +58,7 @@ final public class ServerComposer : UsesDependenciesInjector {
         ent_playerRuntimeContainer = ServerPlayerRuntimeContainer()
         ent_panelRuntimeContainer  = ServerPanelRuntimeContainer()
         ent_gameRuntimeContainer   = ServerGameRuntimeContainer()
+        ent_taskRuntimeContainer   = ServerTaskRuntimeContainer()
     }
     
     private var cancellables : Set<AnyCancellable> = []
@@ -135,6 +137,7 @@ extension ServerComposer {
             panelRuntimeContainer  : self.ent_panelRuntimeContainer,
             playerRuntimeContainer : self.ent_playerRuntimeContainer,
             gameRuntimeContainer   : self.ent_gameRuntimeContainer,
+            taskRuntimeContainer   : self.ent_taskRuntimeContainer,
             admitPlayer            : { playerName, decideToAdmit in
                 guard let playerRequest = self.networkManager.advertiserService.pendingRequests.first(where: { $0.requestee.displayName == playerName }) else {
                     debug("[S] HostSignalResponder is unable to admit the player: the request record is missing or not found")

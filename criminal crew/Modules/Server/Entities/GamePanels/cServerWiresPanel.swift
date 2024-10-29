@@ -48,8 +48,12 @@ extension ServerWiresPanel {
         ]
         
         return GameTask (
-            prompt: "\(connectionMap)",
-            completionCriteria: [leftPanelConnection, rightPanelConnection]
+            instruction        : GameTaskInstruction (
+                content: "\(connectionMap)"
+            ),
+            completionCriteria : GameTaskCriteria(
+                requirement: [leftPanelConnection, rightPanelConnection]
+            )
         )
     }
 

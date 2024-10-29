@@ -223,37 +223,80 @@ extension ServerSignalResponder {
     }
     
     public func didGetAssignedTask ( _ event: HasBeenAssignedTask ) {
+        guard true == false else {
+            debug("\(consoleIdentifier) Did fail to handle didGetAssignedTask since this feature is deprecated")
+            return
+        }
+        
+        // guard let relay else { 
+        //     debug("\(consoleIdentifier) Relay is missing or not set")
+        //     return 
+        // }
+        
+        // guard 
+        //     let gameRuntime = relay.gameRuntime,
+        //     gameRuntime.state == .playing
+        // else {
+        //     debug("\(consoleIdentifier) Did fail to handle didGetAssignedTask since GameRuntime is missing or not set, or game is not in playing state")
+        //     return
+        // }
+        
+        // guard let panelRuntime = relay.panelRuntime else {
+        //     debug("\(consoleIdentifier) Did fail to handle didGetAssignedTask since PanelRuntime is missing or not set")
+        //     return
+        // }
+        
+        // let notOverwriting = panelRuntime.attachTask (
+        //     GameTask (
+        //         prompt: event.prompt, 
+        //         completionCriteria: event.completionCriteria,
+        //         duration: event.duration
+        //     )
+        // )
+        
+        // if notOverwriting {
+        //     debug("\(consoleIdentifier) Did sucessfully attached new task")
+        // } else {
+        //     debug("\(consoleIdentifier) Did overwrite old task")
+        // }
+    }
+    
+    public func didGetAssignedInstruction ( _ event: HasBeenAssignedInstruction ) {
         guard let relay else { 
             debug("\(consoleIdentifier) Relay is missing or not set")
             return 
         }
         
-        guard 
-            let gameRuntime = relay.gameRuntime,
-            gameRuntime.state == .playing
-        else {
-            debug("\(consoleIdentifier) Did fail to handle didGetAssignedTask since GameRuntime is missing or not set, or game is not in playing state")
+        guard let panelRuntime = relay.panelRuntime else {
+            debug("\(consoleIdentifier) Did fail to handle didGetAssignedInstruction since PanelRuntime is missing or not set")
             return
+        }
+        
+        panelRuntime.instructions.append (
+            GameTaskInstruction (
+                content: event.instruction, 
+                displayDuration: event.displayDuration
+            )
+        )
+    }
+    
+    public func didGetAssignedCriteria ( _ event: HasBeenAssignedCriteria ) {
+        guard let relay else { 
+            debug("\(consoleIdentifier) Relay is missing or not set")
+            return 
         }
         
         guard let panelRuntime = relay.panelRuntime else {
-            debug("\(consoleIdentifier) Did fail to handle didGetAssignedTask since PanelRuntime is missing or not set")
+            debug("\(consoleIdentifier) Did fail to handle didGetAssignedCriteria since PanelRuntime is missing or not set")
             return
         }
         
-        let notOverwriting = panelRuntime.attachTask (
-            GameTask (
-                prompt: event.prompt, 
-                completionCriteria: event.completionCriteria,
-                duration: event.duration
+        panelRuntime.criterias.append (
+            GameTaskCriteria (
+                requirement: event.requirements,
+                validityDuration: event.validityDuration
             )
         )
-        
-        if notOverwriting {
-            debug("\(consoleIdentifier) Did sucessfully attached new task")
-        } else {
-            debug("\(consoleIdentifier) Did overwrite old task")
-        }
     }
     
 }

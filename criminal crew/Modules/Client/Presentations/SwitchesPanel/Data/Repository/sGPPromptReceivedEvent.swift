@@ -15,13 +15,13 @@ public struct GPPromptReceivedEvent : GPEvent, GPReceivableEvent {
     public let taskId: String
     
     public let id: String = "AssignPromptEvent"
-    public let purpose: String = "Get the prompt assigned from server"
+    public let purpose: String = "Get the instruction assigned from server"
     public let instanciatedOn: Date = .now
     
     public static func construct(from payload: [String : Any]) -> GPPromptReceivedEvent? {
         guard
             "AssignPromptEvent" == payload["eventId"] as? String,
-            let prompt = payload["prompt"] as? String,
+            let prompt = payload["instruction"] as? String,
             let taskId = payload["taskId"] as? String,
             let completionCriteria = payload["completionCriteria"] as? String,
             let duration = payload["duration"] as? String,

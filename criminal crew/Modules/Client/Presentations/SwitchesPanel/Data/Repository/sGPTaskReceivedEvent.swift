@@ -21,7 +21,7 @@ public struct GPTaskReceivedEvent : GPEvent, GPReceivableEvent {
     public static func construct(from payload: [String : Any]) -> GPTaskReceivedEvent? {
         guard
             "AssignTaskEvent" == payload["eventId"] as? String,
-            let prompt = payload["prompt"] as? String,
+            let prompt = payload["instruction"] as? String,
             let taskId = payload["taskId"] as? String,
             let completionCriteria = payload["completionCriteria"] as? String,
             let duration = payload["duration"] as? String,

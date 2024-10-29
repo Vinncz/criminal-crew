@@ -37,8 +37,12 @@ extension ServerSwitchesPanel {
         let switches = validSwitches.shuffled().prefix(2)
         
         return GameTask (
-            prompt: "Activate \(levers[0]), \(levers[1]), \(switches[0]), \(levers[2]), and \(switches[1])", 
-            completionCriteria: ["\(levers[0])", "\(levers[1])", "\(levers[2])", "\(switches[0])", "\(switches[1])"]
+            instruction: GameTaskInstruction (
+                content: "Activate \(levers[0]), \(levers[1]), \(levers[2]), \(switches[0]), and \(switches[1])"
+            ), 
+            completionCriteria: GameTaskCriteria (
+                requirement: ["\(levers[0])", "\(levers[1])", "\(levers[2])", "\(switches[0])", "\(switches[1])"]
+            )
         )
     }
 
