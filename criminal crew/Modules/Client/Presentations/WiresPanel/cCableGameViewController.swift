@@ -201,21 +201,18 @@ public class CableGameViewController: BaseGameViewController {
             }
 
             NSLayoutConstraint.activate([
-                // Start Point Constraints
                 startPoint.bottomAnchor.constraint(equalTo: target.safeAreaLayoutGuide.bottomAnchor, constant: -40),
-                startPoint.leadingAnchor.constraint(equalTo: target.leadingAnchor, constant: CGFloat(CGFloat(16 + (index * 70)) + startPointLeadingConstant)),  // Responsive leading
+                startPoint.leadingAnchor.constraint(equalTo: target.leadingAnchor, constant: CGFloat(CGFloat(16 + (index * 70)) + startPointLeadingConstant)),
                 startPoint.widthAnchor.constraint(equalToConstant: 50 ),
                 startPoint.heightAnchor.constraint(equalToConstant: 50),
 
-                // End Point Constraints
                 endPoint.topAnchor.constraint(equalTo: target.safeAreaLayoutGuide.topAnchor),
-                endPoint.leadingAnchor.constraint(equalTo: target.leadingAnchor, constant: CGFloat(CGFloat(16 + (index * 70)) + startPointLeadingConstant)), // Responsive leading
+                endPoint.leadingAnchor.constraint(equalTo: target.leadingAnchor, constant: CGFloat(CGFloat(16 + (index * 70)) + startPointLeadingConstant)),
                 endPoint.widthAnchor.constraint(equalToConstant: 50),
                 endPoint.heightAnchor.constraint(equalToConstant: 50),
 
-                // Cable Head Constraints
                 cableHead.centerXAnchor.constraint(equalTo: startPoint.centerXAnchor),
-                cableHead.centerYAnchor.constraint(equalTo: startPoint.centerYAnchor, constant: -25),  // Responsive vertical offset
+                cableHead.centerYAnchor.constraint(equalTo: startPoint.centerYAnchor, constant: -25),
                 cableHead.widthAnchor.constraint(equalToConstant: 40),
                 cableHead.heightAnchor.constraint(equalToConstant: 40),
             ])
@@ -428,10 +425,24 @@ public class CableGameViewController: BaseGameViewController {
     }
     
     @objc func handleCableLeverTap(_ sender: UITapGestureRecognizer) {
-        
+        let leverImagePulled = UIImage(named: "client.panels.cables-panel.cable-lever-pulled")
+        let leverImageDefault = UIImage(named: "client.panels.cables-panel.cable-lever")
+
+        // Animate the lever pull
+        UIView.transition(with: CableManager.shared.cableLever, duration: 0.2, options: .transitionCrossDissolve, animations: {
+            CableManager.shared.cableLever.image = leverImagePulled
+        }) { _ in
+            // Delay and revert to the original lever image
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                UIView.transition(with: CableManager.shared.cableLever, duration: 0.2, options: .transitionCrossDissolve, animations: {
+                    CableManager.shared.cableLever.image = leverImageDefault
+                })
+            }
+        }
+
         print("Cable lever tapped!")
-        
     }
+
 
     @objc func handleCablePan(_ gesture: UIPanGestureRecognizer) {
         guard let cableHead = gesture.view as? UIImageView else { return }
