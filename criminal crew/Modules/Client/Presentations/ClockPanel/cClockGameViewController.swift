@@ -1,4 +1,5 @@
 import UIKit
+import Combine
 
 internal class ClockGameViewController: BaseGameViewController, UsesDependenciesInjector {
     
@@ -14,6 +15,7 @@ internal class ClockGameViewController: BaseGameViewController, UsesDependencies
     var switchButtons : [UIButton] = []
     
     var timer         : Timer?
+    internal var cancellables = Set<AnyCancellable>()
     
     let portraitBackgroundImage = ViewFactory.addBackgroundImageView("BG Portrait")
     
@@ -421,11 +423,22 @@ extension ClockGameViewController {
     
     func withRelay ( of relay: Relay ) -> Self {
         self.relay = relay
+        if let panelRuntimeContainer = relay.panelRuntimeContainer {
+            bindInstruction(to: panelRuntimeContainer)
+        }
         return self
     }
     
-}
-
-#Preview {
-    ClockGameViewController()
+    private func bindInstruction(to panelRuntimeContainer: ClientPanelRuntimeContainer) {
+        panelRuntimeContainer.$instructions
+            .sink { [weak self] instructions in
+                guard let instruction = instructions.last else {
+                    debug("\(self?.consoleIdentifier ?? "SwitchGameViewModel") Did fail to update instructions. Instructions are empty.")
+                    return
+                }
+                self?.changePromptText(instruction.content)
+                self?.changeTimeInterval(instruction.displayDuration)
+            }
+            .store(in: &cancellables)
+    }
 }

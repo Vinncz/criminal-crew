@@ -1,4 +1,5 @@
 import UIKit
+import Combine
 
 public class CableGameViewController: BaseGameViewController, UsesDependenciesInjector {
     
@@ -21,6 +22,8 @@ public class CableGameViewController: BaseGameViewController, UsesDependenciesIn
     public struct Relay : CommunicationPortal {
         weak var panelRuntimeContainer: ClientPanelRuntimeContainer?
     }
+    
+    internal var cancellables = Set<AnyCancellable>()
     
     private let consoleIdentifier : String = "[C-PWR-VC]"
     
@@ -1128,7 +1131,23 @@ extension CableGameViewController {
     
     func withRelay ( of relay: Relay ) -> Self {
         self.relay = relay
+        if let panelRuntimeContainer = relay.panelRuntimeContainer {
+            bindInstruction(to: panelRuntimeContainer)
+        }
         return self
+    }
+    
+    private func bindInstruction(to panelRuntimeContainer: ClientPanelRuntimeContainer) {
+        panelRuntimeContainer.$instructions
+            .sink { [weak self] instructions in
+                guard let instruction = instructions.last else {
+                    debug("\(self?.consoleIdentifier ?? "SwitchGameViewModel") Did fail to update instructions. Instructions are empty.")
+                    return
+                }
+                self?.changePromptText(instruction.content)
+                self?.changeTimeInterval(instruction.displayDuration)
+            }
+            .store(in: &cancellables)
     }
     
 }

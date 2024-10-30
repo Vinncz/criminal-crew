@@ -126,7 +126,7 @@ open class BaseGameViewController: UIViewController, GameContentProvider {
     
     private func addContentToPromptView() {
         
-        promptStackView.promptLabelView.promptLabel.text = "Red -> Red, Green -> Circle"
+        promptStackView.promptLabelView.promptLabel.text = "Initial Prompt"
         
         promptView.addSubview(promptStackView)
         promptStackView.translatesAutoresizingMaskIntoConstraints = false
@@ -144,6 +144,12 @@ open class BaseGameViewController: UIViewController, GameContentProvider {
     
     public func changePromptText(_ text: String) {
         promptStackView.promptLabelView.promptLabel.text = text
+    }
+    
+    public func changeTimeInterval(_ timeInterval: TimeInterval) {
+        if let timerView = promptStackView.arrangedSubviews[0] as? PromptView {
+            timerView.timerInterval = timeInterval
+        }
     }
     
 }
