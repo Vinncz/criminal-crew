@@ -10,8 +10,10 @@ import UIKit
 internal class LeverPanelView: UIView {
     
     weak var delegate: ButtonTappedDelegate?
+    private let leverArray: [String]
     
-    init() {
+    init(leverArray: [String]) {
+        self.leverArray = leverArray
         super.init(frame: .zero)
         setupLeverGrid()
     }
@@ -21,9 +23,6 @@ internal class LeverPanelView: UIView {
     }
     
     private func setupLeverGrid() {
-        var leverImages: [String] = ["Blue Lever Off", "Green Lever Off", "Red Lever Off", "Yellow Lever Off"]
-        leverImages.shuffle()
-        
         let leverGridStackView = ViewFactory.createVerticalStackView()
         leverGridStackView.translatesAutoresizingMaskIntoConstraints = false
         
@@ -32,7 +31,7 @@ internal class LeverPanelView: UIView {
             rowStackView.translatesAutoresizingMaskIntoConstraints = false
             
             for columnIndex in 0..<2 {
-                let button = LeverButton(imageName: leverImages[rowIndex * 2 + columnIndex])
+                let button = LeverButton(imageName: "\(leverArray[rowIndex * 2 + columnIndex]) Lever Off")
                 button.addTarget(self, action: #selector(leverTapped), for: .touchUpInside)
                 rowStackView.addArrangedSubview(button)
             }

@@ -23,11 +23,28 @@ public class ClientSwitchesPanel : ClientGamePanel, ObservableObject {
 
 extension ClientSwitchesPanel {
     
+    internal func toggleButton(label: String) {
+        if pressedButtons.contains(label) {
+            removeButtonLabel(label)
+        } else {
+            addButtonLabel(label)
+        }
+        print("pressedButtons now : \(pressedButtons)")
+    }
+    
+    private func addButtonLabel(_ label: String) {
+        pressedButtons.append(label)
+    }
+    
+    private func removeButtonLabel(_ label: String) {
+        pressedButtons.removeAll { $0 == label }
+    }
+    
     /// CONVENTION
     /// [ n(#)  ]
     public func validate ( _ completionCriterias: [String] ) -> Bool {
         var flowIsCompleted : Bool = false
-        
+        print("completionCriteria = \(completionCriterias), pressedButtons = \(pressedButtons)")
         guard
             Set(pressedButtons) == Set(completionCriterias)
         else {

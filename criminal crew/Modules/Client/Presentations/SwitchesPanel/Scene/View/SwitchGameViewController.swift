@@ -5,25 +5,38 @@ internal class SwitchGameViewController: BaseGameViewController {
     
     private var cancellables: Set<AnyCancellable> = Set<AnyCancellable>()
     internal var viewModel: SwitchGameViewModel?
-//    internal var coordinator: RootCoordinator?
     
     private var leverView: LeversView?
     private var switchStackView: SwitchStackView?
     
-    private let didPressedButton: PassthroughSubject = PassthroughSubject<String, Never>()
+    private let didPressedButton: PassthroughSubject<String, Never> = PassthroughSubject<String, Never>()
     
-    public var relay: Relay?
-    public struct Relay : CommunicationPortal {
-        weak var panelRuntimeContainer: ClientPanelRuntimeContainer?
+    internal var relay: Relay?
+    internal struct Relay : CommunicationPortal {
+        weak var panelRuntimeContainer : ClientPanelRuntimeContainer?
+        weak var selfSignalCommandCenter : SelfSignalCommandCenter?
     }
     
+    private let consoleIdentifier : String = "[C-PSW-VC]"
+    
     override func createFirstPanelView() -> UIView {
+        guard
+            let relay,
+            let panelRuntimeContainer = relay.panelRuntimeContainer,
+            let panelPlayed = panelRuntimeContainer.panelPlayed,
+            let panelEntity = panelPlayed as? ClientSwitchesPanel
+        else {
+            debug("\(consoleIdentifier) Did fail to create first panel view. Relay and/or some of its attribute is missing or not set")
+            return UIView()
+        }
+
         let firstPanelContainerView = UIView()
         
         let portraitBackgroundImage = ViewFactory.addBackgroundImageView("BG Portrait")
         firstPanelContainerView.addSubview(portraitBackgroundImage)
         
-        leverView = LeversView()
+        let leverArray = panelEntity.leverArray
+        leverView = LeversView(leverArray: leverArray)
         
         if let leverView = leverView {
             firstPanelContainerView.addSubview(leverView)
@@ -49,12 +62,24 @@ internal class SwitchGameViewController: BaseGameViewController {
     }
     
     override func createSecondPanelView() -> UIView {
+        guard
+            let relay,
+            let panelRuntimeContainer = relay.panelRuntimeContainer,
+            let panelPlayed = panelRuntimeContainer.panelPlayed,
+            let panelEntity = panelPlayed as? ClientSwitchesPanel
+        else {
+            debug("\(consoleIdentifier) Did fail to create second panel view. Relay and/or some of its attribute is missing or not set")
+            return UIView()
+        }
+        
         let secondPanelContainerView: UIView = UIView()
         
         let landscapeBackgroundImage = ViewFactory.addBackgroundImageView("BG Landscape")
         secondPanelContainerView.addSubview(landscapeBackgroundImage)
         
-        switchStackView = SwitchStackView()
+        let firstArray = panelEntity.firstArray
+        let secondArray = panelEntity.secondArray
+        switchStackView = SwitchStackView(firstArray: firstArray, secondArray: secondArray)
         
         if let switchStackView = switchStackView {
             switchStackView.translatesAutoresizingMaskIntoConstraints = false
@@ -80,9 +105,15 @@ internal class SwitchGameViewController: BaseGameViewController {
     }
     
     override open func setupGameContent() {
-        let repository = MultipeerTaskRepository()
-        let useCase = SwitchGameUseCase(taskRepository: repository)
-        self.viewModel = SwitchGameViewModel(switchGameUseCase: useCase)
+        guard
+            let relay,
+            let panelRuntimeContainer = relay.panelRuntimeContainer
+        else {
+            debug("\(consoleIdentifier) Did fail to setup gameContent. Relay and/or some of its attribute is missing or not set")
+            return
+        }
+        
+        self.viewModel = SwitchGameViewModel().withRelay(of: .init(panelRuntimeContainer: panelRuntimeContainer))
         
         bindViewModel()
         
@@ -102,9 +133,14 @@ internal class SwitchGameViewController: BaseGameViewController {
     }
     
     private func bindViewModel() {
-        guard let viewModel = viewModel else { return }
+        guard
+            let viewModel = viewModel
+        else {
+            debug("\(consoleIdentifier) Did fail to get view model. ViewModel must be set before binding.")
+            return
+        }
         
-        viewModel.bind()
+        viewModel.bindDidButtonPress(to: didPressedButton)
         
         viewModel.taskCompletionStatus
             .receive(on: DispatchQueue.main)
@@ -112,11 +148,10 @@ internal class SwitchGameViewController: BaseGameViewController {
                 self?.showTaskAlert(isSuccess: isSuccess)
             }
             .store(in: &cancellables)
-        
         viewModel.changePrompt
             .receive(on: DispatchQueue.main)
             .sink { [weak self] prompt in
-                self?.changePromptLabel(prompt)
+                self?.changePromptText(prompt)
             }
             .store(in: &cancellables)
         viewModel.finishGameAlert
@@ -133,13 +168,6 @@ internal class SwitchGameViewController: BaseGameViewController {
                 }
             }
             .store(in: &cancellables)
-    }
-    
-    @objc private func toggleButton(_ sender: SwitchButton) {
-        guard let label = sender.accessibilityLabel else { return }
-        didPressedButton.send(label)
-        
-        sender.toggleButtonState()
     }
     
     @objc private func didCompleteQuickTimeEvent() {
@@ -169,10 +197,6 @@ internal class SwitchGameViewController: BaseGameViewController {
         }
     }
     
-    private func changePromptLabel(_ prompt: String) {
-        promptStackView.promptLabelView.promptLabel.text = prompt
-    }
-    
     deinit {
         cancellables.forEach { cancellable in
             cancellable.cancel()
@@ -185,8 +209,8 @@ extension SwitchGameViewController: ButtonTappedDelegate {
     
     internal func buttonTapped(sender: UIButton) {
         if let sender = sender as? LeverButton {
-            if let label = sender.accessibilityLabel, let viewModel = viewModel {
-                viewModel.input.didPressedButton.send(label)
+            if let label = sender.accessibilityLabel {
+                didPressedButton.send(label)
             }
             
             if let indicator = leverView?.leverIndicatorView.first(where: { $0.bulbColor == sender.leverColor }) {
@@ -195,8 +219,8 @@ extension SwitchGameViewController: ButtonTappedDelegate {
             
             sender.toggleButtonState()
         } else if let sender = sender as? SwitchButton {
-            if let label = sender.accessibilityLabel, let viewModel = viewModel {
-                viewModel.input.didPressedButton.send(label)
+            if let label = sender.accessibilityLabel {
+                didPressedButton.send(label)
             }
             sender.toggleButtonState()
         }
@@ -212,8 +236,4 @@ extension SwitchGameViewController {
         return self
     }
     
-}
-
-#Preview {
-    SwitchGameViewController()
 }
