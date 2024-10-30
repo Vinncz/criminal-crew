@@ -57,8 +57,17 @@ internal class SwitchGameViewModel {
     
     private func validateTask(panelRuntimeContainer: ClientPanelRuntimeContainer) {
         let taskId = panelRuntimeContainer.checkTaskCompletion()
-        if taskId != nil {
-            self.taskCompletionStatus.send(true)
+        
+        if let taskId = taskId {
+            guard
+                let relay = self.relay,
+                let selfSignalCommandCenter = relay.selfSignalCommandCenter
+            else {
+                return
+            }
+            
+            let isSuccess = selfSignalCommandCenter.sendTaskReport(taskId: taskId, isAccomplished: true)
+            self.taskCompletionStatus.send(isSuccess)
         } else {
             self.taskCompletionStatus.send(false)
         }
