@@ -19,6 +19,7 @@ class LoseIndicatorView: UIView {
         gradientLayer.startPoint = CGPoint(x: 0.5, y: 0.5)
         gradientLayer.endPoint = CGPoint(x: 1.3, y: 1.3)
         gradientLayer.type = .radial
+        gradientLayer.opacity = 0.0
         layer.addSublayer(gradientLayer)
     }
     

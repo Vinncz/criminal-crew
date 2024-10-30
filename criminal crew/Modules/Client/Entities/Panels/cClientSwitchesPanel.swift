@@ -48,7 +48,7 @@ extension ClientSwitchesPanel {
         guard
             Set(pressedButtons) == Set(completionCriterias)
         else {
-            debug("\(consoleIdentifier) Did fail validation. Pressed buttons contains differing elements from completion criteria: \(pressedButtons) to \(completionCriterias)")
+            debug("\(consoleIdentifier) Did fail validation. Pressed buttons contains differing elements from completion criteria: \(Set(pressedButtons)) to \(Set(completionCriterias))")
             return flowIsCompleted
         }
         

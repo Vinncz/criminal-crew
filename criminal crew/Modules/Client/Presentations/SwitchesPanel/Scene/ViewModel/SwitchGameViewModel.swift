@@ -41,6 +41,19 @@ internal class SwitchGameViewModel {
             .store(in: &cancellables)
     }
     
+    private func bindInstruction(to panelRuntimeContainer: ClientPanelRuntimeContainer) {
+        panelRuntimeContainer.$instructions
+            .sink { [weak self] instructions in
+                guard let instruction = instructions.last else {
+                    debug("\(self?.consoleIdentifier ?? "SwitchGameViewModel") Did fail to update instructions. Instructions are empty.")
+                    return
+                }
+                self?.changePromptLabel(instruction.content)
+                self?.updateTimerInterval(to: instruction.displayDuration)
+            }
+            .store(in: &cancellables)
+    }
+    
     internal func bindDidButtonPress(to buttonPressPublisher: PassthroughSubject<String, Never>) {
         buttonPressPublisher
             .subscribe(didPressedButton)
@@ -56,9 +69,9 @@ internal class SwitchGameViewModel {
     }
     
     private func validateTask(panelRuntimeContainer: ClientPanelRuntimeContainer) {
-        let taskId = panelRuntimeContainer.checkCriteriaCompletion()
+        let criteriaId = panelRuntimeContainer.checkCriteriaCompletion()
         
-        if taskId != [] {
+        if criteriaId != [] {
             guard
                 let relay = self.relay,
                 let selfSignalCommandCenter = relay.selfSignalCommandCenter
@@ -66,7 +79,7 @@ internal class SwitchGameViewModel {
                 return
             }
             
-            let isSuccess = selfSignalCommandCenter.sendTaskReport(taskId: taskId[0], isAccomplished: true)
+            let isSuccess = selfSignalCommandCenter.sendCriteriaReport(criteriaId: criteriaId[0], isAccomplished: true)
             self.taskCompletionStatus.send(isSuccess)
         } else {
             self.taskCompletionStatus.send(false)
@@ -94,6 +107,9 @@ extension SwitchGameViewModel {
     
     func withRelay ( of relay: Relay ) -> Self {
         self.relay = relay
+        if let panelRuntimeContainer = relay.panelRuntimeContainer {
+            bindInstruction(to: panelRuntimeContainer)
+        }
         return self
     }
     
