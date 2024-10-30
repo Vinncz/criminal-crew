@@ -11,8 +11,10 @@ internal class LeversView: UIView {
     
     internal var leverIndicatorView: [LeverIndicatorView] = []
     internal var leverPanelView: LeverPanelView?
+    internal let leverArray: [String]
     
-    init() {
+    init(leverArray: [String]) {
+        self.leverArray = leverArray
         super.init(frame: .zero)
         setupView()
     }
@@ -25,11 +27,10 @@ internal class LeversView: UIView {
         let verticalStackView = ViewFactory.createVerticalStackView()
         verticalStackView.translatesAutoresizingMaskIntoConstraints = false
         
-        let indicatorArray: [String] = ["Green", "Yellow", "Blue", "Red"]
         let indicatorStackView = ViewFactory.createHorizontalStackView()
         indicatorStackView.translatesAutoresizingMaskIntoConstraints = false
         
-        for indicator in indicatorArray {
+        for indicator in leverArray {
             let leverIndicator = LeverIndicatorView(imageName: indicator)
             leverIndicatorView.append(leverIndicator)
         }
@@ -41,7 +42,7 @@ internal class LeversView: UIView {
         verticalStackView.addArrangedSubview(indicatorStackView)
         indicatorStackView.heightAnchor.constraint(equalTo: verticalStackView.heightAnchor, multiplier: 0.2).isActive = true
         
-        leverPanelView = LeverPanelView()
+        leverPanelView = LeverPanelView(leverArray: leverArray)
         if let leverPanelView = leverPanelView {
             leverPanelView.translatesAutoresizingMaskIntoConstraints = false
             verticalStackView.addArrangedSubview(leverPanelView)

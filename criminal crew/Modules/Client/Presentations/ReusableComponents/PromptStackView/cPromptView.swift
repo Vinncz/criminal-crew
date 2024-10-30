@@ -75,7 +75,7 @@ open class PromptView: UIView {
         if let timerInterval = timerInterval {
             let originalWidth = timerRectangle.frame.width
             let targetWidth: CGFloat = 0.0
-            UIView.animate(withDuration: timerInterval, delay: 0, options: [.curveLinear], animations: {
+            UIView.animate(withDuration: timerInterval, delay: 0, options: .curveLinear, animations: {
                 self.timerRectangle.frame.size.width = targetWidth
             }, completion: { _ in
                 self.resetTimer(originalWidth: originalWidth)

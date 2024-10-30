@@ -69,7 +69,7 @@ extension ServerTaskRuntimeContainer {
     }
 
     public func getTaskInstruction ( withId instructionId: String ) -> GameTaskInstruction? {
-        tasks.first { $0.instruction.id.uuidString == instructionId }?.instruction
+        tasks.first { $0.instruction.id == instructionId }?.instruction
     }
     
     public func getTaskCriteria ( associatedWith playerName: String ) -> [GameTaskCriteria] {
