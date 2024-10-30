@@ -91,6 +91,7 @@ extension ServerComposer {
             router.openChannel(for:GPTerminatedEvent.self),
             
             router.openChannel(for:TaskReportEvent.self),
+            router.openChannel(for:CriteriaReportEvent.self),
             router.openChannel(for:GPAcquaintanceStatusUpdateEvent.self),
             
             router.openChannel(for:InquiryAboutConnectedPlayersRequestedEvent.self)
@@ -171,8 +172,11 @@ extension ServerComposer {
         
         evtUC_taskReportResponder.relay = PlayerTaskReportResponder.Relay (
             eventRouter          : self.router,
+            eventBroadcaster     : self.networkManager.eventBroadcaster,
             gameRuntimeContainer : self.ent_gameRuntimeContainer,
             panelRuntimeContainer: self.ent_panelRuntimeContainer,
+            playerRuntimeContainer: self.ent_playerRuntimeContainer,
+            taskRuntimeContainer: self.ent_taskRuntimeContainer,
             taskAssigner: self.comUC_taskAssigner,
             taskGenerator: self.comUC_taskGenerator
         )
@@ -199,6 +203,7 @@ extension ServerComposer {
         debug("[S] Placed subscription of HostSignalResponder to GPGameStartRequestedEvent, GPGameEndRequestedEvent, GPGameJoinVerdictDeliveredEvent, GPBlacklistedEvent, and GPTerminatedEvent")
         
         evtUC_taskReportResponder.placeSubscription(on: TaskReportEvent.self)
+        evtUC_taskReportResponder.placeSubscription(on: CriteriaReportEvent.self)
         debug("[S] Placed subscription of TaskReportResponder to TaskReportEvent")
         
         evtUC_playerConnectionResponder.placeSubscription(on: GPAcquaintanceStatusUpdateEvent.self)

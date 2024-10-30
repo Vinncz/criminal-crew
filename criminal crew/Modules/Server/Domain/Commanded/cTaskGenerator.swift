@@ -12,4 +12,8 @@ extension TaskGenerator {
         panel.generateSingleTask()
     }
     
+    public func generate ( for panel: ServerGamePanel, count: Int ) -> [GameTask] {
+        (0..<count).map { _ in generate(for: panel) }
+    }
+    
 }

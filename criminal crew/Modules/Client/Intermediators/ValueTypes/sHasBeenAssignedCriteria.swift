@@ -46,7 +46,7 @@ extension HasBeenAssignedCriteria {
             [
                 PayloadKeys.eventId.rawValue          : self.id,
                 PayloadKeys.criteriaId.rawValue       : self.criteriaId,
-                PayloadKeys.requirements.rawValue     : self.requirements.joined(separator: ","),
+                PayloadKeys.requirements.rawValue     : self.requirements.joined(separator: self.delimiter),
                 PayloadKeys.validityDuration.rawValue : self.validityDuration.description,
                 PayloadKeys.delimiter.rawValue        : self.delimiter
             ]

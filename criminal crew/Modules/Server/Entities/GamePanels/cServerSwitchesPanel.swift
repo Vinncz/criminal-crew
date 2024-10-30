@@ -41,7 +41,7 @@ extension ServerSwitchesPanel {
                 content: "Activate \(levers[0]), \(levers[1]), \(levers[2]), \(switches[0]), and \(switches[1])"
             ), 
             completionCriteria: GameTaskCriteria (
-                requirement: ["\(levers[0])", "\(levers[1])", "\(levers[2])", "\(switches[0])", "\(switches[1])"]
+                requirements: ["\(levers[0])", "\(levers[1])", "\(levers[2])", "\(switches[0])", "\(switches[1])"]
             )
         )
     }

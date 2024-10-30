@@ -52,7 +52,7 @@ extension ServerWiresPanel {
                 content: "\(connectionMap)"
             ),
             completionCriteria : GameTaskCriteria(
-                requirement: [leftPanelConnection, rightPanelConnection]
+                requirements: [leftPanelConnection, rightPanelConnection]
             )
         )
     }

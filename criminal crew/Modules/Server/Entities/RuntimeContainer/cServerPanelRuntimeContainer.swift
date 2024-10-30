@@ -7,7 +7,7 @@ public class ServerPanelRuntimeContainer : ObservableObject {
             debug("\(consoleIdentifier) Did update registered panels to: \(registeredPanels)")
         }
     }
-    @Published public var playerMapping    : [MCPeerID: ServerGamePanel] {
+    @Published public var playerMapping    : [String: ServerGamePanel] {
         didSet {
             debug("\(consoleIdentifier) Did update player mapping to: \(playerMapping)")
         }
@@ -60,8 +60,17 @@ extension ServerPanelRuntimeContainer {
         self.registeredPanels.append(panel)
     }
     
-    public func assignPanel ( _ panel: ServerGamePanel, to player: MCPeerID ) {
+    public func assignPanel ( _ panel: ServerGamePanel, to player: String ) {
         self.playerMapping[player] = panel
+    }
+    
+}
+
+extension ServerPanelRuntimeContainer {
+    
+    public func reset () {
+        self.registeredPanels = []
+        self.playerMapping    = [:]
     }
     
 }

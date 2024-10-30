@@ -4,7 +4,7 @@ public struct HasBeenAssignedInstruction : GPEvent, GPSendableEvent, GPReceivabl
     
     public let instructionId : String
     public let instruction   : String
-    public let displayDuration : TimeInterval = 20
+    public let displayDuration : TimeInterval
     
     public let id             : String = "HasBeenAssignedInstruction"
     public let purpose        : String = "A notification that self had been assigned an instruction"
@@ -13,8 +13,9 @@ public struct HasBeenAssignedInstruction : GPEvent, GPSendableEvent, GPReceivabl
     public var payload        : [String : Any]
     
     public init ( instructionId: String, instruction: String, displayDuration: TimeInterval = 20 ) {
-        self.instructionId = instructionId
-        self.instruction   = instruction
+        self.instructionId   = instructionId
+        self.instruction     = instruction
+        self.displayDuration = displayDuration
         payload = [:]
     }
     

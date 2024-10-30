@@ -2,15 +2,16 @@ import Foundation
 
 public struct GameTaskCriteria : Identifiable, Hashable, Sendable {
     
-    public let id : UUID = UUID()
+    public let id : String
     
-    public let requirement      : [String]
+    public let requirements     : [String]
     public let validityDuration : TimeInterval
     
     public var parentTaskId : UUID?
     
-    public init ( requirement: [String], validityDuration: TimeInterval = 20 ) {
-        self.requirement      = requirement
+    public init ( id: String = UUID().uuidString, requirements: [String], validityDuration: TimeInterval = 20 ) {
+        self.id = id
+        self.requirements      = requirements
         self.parentTaskId     = nil
         self.validityDuration = validityDuration
     }

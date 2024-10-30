@@ -16,42 +16,116 @@ public class TaskAssigner : UseCase {
 
 extension TaskAssigner {
     
-    public func assignToSpecificAndPush ( task: GameTask, to player: MCPeerID ) {
-        guard let relay = relay else { 
+    public func assignToSpecificAndPush ( task: GameTask, to player: String ) {
+        fatalError("Deprecated")
+        
+        guard let relay else { 
             debug("\(consoleIdentifier) Did fail to assign task to random player: relay is missing or not set") 
             return 
         }
         
-        guard let playerRuntimeContainer = relay.playerRuntimeContainer else {
-            debug("\(consoleIdentifier) Did fail to assign task to random player: playerRuntimeContainer is missing or not set")
-            return
-        }
-        
-        guard 
-            .connected == playerRuntimeContainer.getWhitelistedPartiesAndTheirState()[player] else {
-            debug("\(consoleIdentifier) Did fail to assign task to random player: player is not connected")
-            return
-        }
-        
-        do {
-            guard let eventBroadcaster = relay.eventBroadcaster else {
-                debug("\(consoleIdentifier) Did fail to assign task to random player: eventBroadcaster is missing or not set")
+        switch ( relay.check(\.playerRuntimeContainer, \.eventBroadcaster) ) {
+            case .failure (let missing):
+                debug("\(consoleIdentifier) Did fail to assign task to random player: \(missing) is missing or not set")
                 return
-            }
-            
-            try eventBroadcaster.broadcast (
-                HasBeenAssignedTask (
-                    taskId: task.id.uuidString, 
-                    instruction: task.instruction.content, 
-                    criteria: task.criteria.requirement, 
-                    duration: 20,
-                    delimiter: "˛"
-                ).representedAsData(),
-                to: [player]
-            )
-            debug("\(consoleIdentifier) Did assign \(task) to \(player)")
-        } catch {
-            debug("\(consoleIdentifier) Did fail to assign task [S] to \(player)")
+                
+            case .success:
+                guard let playerRuntimeContainer = relay.playerRuntimeContainer,
+                      let eventBroadcaster = relay.eventBroadcaster 
+                else { return }
+                
+                guard let playerReport = playerRuntimeContainer.getReportOnPlayer(named: player) else {
+                    debug("\(consoleIdentifier) Did fail to assign task to \(player): player is not found")
+                    return
+                }
+                
+                do {
+                    try eventBroadcaster.broadcast (
+                        HasBeenAssignedTask (
+                            taskId: task.id.uuidString, 
+                            instruction: task.instruction.content, 
+                            criteria: task.criteria.requirements, 
+                            duration: 20,
+                            delimiter: "˛"
+                        ).representedAsData(),
+                        to: [playerReport.address]
+                    )
+                    debug("\(consoleIdentifier) Did assign \(task) to \(player)")
+                } catch {
+                    debug("\(consoleIdentifier) Did fail to assign task [S] to \(player)")
+                }
+        }
+    }
+    
+    public func assignToSpecificAndPush ( instruction: GameTaskInstruction, to player: String ) {
+        guard let relay else { 
+            debug("\(consoleIdentifier) Did fail to assign instruction to specific player: relay is missing or not set") 
+            return 
+        }
+        
+        switch ( relay.check(\.playerRuntimeContainer, \.eventBroadcaster) ) {
+            case .failure (let missing):
+                debug("\(consoleIdentifier) Did fail to assign task to specific player: \(missing) is missing or not set")
+                return
+                
+            case .success:
+                guard let playerRuntimeContainer = relay.playerRuntimeContainer,
+                      let eventBroadcaster = relay.eventBroadcaster 
+                else { return }
+                
+                guard let playerReport = playerRuntimeContainer.getReportOnPlayer(named: player) else {
+                    debug("\(consoleIdentifier) Did fail to assign task to \(player): player is not found")
+                    return
+                }
+                
+                do {
+                    try eventBroadcaster.broadcast (
+                        HasBeenAssignedInstruction (
+                            instructionId: instruction.id,
+                            instruction: instruction.content
+                        ).representedAsData(),
+                        to: [playerReport.address]
+                    )
+                    debug("\(consoleIdentifier) Did assign \(instruction) to \(player)")
+                } catch {
+                    debug("\(consoleIdentifier) Did fail to assign \(instruction) to \(player)")
+                }
+        }
+    }
+    
+    public func assignToSpecificAndPush ( criteria: GameTaskCriteria, to player: String ) {
+        guard let relay else { 
+            debug("\(consoleIdentifier) Did fail to assign criteria to specific player: relay is missing or not set") 
+            return 
+        }
+        
+        switch ( relay.check(\.playerRuntimeContainer, \.eventBroadcaster) ) {
+            case .failure (let missing):
+                debug("\(consoleIdentifier) Did fail to assign task to specific player: \(missing) is missing or not set")
+                return
+                
+            case .success:
+                guard let playerRuntimeContainer = relay.playerRuntimeContainer,
+                      let eventBroadcaster = relay.eventBroadcaster 
+                else { return }
+                
+                guard let playerReport = playerRuntimeContainer.getReportOnPlayer(named: player) else {
+                    debug("\(consoleIdentifier) Did fail to assign task to \(player): player is not found")
+                    return
+                }
+                
+                do {
+                    try eventBroadcaster.broadcast (
+                        HasBeenAssignedCriteria (
+                            criteriaId: criteria.id,
+                            requirements: criteria.requirements
+                        ).representedAsData(),
+                        to: [playerReport.address]
+                    )
+                    debug("\(consoleIdentifier) Did assign \(criteria) to \(player)")
+                } catch {
+                    debug("\(consoleIdentifier) Did fail to assign \(criteria) to \(player)")
+                }
         }
     }
     

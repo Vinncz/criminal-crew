@@ -132,7 +132,9 @@ extension ClientComposer {
             router.openChannel(for:HasBeenAssignedPanel.self),
             router.openChannel(for:HasBeenAssignedTask.self),
             router.openChannel(for:HasBeenAssignedInstruction.self),
-            router.openChannel(for:HasBeenAssignedCriteria.self)
+            router.openChannel(for:HasBeenAssignedCriteria.self),
+            
+            router.openChannel(for:InstructionDidGetDismissed.self)
         else {
             debug("[C] Did fail to open all required channels for EventRouter")
             return
@@ -150,6 +152,8 @@ extension ClientComposer {
         evtUC_serverSignalResponder.placeSubscription(on: HasBeenAssignedTask.self)
         evtUC_serverSignalResponder.placeSubscription(on: HasBeenAssignedInstruction.self)
         evtUC_serverSignalResponder.placeSubscription(on: HasBeenAssignedCriteria.self)
+        
+        evtUC_serverSignalResponder.placeSubscription(on: InstructionDidGetDismissed.self)
         
         evtUC_serverSignalResponder.placeSubscription(on: PenaltyDidReachLimitEvent.self)
         evtUC_serverSignalResponder.placeSubscription(on: TaskDidReachLimitEvent.self)

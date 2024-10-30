@@ -41,7 +41,7 @@ public class RandomTaskDistributionStrategy : TaskDistributionStrategy {
 //            HasBeenAssignedTask(
 //                taskId: task.id.uuidString,
 //                instruction: task.instruction.content,
-//                criteria: task.criteria.requirement,
+//                criteria: task.criteria.requirements,
 //                duration: 20,
 //                delimiter: "˛"
 //            ).representedAsData(),

@@ -46,6 +46,10 @@ extension ServerPlayerRuntimeContainer {
         }
     }
     
+    public func getPlayerCount () -> Int {
+        getWhitelistedPartiesAndTheirState().keys.count
+    }
+    
 }
 
 extension ServerPlayerRuntimeContainer {
@@ -99,12 +103,12 @@ extension ServerPlayerRuntimeContainer {
 extension ServerPlayerRuntimeContainer {
     
     public struct Report {
-        public let player : MCPeerID
-        public let state  : MCSessionState
+        public let address : MCPeerID
+        public let state   : MCSessionState
         public let isBlacklisted : Bool
     }
     
-    public func getPlayer ( named: String ) -> Report? {
+    public func getReportOnPlayer ( named: String ) -> Report? {
         let player = acquaintancedParties.first { acquaintance, _ in
             acquaintance.displayName == named
         }
@@ -114,12 +118,40 @@ extension ServerPlayerRuntimeContainer {
         }
         
         return Report (
-            player: player.key,
+            address: player.key,
             state: player.value,
             isBlacklisted: blacklistedParties.contains { blacklisted, _ in
                 blacklisted == player.key
             }
         )
+    }
+    
+    public func getReportOnPlayers ( thatAre state: MCSessionState ) -> [Report] {
+        acquaintancedParties.filter { _, state in
+            state == state
+        }.map { acquaintance, state in
+            Report (
+                address: acquaintance,
+                state: state,
+                isBlacklisted: blacklistedParties.contains { blacklisted, _ in
+                    blacklisted == acquaintance
+                }
+            )
+        }
+    }
+    
+    public func getReportOnSafePlayers ( thatAre state: MCSessionState ) -> [Report] {
+        getWhitelistedPartiesAndTheirState().filter { _, state in
+            state == state
+        }.map { acquaintance, state in
+            Report (
+                address: acquaintance,
+                state: state,
+                isBlacklisted: blacklistedParties.contains { blacklisted, _ in
+                    blacklisted == acquaintance
+                }
+            )
+        }
     }
     
 }

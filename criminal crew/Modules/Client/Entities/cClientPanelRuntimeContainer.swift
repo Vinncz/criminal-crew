@@ -9,12 +9,12 @@ public class ClientPanelRuntimeContainer : ObservableObject {
     }
     @Published public var instructions : [GameTaskInstruction] {
         didSet {
-            debug("\(consoleIdentifier) Did update instructions to \(instructions)")
+            debug("\(consoleIdentifier) Did update instructions to \(instructions.map{ $0.content })")
         }
     }
     @Published public var criterias : [GameTaskCriteria] {
         didSet {
-            debug("\(consoleIdentifier) Did update criterias to \(criterias)")
+            debug("\(consoleIdentifier) Did update criterias to \(criterias.map{ $0.requirements })")
         }
     }
     
@@ -75,8 +75,8 @@ extension ClientPanelRuntimeContainer {
         }
         
         criterias.forEach { criteria in
-            if panelPlayed.validate(criteria.requirement) {
-                criteriaId.append(criteria.id.uuidString)
+            if panelPlayed.validate(criteria.requirements) {
+                criteriaId.append(criteria.id)
             }
         }
         

@@ -56,6 +56,13 @@ extension ServerSignalResponder : GPHandlesEvents {
                 didGetAssignedPanel(event)
             case let event as HasBeenAssignedTask:
                 didGetAssignedTask(event)
+            case let event as HasBeenAssignedCriteria:
+                didGetAssignedCriteria(event)
+            case let event as HasBeenAssignedInstruction:
+                didGetAssignedInstruction(event)
+                
+            case let event as InstructionDidGetDismissed:
+                didGetPromptDismissed(event)
                 
             case let event as PenaltyDidReachLimitEvent:
                 didGetPenaltyLimitCue(event)
@@ -274,6 +281,7 @@ extension ServerSignalResponder {
         
         panelRuntime.instructions.append (
             GameTaskInstruction (
+                id: event.instructionId,
                 content: event.instruction, 
                 displayDuration: event.displayDuration
             )
@@ -293,10 +301,29 @@ extension ServerSignalResponder {
         
         panelRuntime.criterias.append (
             GameTaskCriteria (
-                requirement: event.requirements,
+                id: event.criteriaId,
+                requirements: event.requirements,
                 validityDuration: event.validityDuration
             )
         )
+    }
+    
+}
+
+extension ServerSignalResponder {
+    
+    public func didGetPromptDismissed ( _ event: InstructionDidGetDismissed ) {
+        guard let relay else { 
+            debug("\(consoleIdentifier) Relay is missing or not set")
+            return 
+        }
+        
+        guard let panelRuntime = relay.panelRuntime else {
+            debug("\(consoleIdentifier) Did fail to handle prompt dismissed since PanelRuntime is missing or not set")
+            return
+        }
+        
+        panelRuntime.instructions.removeAll { $0.id == event.instructionId }
     }
     
 }

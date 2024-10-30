@@ -216,6 +216,8 @@ extension SelfSignalCommandCenter {
         gameRuntime.reset()
         browser.reset()
         panelRuntime.reset()
+        
+        debug("\(consoleIdentifier) Did disconnect self and reset all runtime containers")
     }
     
 }
@@ -301,6 +303,54 @@ extension SelfSignalCommandCenter {
             
         } catch {
             debug("\(consoleIdentifier) Did fail to send task report to server: \(error)")
+            
+        }
+        
+        return flowIsComplete
+    }
+    
+    public func sendCriteriaReport ( criteriaId: String, isAccomplished: Bool, penaltiesGiven: Int = 0 ) -> Bool {
+        var flowIsComplete = false
+        
+        guard let relay else {
+            debug("\(consoleIdentifier) Did fail to send criteria report: relay is missing or not set")
+            return flowIsComplete
+        }
+        
+        guard let gameRuntime = relay.gameRuntime else {
+            debug("\(consoleIdentifier) Did fail to send criteria report: gameRuntime is missing or not set")
+            return flowIsComplete
+        }
+        
+        guard 
+            let serverAddr = gameRuntime.playedServerAddr,
+            gameRuntime.connectionState == .connected
+        else {
+            debug("\(consoleIdentifier) Did fail to send criteria report: self is not connected to a server")
+            return flowIsComplete
+        }
+        
+        guard let eventBroadcaster = relay.eventBroadcaster else {
+            debug("\(consoleIdentifier) Did fail to send criteria report: eventBroadcaster is missing or not set")
+            return flowIsComplete
+        }
+        
+        do {
+            try eventBroadcaster.broadcast (
+                CriteriaReportEvent (
+                    submittedBy    : eventBroadcaster.broadcastingFor.displayName,
+                    criteriaId     : criteriaId,
+                    isAccomplished : isAccomplished,
+                    penaltyPoints  : penaltiesGiven
+                ).representedAsData(), 
+                to: [serverAddr]
+            )
+            debug("\(consoleIdentifier) Did send criteria report to server")
+            
+            flowIsComplete = true
+            
+        } catch {
+            debug("\(consoleIdentifier) Did fail to send criteria report to server: \(error)")
             
         }
         

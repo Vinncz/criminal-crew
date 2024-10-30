@@ -37,3 +37,15 @@ public class ServerGameRuntimeContainer : ObservableObject {
     
     private let consoleIdentifier : String = "[S-GRC]"
 }
+
+extension ServerGameRuntimeContainer {
+    
+    public func reset () {
+        self.state = .notStarted
+        let oldPenaltyProgression = self.penaltiesProgression
+        self.penaltiesProgression = PenaltiesProgression(limit: oldPenaltyProgression.limit)
+        let oldTaskProgression    = self.tasksProgression
+        self.tasksProgression     = TasksProgression(limit: oldTaskProgression.limit)
+    }
+    
+}

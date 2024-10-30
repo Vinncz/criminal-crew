@@ -19,7 +19,6 @@ internal class ClockGameViewController: BaseGameViewController, UsesDependencies
     
     var relay: Relay?
     struct Relay : CommunicationPortal {
-//        weak var panelEntity : ClientClockPanel?
         weak var panelRuntimeContainer : ClientPanelRuntimeContainer?
         weak var selfSignalCommandCenter : SelfSignalCommandCenter?
     }
@@ -27,7 +26,6 @@ internal class ClockGameViewController: BaseGameViewController, UsesDependencies
     override func createFirstPanelView() -> UIView {
         guard 
             let relay,
-//            let panelEntity = relay.panelEntity
             let panelPlayed = relay.panelRuntimeContainer?.panelPlayed,
             let panelEntity = panelPlayed as? ClientClockPanel
         else {
@@ -243,8 +241,8 @@ extension ClockGameViewController {
         
         let completedTaskIds = panelRuntimeContainer.checkCriteriaCompletion()
         completedTaskIds.forEach { completedTaskId in
-            if !selfSignalCommandCenter.sendTaskReport (
-                taskId: completedTaskId, 
+            if !selfSignalCommandCenter.sendCriteriaReport (
+                criteriaId: completedTaskId, 
                 isAccomplished: true, 
                 penaltiesGiven: 0
             ) {

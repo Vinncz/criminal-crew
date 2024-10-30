@@ -4,17 +4,17 @@ public class ServerTaskRuntimeContainer : ObservableObject {
     
     @Published public var tasks : [GameTask] {
         didSet {
-            debug("\(consoleIdentifier) Did update registered tasks to: \(tasks)")
+            debug("\(consoleIdentifier) Did update registered tasks to: \(tasks.map{ $0.instruction.content })")
         }
     }
     @Published public var playerTaskInstructionMapping : [String: [GameTaskInstruction]] {
         didSet {
-            debug("\(consoleIdentifier) Did update player-instruction mapping to: \(playerTaskInstructionMapping)")
+            debug("\(consoleIdentifier) Did update player-instruction mapping to: \(playerTaskInstructionMapping.map{ playerName, instructions in return "\(playerName): \(instructions.map{ $0.content })"  })")
         }
     }
     @Published public var playerTaskCriteriaMapping : [String: [GameTaskCriteria]] {
         didSet {
-            debug("\(consoleIdentifier) Did update player-criteria mapping to: \(playerTaskCriteriaMapping)")
+            debug("\(consoleIdentifier) Did update player-criteria mapping to: \(playerTaskCriteriaMapping.map{ playerName, criterias in return "\(playerName): \(criterias.map{ $0.requirements })"  })")
         }
     }
     
@@ -77,7 +77,10 @@ extension ServerTaskRuntimeContainer {
     }
     
     public func getTaskCriteria ( withId criteriaId: String ) -> GameTaskCriteria? {
-        tasks.first { $0.criteria.id.uuidString == criteriaId }?.criteria
+        print(tasks.map {
+            $0.criteria.id
+        })
+        return tasks.first { $0.criteria.id == criteriaId }?.criteria
     }
     
 }
@@ -104,6 +107,16 @@ extension ServerTaskRuntimeContainer {
         } else {
             playerTaskCriteriaMapping[to] = [criteria]
         }
+    }
+    
+}
+
+extension ServerTaskRuntimeContainer {
+    
+    public func reset () {
+        self.tasks = []
+        self.playerTaskCriteriaMapping = [:]
+        self.playerTaskInstructionMapping = [:]
     }
     
 }
