@@ -4,40 +4,46 @@ import Combine
 internal class SwitchGameViewModel {
     
     private var cancellables = Set<AnyCancellable>()
-    private let switchGameUseCase: SwitchGameUseCase
     
-    private var pressedButton: [String] = []
+    private let didPressedButton: PassthroughSubject<String, Never> = PassthroughSubject<String, Never>()
     internal var taskCompletionStatus: PassthroughSubject<Bool, Never> = PassthroughSubject<Bool, Never>()
     internal var changePrompt: PassthroughSubject<String, Never> = PassthroughSubject<String, Never>()
     internal var finishGameAlert: PassthroughSubject<String, Never> = PassthroughSubject<String, Never>()
     internal var timeIntervalSubject: PassthroughSubject<TimeInterval, Never> = PassthroughSubject<TimeInterval, Never>()
     
-    init(switchGameUseCase: SwitchGameUseCase) {
-        self.switchGameUseCase = switchGameUseCase
-        switchGameUseCase.promptPublisher()
-            .sink { [weak self] prompt in
-                self?.changePromptLabel(prompt)
-            }
-            .store(in: &cancellables)
-        switchGameUseCase.finishGamePublisher()
-            .sink { [weak self] isFinished in
-                self?.finishGameAlert(isFinished)
-            }
-            .store(in: &cancellables)
+    var relay: Relay?
+    struct Relay : CommunicationPortal {
+        weak var panelRuntimeContainer : ClientPanelRuntimeContainer?
+        weak var selfSignalCommandCenter : SelfSignalCommandCenter?
     }
     
-    internal struct Input {
-        let didPressedButton = PassthroughSubject<String, Never>()
+    private let consoleIdentifier : String = "[C-PSW-VM]"
+    
+    init() {
+        bind()
     }
     
-    internal let input = Input()
-    
-    internal func bind() {
-        input.didPressedButton
+    private func bind() {
+        didPressedButton
             .sink { [weak self] accessibilityLabel in
-                self?.toggleButton(label: accessibilityLabel)
-                self?.validateTask()
+                guard
+                    let relay = self?.relay,
+                    let panelRuntimeContainer = relay.panelRuntimeContainer,
+                    let panelPlayed = panelRuntimeContainer.panelPlayed,
+                    let panelEntity = panelPlayed as? ClientSwitchesPanel
+                else {
+                    debug("Did fail to update pressedButton. the Relay is not initialized")
+                    return
+                }
+                panelEntity.toggleButton(label: accessibilityLabel)
+                self?.validateTask(panelRuntimeContainer: panelRuntimeContainer)
             }
+            .store(in: &cancellables)
+    }
+    
+    internal func bindDidButtonPress(to buttonPressPublisher: PassthroughSubject<String, Never>) {
+        buttonPressPublisher
+            .subscribe(didPressedButton)
             .store(in: &cancellables)
     }
     
@@ -49,64 +55,13 @@ internal class SwitchGameViewModel {
         timeIntervalSubject.send(newInterval)
     }
     
-    private func toggleButton(label: String) {
-        if pressedButton.contains(label) {
-            removeButtonLabel(label)
+    private func validateTask(panelRuntimeContainer: ClientPanelRuntimeContainer) {
+        let taskId = panelRuntimeContainer.checkTaskCompletion()
+        if taskId != nil {
+            self.taskCompletionStatus.send(true)
         } else {
-            addButtonLabel(label)
+            self.taskCompletionStatus.send(false)
         }
-    }
-    
-    private func addButtonLabel(_ label: String) {
-        pressedButton.append(label)
-    }
-    
-    private func removeButtonLabel(_ label: String) {
-        pressedButton.removeAll { $0 == label }
-    }
-    
-    private func validateTask() {
-        switchGameUseCase.validateGameLogic(pressedButtons: pressedButton)
-            .receive(on: DispatchQueue.main)
-            .flatMap{ [weak self] taskId -> AnyPublisher<String?, Never> in
-                guard let self = self, let taskId = taskId else {
-                    self?.taskCompletionStatus.send(false)
-                    return Just(nil).eraseToAnyPublisher()
-                }
-                return self.completeTask()
-                    .map { isSuccess in
-                        self.taskCompletionStatus.send(isSuccess)
-                        return isSuccess ? taskId : nil
-                    }
-                    .eraseToAnyPublisher()
-            }
-            .compactMap { $0 }
-            .sink(receiveCompletion: { completion in
-                switch completion {
-                case .finished:
-                    break
-                case .failure(let error):
-                    print("handle error: \(error)")
-                }
-            }, receiveValue: { [weak self] taskId in
-                self?.removeTask(with: taskId)
-            })
-            .store(in: &cancellables)
-    }
-    
-    private func removeTask(with taskId: String) {
-        switchGameUseCase.removeTask(with: taskId)
-    }
-    
-    private func completeTask() -> AnyPublisher<Bool, Never> {
-        return switchGameUseCase.completeTask()
-            .handleEvents(receiveCompletion: { completion in
-                if case .failure(let error) = completion {
-                    self.showAlert(for: error)
-                }
-            })
-            .replaceError(with: false)
-            .eraseToAnyPublisher()
     }
     
     private func finishGameAlert(_ winningCondition: Bool) {
@@ -122,6 +77,15 @@ internal class SwitchGameViewModel {
         cancellables.forEach { cancellable in
             cancellable.cancel()
         }
+    }
+    
+}
+
+extension SwitchGameViewModel {
+    
+    func withRelay ( of relay: Relay ) -> Self {
+        self.relay = relay
+        return self
     }
     
 }

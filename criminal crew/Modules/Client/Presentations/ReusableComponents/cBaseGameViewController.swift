@@ -36,6 +36,7 @@ open class BaseGameViewController: UIViewController, GameContentProvider {
     }
     
     open override func viewDidLoad() {
+        navigationItem.hidesBackButton = true
         contentProvider = self
         if let contentProvider = contentProvider {
             addContentToFirstPanelView(contentProvider.createFirstPanelView())
@@ -139,6 +140,10 @@ open class BaseGameViewController: UIViewController, GameContentProvider {
     
     private func createPromptView() -> UIView {
         return promptStackView
+    }
+    
+    public func changePromptText(_ text: String) {
+        promptStackView.promptLabelView.promptLabel.text = text
     }
     
 }

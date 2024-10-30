@@ -14,10 +14,12 @@ internal class SwitchStackView: UIStackView {
     internal var correctIndicatorView: SwitchIndicatorView = SwitchIndicatorView(imageName: "Green Light Off")
     internal var falseIndicatorView: SwitchIndicatorView = SwitchIndicatorView(imageName: "Red Light Off")
     
-    private var firstArray : [String] = ["Quantum", "Pseudo"]
-    private var secondArray : [String] = ["Encryption", "AIIDS", "Cryptography", "Protocol"]
+    private var firstArray : [String]
+    private var secondArray : [String]
     
-    init() {
+    init(firstArray: [String], secondArray: [String]) {
+        self.firstArray = firstArray
+        self.secondArray = secondArray
         super.init(frame: .zero)
         setupStackView()
     }
@@ -102,7 +104,7 @@ internal class SwitchStackView: UIStackView {
         if let delegate = delegate {
             delegate.buttonTapped(sender: sender)
         } else {
-            print("Delegate is nil!")
+            print("Switch delegate is nil!")
         }
     }
     
