@@ -261,48 +261,48 @@ extension SelfSignalCommandCenter {
         return flowIsComplete
     }
     
-    public func sendTaskReport ( taskId: String, isAccomplished: Bool, penaltiesGiven: Int = 0 ) -> Bool {
+    public func sendIstructionReport ( instructionId: String, isAccomplished: Bool, penaltiesGiven: Int = 0 ) -> Bool {
         var flowIsComplete = false
         
         guard let relay else {
-            debug("\(consoleIdentifier) Did fail to send task report: relay is missing or not set")
+            debug("\(consoleIdentifier) Did fail to send criteria report: relay is missing or not set")
             return flowIsComplete
         }
         
         guard let gameRuntime = relay.gameRuntime else {
-            debug("\(consoleIdentifier) Did fail to send task report: gameRuntime is missing or not set")
+            debug("\(consoleIdentifier) Did fail to send criteria report: gameRuntime is missing or not set")
             return flowIsComplete
         }
         
-        guard 
+        guard
             let serverAddr = gameRuntime.playedServerAddr,
             gameRuntime.connectionState == .connected
         else {
-            debug("\(consoleIdentifier) Did fail to send task report: self is not connected to a server")
+            debug("\(consoleIdentifier) Did fail to send criteria report: self is not connected to a server")
             return flowIsComplete
         }
         
         guard let eventBroadcaster = relay.eventBroadcaster else {
-            debug("\(consoleIdentifier) Did fail to send task report: eventBroadcaster is missing or not set")
+            debug("\(consoleIdentifier) Did fail to send criteria report: eventBroadcaster is missing or not set")
             return flowIsComplete
         }
         
         do {
             try eventBroadcaster.broadcast (
-                TaskReportEvent (
-                    submittedBy: eventBroadcaster.broadcastingFor.displayName, 
-                    taskIdentifier: taskId, 
-                    isAccomplished: isAccomplished, 
-                    penaltyPoints: penaltiesGiven
-                ).representedAsData(), 
+                InstructionReportEvent (
+                    submittedBy    : eventBroadcaster.broadcastingFor.displayName,
+                    instructionId  : instructionId,
+                    isAccomplished : isAccomplished,
+                    penaltyPoints  : penaltiesGiven
+                ).representedAsData(),
                 to: [serverAddr]
             )
-            debug("\(consoleIdentifier) Did send task report to server")
+            debug("\(consoleIdentifier) Did send criteria report to server")
             
             flowIsComplete = true
             
         } catch {
-            debug("\(consoleIdentifier) Did fail to send task report to server: \(error)")
+            debug("\(consoleIdentifier) Did fail to send criteria report to server: \(error)")
             
         }
         

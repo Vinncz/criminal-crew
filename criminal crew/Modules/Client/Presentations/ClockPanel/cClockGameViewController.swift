@@ -25,6 +25,25 @@ internal class ClockGameViewController: BaseGameViewController, UsesDependencies
         weak var selfSignalCommandCenter : SelfSignalCommandCenter?
     }
     
+    override func setupGameContent() {
+        timerUpPublisher
+            .sink { [weak self] isExpired in
+                guard
+                    let relay = self?.relay,
+                    let selfSignalCommandCenter = relay.selfSignalCommandCenter,
+                    let panelRuntimeContainer = relay.panelRuntimeContainer,
+                    let instructionId = panelRuntimeContainer.instructions.first?.id
+                else {
+                    debug("\(self?.consoleIdentifier ?? "ClockGameViewController") Did fail to get selfSignalCommandCenter, failed to send timer expired report")
+                    return
+                }
+                
+                let isSuccess = selfSignalCommandCenter.sendIstructionReport(instructionId: instructionId, isAccomplished: isExpired)
+                debug("\(self?.consoleIdentifier ?? "ClockGameViewController") success in sending instruction did timer expired report, status is \(isSuccess)")
+            }
+            .store(in: &cancellables)
+    }
+    
     override func createFirstPanelView() -> UIView {
         guard 
             let relay,

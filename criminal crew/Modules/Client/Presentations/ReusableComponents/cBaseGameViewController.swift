@@ -6,6 +6,7 @@
 //
 
 import UIKit
+import Combine
 
 open class BaseGameViewController: UIViewController, GameContentProvider {
     open func createFirstPanelView() -> UIView {
@@ -15,6 +16,8 @@ open class BaseGameViewController: UIViewController, GameContentProvider {
     open func createSecondPanelView() -> UIView {
         return UIView()
     }
+    
+    public var timerUpPublisher: PassthroughSubject<Bool, Never> = .init()
     
     public var contentProvider: GameContentProvider?
     
@@ -129,6 +132,7 @@ open class BaseGameViewController: UIViewController, GameContentProvider {
         promptStackView.promptLabelView.promptLabel.text = "Initial Prompt"
         
         promptView.addSubview(promptStackView)
+        promptStackView.promptLabelView.delegate = self
         promptStackView.translatesAutoresizingMaskIntoConstraints = false
         NSLayoutConstraint.activate([
             promptStackView.topAnchor.constraint(equalTo: promptView.topAnchor, constant: 8),
@@ -150,6 +154,14 @@ open class BaseGameViewController: UIViewController, GameContentProvider {
         if let timerView = promptStackView.arrangedSubviews[0] as? PromptView {
             timerView.timerInterval = timeInterval
         }
+    }
+    
+}
+
+extension BaseGameViewController: PromptViewDelegate {
+    
+    public func timerDidFinish() {
+        timerUpPublisher.send(false)
     }
     
 }

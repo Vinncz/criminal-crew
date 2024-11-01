@@ -21,6 +21,7 @@ public class CableGameViewController: BaseGameViewController, UsesDependenciesIn
     public var relay: Relay?
     public struct Relay : CommunicationPortal {
         weak var panelRuntimeContainer: ClientPanelRuntimeContainer?
+        weak var selfSignalCommandCenter: SelfSignalCommandCenter?
     }
     
     internal var cancellables = Set<AnyCancellable>()
@@ -104,6 +105,23 @@ public class CableGameViewController: BaseGameViewController, UsesDependenciesIn
     public override func setupGameContent() {
         setupGestureRecognizers()
         assignIDs()
+        
+        timerUpPublisher
+            .sink { [weak self] isExpired in
+                guard
+                    let relay = self?.relay,
+                    let selfSignalCommandCenter = relay.selfSignalCommandCenter,
+                    let panelRuntimeContainer = relay.panelRuntimeContainer,
+                    let instructionId = panelRuntimeContainer.instructions.first?.id
+                else {
+                    debug("\(self?.consoleIdentifier ?? "ClockGameViewController") Did fail to get selfSignalCommandCenter, failed to send timer expired report")
+                    return
+                }
+                
+                let isSuccess = selfSignalCommandCenter.sendIstructionReport(instructionId: instructionId, isAccomplished: isExpired)
+                debug("\(self?.consoleIdentifier ?? "ClockGameViewController") success in sending instruction did timer expired report, status is \(isSuccess)")
+            }
+            .store(in: &cancellables)
     }
     
     

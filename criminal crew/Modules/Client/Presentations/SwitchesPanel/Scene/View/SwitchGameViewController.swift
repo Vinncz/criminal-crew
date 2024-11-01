@@ -116,6 +116,14 @@ internal class SwitchGameViewController: BaseGameViewController {
         self.viewModel = SwitchGameViewModel().withRelay(of: .init(panelRuntimeContainer: panelRuntimeContainer))
         
         bindViewModel()
+        
+        timerUpPublisher
+            .sink { [weak self] isExpired in
+                if let viewModel = self?.viewModel {
+                    viewModel.timerDidFinish(isExpired)
+                }
+            }
+            .store(in: &cancellables)
     }
     
     private func bindViewModel() {
