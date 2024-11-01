@@ -1,6 +1,12 @@
 import UIKit
 
+protocol PromptViewDelegate: AnyObject {
+    func timerDidFinish()
+}
+
 open class PromptView: UIView {
+    
+    weak var delegate: PromptViewDelegate?
     
     public var promptLabel: UILabel = UILabel()
     
@@ -67,11 +73,18 @@ open class PromptView: UIView {
         if let timerInterval = timerInterval {
             countdownTimer?.invalidate()
             animateTimer()
-            countdownTimer = Timer.scheduledTimer(timeInterval: timerInterval, target: self, selector: #selector(animateTimer), userInfo: nil, repeats: false)
+            countdownTimer = Timer.scheduledTimer(timeInterval: timerInterval, target: self, selector: #selector(timerUp), userInfo: nil, repeats: false)
         }
     }
     
-    @objc private func animateTimer() {
+    @objc private func timerUp() {
+        countdownTimer?.invalidate()
+        countdownTimer = nil
+        
+        delegate?.timerDidFinish()
+    }
+    
+    private func animateTimer() {
         if let timerInterval = timerInterval {
             let originalWidth = timerRectangle.frame.width
             let targetWidth: CGFloat = 0.0

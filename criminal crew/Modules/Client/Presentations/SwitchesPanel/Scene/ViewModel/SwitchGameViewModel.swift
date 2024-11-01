@@ -115,3 +115,22 @@ extension SwitchGameViewModel {
     }
     
 }
+
+extension SwitchGameViewModel {
+    
+    internal func timerDidFinish(_ isExpired: Bool) {
+        guard
+            let relay = relay,
+            let selfSignalCommandCenter = relay.selfSignalCommandCenter,
+            let panelRuntimeContainer = relay.panelRuntimeContainer,
+            let instructionId = panelRuntimeContainer.instructions.first?.id
+        else {
+            debug("\(consoleIdentifier) Did fail to get selfSignalCommandCenter, failed to send timer expired report")
+            return
+        }
+        
+        let isSuccess = selfSignalCommandCenter.sendIstructionReport(instructionId: instructionId, isAccomplished: isExpired)
+        debug("\(consoleIdentifier) success in sending instruction did timer expired report, status is \(isSuccess)")
+    }
+    
+}
