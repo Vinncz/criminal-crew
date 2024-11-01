@@ -35,7 +35,7 @@ internal class SwitchGameViewController: BaseGameViewController {
         let portraitBackgroundImage = ViewFactory.addBackgroundImageView("BG Portrait")
         firstPanelContainerView.addSubview(portraitBackgroundImage)
         
-        let leverArray = panelEntity.leverArray
+        let leverArray = panelEntity.getLeverArray()
         leverView = LeversView(leverArray: leverArray)
         
         if let leverView = leverView {
@@ -77,8 +77,8 @@ internal class SwitchGameViewController: BaseGameViewController {
         let landscapeBackgroundImage = ViewFactory.addBackgroundImageView("BG Landscape")
         secondPanelContainerView.addSubview(landscapeBackgroundImage)
         
-        let firstArray = panelEntity.firstArray
-        let secondArray = panelEntity.secondArray
+        let firstArray = panelEntity.getFirstArray()
+        let secondArray = panelEntity.getSecondArray()
         switchStackView = SwitchStackView(firstArray: firstArray, secondArray: secondArray)
         
         if let switchStackView = switchStackView {
@@ -152,10 +152,6 @@ internal class SwitchGameViewController: BaseGameViewController {
                 self?.changeTimeInterval(timeInterval)
             }
             .store(in: &cancellables)
-    }
-    
-    @objc private func didCompleteQuickTimeEvent() {
-//        coordinator?.handleTaskCompletion()
     }
     
     private func showAlert(_ message: String) {

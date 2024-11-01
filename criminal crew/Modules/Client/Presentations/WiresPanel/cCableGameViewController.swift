@@ -1139,6 +1139,7 @@ extension CableGameViewController {
     
     private func bindInstruction(to panelRuntimeContainer: ClientPanelRuntimeContainer) {
         panelRuntimeContainer.$instructions
+            .receive(on: DispatchQueue.main)
             .sink { [weak self] instructions in
                 guard let instruction = instructions.last else {
                     debug("\(self?.consoleIdentifier ?? "SwitchGameViewModel") Did fail to update instructions. Instructions are empty.")

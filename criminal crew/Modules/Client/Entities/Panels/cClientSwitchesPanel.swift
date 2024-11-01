@@ -4,11 +4,11 @@ public class ClientSwitchesPanel : ClientGamePanel, ObservableObject {
     
     public let panelId : String = "SwitchesPanel"
     
-    public var firstArray  : [String] = ["Quantum", "Pseudo"]
-    public var secondArray : [String] = ["Encryption", "AIIDS", "Cryptography", "Protocol"]
-    public var leverArray  : [String] = ["Red", "Yellow", "Green", "Blue"]
+    private var firstArray  : [String] = ["Quantum", "Pseudo"]
+    private var secondArray : [String] = ["Encryption", "AIIDS", "Cryptography", "Protocol"]
+    private var leverArray  : [String] = ["Red", "Yellow", "Green", "Blue"]
     
-    public var pressedButtons: [String] = []
+    private var pressedButtons: [String] = []
     
     public required init () {
         firstArray  = firstArray.shuffled()
@@ -22,6 +22,18 @@ public class ClientSwitchesPanel : ClientGamePanel, ObservableObject {
 }
 
 extension ClientSwitchesPanel {
+    
+    internal func getFirstArray() -> [String] {
+        return firstArray
+    }
+    
+    internal func getSecondArray() -> [String] {
+        return secondArray
+    }
+    
+    internal func getLeverArray() -> [String] {
+        return leverArray
+    }
     
     internal func toggleButton(label: String) {
         if pressedButtons.contains(label) {
