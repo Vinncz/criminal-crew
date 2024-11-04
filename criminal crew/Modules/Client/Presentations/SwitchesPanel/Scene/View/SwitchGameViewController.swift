@@ -115,7 +115,6 @@ internal class SwitchGameViewController: BaseGameViewController {
         }
         
         self.viewModel = SwitchGameViewModel().withRelay(of: .init(panelRuntimeContainer: panelRuntimeContainer, selfSignalCommandCenter: selfSignalCommandCenter))
-        viewModel?.timerDelegate = self
         
         bindViewModel()
         
@@ -144,22 +143,10 @@ internal class SwitchGameViewController: BaseGameViewController {
                 self?.showTaskAlert(isSuccess: isSuccess)
             }
             .store(in: &cancellables)
-        viewModel.changePrompt
-            .receive(on: DispatchQueue.main)
-            .sink { [weak self] prompt in
-                self?.changePromptText(prompt)
-            }
-            .store(in: &cancellables)
         viewModel.finishGameAlert
             .receive(on: DispatchQueue.main)
             .sink { [weak self] message in
                 self?.showAlert(message)
-            }
-            .store(in: &cancellables)
-        viewModel.timeIntervalSubject
-            .receive(on: DispatchQueue.main)
-            .sink { [weak self] timeInterval in
-                self?.changeTimeInterval(timeInterval)
             }
             .store(in: &cancellables)
     }
@@ -223,15 +210,27 @@ extension SwitchGameViewController {
     
     func withRelay ( of relay: Relay ) -> Self {
         self.relay = relay
+        if let panelRuntimeContainer = relay.panelRuntimeContainer {
+            bindInstruction(to: panelRuntimeContainer)
+        }
         return self
     }
     
-}
-
-extension SwitchGameViewController: TimerReset {
     
-    func resetTimer() {
-        resetTimerAndAnimation()
+    private func bindInstruction(to panelRuntimeContainer: ClientPanelRuntimeContainer) {
+        panelRuntimeContainer.$instruction
+            .receive(on: DispatchQueue.main)
+            .debounce(for: .milliseconds(200), scheduler: RunLoop.main)
+            .sink { [weak self] instruction in
+                guard let instruction else {
+                    debug("\(self?.consoleIdentifier ?? "SwitchGameViewModel") Did fail to update instructions. Instructions are empty.")
+                    return
+                }
+                self?.resetTimerAndAnimation()
+                self?.changePromptText(instruction.content)
+                self?.changeTimeInterval(instruction.displayDuration)
+            }
+            .store(in: &cancellables)
     }
     
 }

@@ -1,21 +1,13 @@
 import Foundation
 import Combine
 
-protocol TimerReset: AnyObject {
-    func resetTimer()
-}
-
 internal class SwitchGameViewModel {
     
     private var cancellables = Set<AnyCancellable>()
     
     private  let didPressedButton     : PassthroughSubject<String, Never>       = PassthroughSubject<String, Never>()
     internal var taskCompletionStatus : PassthroughSubject<Bool, Never>         = PassthroughSubject<Bool, Never>()
-    internal var changePrompt         : PassthroughSubject<String, Never>       = PassthroughSubject<String, Never>()
     internal var finishGameAlert      : PassthroughSubject<String, Never>       = PassthroughSubject<String, Never>()
-    internal var timeIntervalSubject  : PassthroughSubject<TimeInterval, Never> = PassthroughSubject<TimeInterval, Never>()
-    
-    weak var timerDelegate: TimerReset?
     
     var relay: Relay?
     struct Relay : CommunicationPortal {
@@ -53,14 +45,6 @@ internal class SwitchGameViewModel {
             .store(in: &cancellables)
     }
     
-    private func changePromptLabel(_ prompt: String) {
-        changePrompt.send(prompt)
-    }
-    
-    internal func updateTimerInterval(to newInterval: TimeInterval) {
-        timeIntervalSubject.send(newInterval)
-    }
-    
     private func validateTask(panelRuntimeContainer: ClientPanelRuntimeContainer) {
         let criteriaIds = panelRuntimeContainer.checkCriteriaCompletion()
         
@@ -80,7 +64,6 @@ internal class SwitchGameViewModel {
                 )
                 self.taskCompletionStatus.send(isSuccess)                
             }
-            timerDelegate?.resetTimer()
         } else {
             self.taskCompletionStatus.send(false)
         }
@@ -107,26 +90,7 @@ extension SwitchGameViewModel {
     
     func withRelay ( of relay: Relay ) -> Self {
         self.relay = relay
-        if let panelRuntimeContainer = relay.panelRuntimeContainer {
-            bindInstruction(to: panelRuntimeContainer)
-        }
         return self
-    }
-    
-    private func bindInstruction(to panelRuntimeContainer: ClientPanelRuntimeContainer) {
-        panelRuntimeContainer.$instruction
-            .receive(on: DispatchQueue.main)
-            .debounce(for: .milliseconds(200), scheduler: RunLoop.main)
-            .sink { [weak self] instruction in
-                guard let instruction else {
-                    debug("\(self?.consoleIdentifier ?? "SwitchGameViewModel") Did fail to update instructions. Instructions are empty.")
-                    return
-                }
-                self?.timerDelegate?.resetTimer()
-                self?.changePromptLabel(instruction.content)
-                self?.updateTimerInterval(to: instruction.displayDuration)
-            }
-            .store(in: &cancellables)
     }
     
 }
