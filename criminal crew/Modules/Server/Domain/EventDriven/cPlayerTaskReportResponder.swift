@@ -46,10 +46,11 @@ extension PlayerTaskReportResponder : GPHandlesEvents {
     
     private func handle ( _ event: GPEvent ) {
         switch ( event ) {
-            case let event as TaskReportEvent:
-                handlePlayerTaskReportEvent(event)
             case let event as CriteriaReportEvent:
-                handlePlayerCriteriaReportEvent(event)
+                handlePlayerCriteriaReport(event)
+            case let event as InstructionReportEvent:
+                handlePlayerInstructionReport(event)
+                
             default:
                 debug("\(consoleIdentifier) Unhandled event: \(event)")
                 break
@@ -60,58 +61,88 @@ extension PlayerTaskReportResponder : GPHandlesEvents {
 
 extension PlayerTaskReportResponder {
     
-    private func handlePlayerTaskReportEvent ( _ event: TaskReportEvent ) {
-        fatalError("HandlePlayerTaskReportEvent should not be used anymore")
-        
-        guard let relay = self.relay else {
-            debug("\(consoleIdentifier) Did fail to handle task report: relay is missing or not set"); return
-        }
-        
+    private func gameIsRunningOrPaused () -> Bool {
         guard 
-            let gameRuntimeContainer = relay.gameRuntimeContainer,
-            let panelRuntimeContainer = relay.panelRuntimeContainer
+            relay?.gameRuntimeContainer?.state == .playing || relay?.gameRuntimeContainer?.state == .paused
         else {
-            debug("\(consoleIdentifier) Did fail to handle task report: gameRuntimeContainer and/or panelRuntimeContainer is missing or not set"); return
+            debug("\(consoleIdentifier) Did fail to check game state: game is not running or paused")
+            return false
         }
         
-        guard let taskAssigner = relay.taskAssigner else {
-            debug("\(consoleIdentifier) Did fail to handle task report: Task Assigner is missing or not set")
-            return
-        }
-        
-        guard let taskGenerator = relay.taskGenerator else {
-            debug("\(consoleIdentifier) Did fail to handle task report: Task Assigner is missing or not set")
-            return
-        }
-        
-        if ( event.isAccomplished ) {
-            gameRuntimeContainer.tasksProgression.advance(by: 1)
-            debug("\(consoleIdentifier) PlayerTaskReportResponder advances the task progression by one")
-        } else {
-            gameRuntimeContainer.penaltiesProgression.advance(by: 1)
-            debug("\(consoleIdentifier) PlayerTaskReportResponder advances the penalty progression by one")
-        }
-        
-        guard 
-            let playerAndTheirPlayedPanel  = panelRuntimeContainer.playerMapping.first(where: { $0.key == event.submitterName })
-        else {
-            debug("\(consoleIdentifier) Did fail to reassign new task")
-            return
-        }
-
-        let submitterAddr = playerAndTheirPlayedPanel.key
-        let playedPanel = playerAndTheirPlayedPanel.value
-        
-        let task = taskGenerator.generate(for: playedPanel)
-        taskAssigner.assignToSpecificAndPush(task: task, to: submitterAddr)
+        return true
     }
     
-    private func handlePlayerCriteriaReportEvent ( _ event: CriteriaReportEvent ) {
+    private func isOneOfListedPlayers ( _ playerName: String ) -> Bool {
+        guard 
+            let playerReport = relay?.playerRuntimeContainer?.getReportOnPlayer(named: playerName),
+            playerReport.isBlacklisted == false
+        else {
+            debug("\(consoleIdentifier) Did fail to check player: player is missing or blacklisted")
+            return false
+        }
+        
+        return true
+    }
+    
+    private func criteriaIsAccomplished () {
+        relay?.gameRuntimeContainer?.tasksProgression.advance(by: 1)
+        debug("\(consoleIdentifier) Did advance the task progression by one")
+    }
+    
+    private func criteriaIsNotAccomplished ( _ penaltyPoints: Int ) {
+        relay?.gameRuntimeContainer?.penaltiesProgression.advance(by: penaltyPoints)
+        debug("\(consoleIdentifier) Did advance the penalty progression by \(penaltyPoints)")
+    }
+    
+    private func sendInstructionDismissal ( for instructionId: String, to playerName: String, using broadcaster: GPGameEventBroadcaster ) {
+        guard let playerRecord = relay?.playerRuntimeContainer?.getReportOnPlayer(named: playerName) else {
+            debug("\(consoleIdentifier) Did fail to signal instruction can safely be dismissed: player is not found in playerRuntimeContainer")
+            return
+        }
+        
+        do {
+            try broadcaster.broadcast (
+                InstructionDidGetDismissed (
+                    instructionId: instructionId
+                ).representedAsData(),
+                to: [playerRecord.address]
+            )
+        } catch {
+            debug("\(consoleIdentifier) Did fail to signal instruction can safely be dismissed: \(error)")
+        }
+    }
+    
+    private func sendCriteriaDismissal ( for criteriaId: String, to playerName: String, using broadcaster: GPGameEventBroadcaster ) {
+        guard let playerRecord = relay?.playerRuntimeContainer?.getReportOnPlayer(named: playerName) else {
+            debug("\(consoleIdentifier) Did fail to signal criteria can safely be dismissed: player is not found in playerRuntimeContainer")
+            return
+        }
+        
+        do {
+            try broadcaster.broadcast (
+                CriteriaDidGetDismissed (
+                    criteriaId: criteriaId
+                ).representedAsData(),
+                to: [playerRecord.address]
+            )
+        } catch {
+            debug("\(consoleIdentifier) Did fail to signal criteria can safely be dismissed: \(error)")
+        }
+    }
+    
+    private func handlePlayerCriteriaReport ( _ event: CriteriaReportEvent ) {
         guard let relay = self.relay else {
             debug("\(consoleIdentifier) Did fail to handle criteria report: relay is missing or not set"); return
         }
         
-        switch ( relay.check(\.panelRuntimeContainer, \.gameRuntimeContainer, \.playerRuntimeContainer, \.taskRuntimeContainer, \.taskAssigner, \.taskGenerator, \.eventRouter, \.eventBroadcaster) ) {
+        switch ( 
+            relay.assertPresent (
+                \.panelRuntimeContainer, \.gameRuntimeContainer, 
+                \.playerRuntimeContainer, \.taskRuntimeContainer, 
+                \.taskAssigner, \.taskGenerator, 
+                \.eventRouter, \.eventBroadcaster
+            ) 
+        ) {
             case .failure ( let missingComponents ):
                 debug("\(consoleIdentifier) Did fail to handle criteria report: \(missingComponents) is missing or not set")
                 return
@@ -126,84 +157,170 @@ extension PlayerTaskReportResponder {
                     let taskGenerator = relay.taskGenerator,
                     let eventBroadcaster = relay.eventBroadcaster
                 else {
-                    debug("\(consoleIdentifier) Did fail to handle criteria report: not all required component for the relay are supplied"); return
+                    debug("\(consoleIdentifier) Did fail to handle criteria report: not all required component for the relay are supplied")
+                    return
                 }
                 
-                // server does some processing
-                if ( event.isAccomplished ) {
-                    gameRuntimeContainer.tasksProgression.advance(by: 1)
-                    debug("\(consoleIdentifier) Did advance the task progression by one")
-                } else {
-                    gameRuntimeContainer.penaltiesProgression.advance(by: event.penaltyPoints)
-                    debug("\(consoleIdentifier) Did advance the penalty progression by one")
-                }
+                guard gameIsRunningOrPaused() else { return }
+                guard isOneOfListedPlayers(event.submitterName) else { return }
                 
-                // it then dismiss the associated instruction for said criteria
-                // refer to the topology of GameTask and its relation to GameTaskRequirement and GameTaskCriteria
-                // 
-                // acquire the complete criteria object
+                if ( event.isAccomplished ) { criteriaIsAccomplished() }
+                    else { criteriaIsNotAccomplished(event.penaltyPoints) }
+                
                 guard let completeCriteriaObject = taskRuntimeContainer.getTaskCriteria(withId: event.criteriaId) else {
                     debug("\(consoleIdentifier) Did fail to dismiss instruction: criteriaId is not found in taskRuntimeContainer")
                     return
                 }
-                
-                // from it, we can trace back to the parent task
-                guard let completeGameTaskObject = taskRuntimeContainer.getTask(withId: completeCriteriaObject.parentTaskId!.uuidString) else {
+                guard let completeGameTaskObject = taskRuntimeContainer.getTask(withId: completeCriteriaObject.parentTaskId) else {
                     debug("\(consoleIdentifier) Did fail to dismiss instruction: taskId is not found in taskRuntimeContainer")
                     return
                 }
                 
-                var recordOfPlayerWhoHeldTheInstruction: ServerPlayerRuntimeContainer.Report? = nil
-                
-                
-                // now, find which player is associated with the instruction-half of the GameTask
-                taskRuntimeContainer.playerTaskInstructionMapping.forEach { (playerName, instructions) in
-                    instructions.forEach { instruction in 
-                        if ( instruction.id == completeGameTaskObject.instruction.id ) {
-                            // delete them mapping
-                            taskRuntimeContainer.playerTaskInstructionMapping[playerName]?.removeAll { $0.id == instruction.id }
-                            
-                            // get the address for the given player
-                            guard let playerRecord = playerRuntimeContainer.getReportOnPlayer(named: playerName) else {
-                                debug("\(consoleIdentifier) Did fail to signal instruction can safely be dismissed: player is not found in playerRuntimeContainer")
-                                return
-                            }
-                            recordOfPlayerWhoHeldTheInstruction = playerRecord
-                            
-                            // and tell the client that they can dismiss the instruction
-                            do {
-                                try eventBroadcaster.broadcast (
-                                    InstructionDidGetDismissed (
-                                        instructionId: instruction.id
-                                    ).representedAsData(),
-                                    to: [playerRecord.address]
-                                )
-                            } catch {
-                                debug("\(consoleIdentifier) Did fail to signal instruction can safely be dismissed: \(error)")
-                            }
-                        }
-                    }
-                }
-                
-                
-                // should the player who held the instruction is unfound, then we can't proceed
-                guard let recordOfPlayerWhoHeldTheInstruction else {
-                    debug("\(consoleIdentifier) Did fail to signal instruction can safely be dismissed: player is not found in playerRuntimeContainer")
+                // dismiss the instruction for said criteria for the player who held the instruction
+                guard let nameOfThePlayerHoldingTheInstruction = taskRuntimeContainer.playerTaskInstructionMapping.first(where: { $0.value.contains { $0.id == completeGameTaskObject.instruction.id } })?.key else {
+                    debug("\(consoleIdentifier) Did fail to dismiss instruction: player is not found in playerRuntimeContainer")
                     return
                 }
                 
-                // now, get both the submitter of the criteria, and the player who has the instruction a new set of them
-                guard 
-                    let submitterAddr = playerRuntimeContainer.getReportOnPlayer(named: event.submitterName)?.address,
-                    let playedPanel = panelRuntimeContainer.playerMapping[event.submitterName]
+                sendInstructionDismissal (
+                    for: completeGameTaskObject.instruction.id,
+                    to: nameOfThePlayerHoldingTheInstruction,
+                    using: eventBroadcaster
+                )
+                sendCriteriaDismissal (
+                    for: completeGameTaskObject.criteria.id,
+                    to: event.submitterName,
+                    using: eventBroadcaster
+                )
+                
+                // remove the mappings: both the instruction and the criteria
+                taskRuntimeContainer.playerTaskInstructionMapping[nameOfThePlayerHoldingTheInstruction]?.removeAll { $0.id == completeGameTaskObject.instruction.id }
+                taskRuntimeContainer.playerTaskCriteriaMapping[event.submitterName]?.removeAll { $0.id == event.criteriaId }
+                
+                // make new task to ensure the player that holds the instruction get new instruction replacing the old one
+                guard let randomPanel = panelRuntimeContainer.getRegisteredPanels().randomElement() else {
+                    debug("\(consoleIdentifier) Did fail to pluck a random panel. No panel is registered")
+                    return
+                }
+                
+                let task = taskGenerator.generate(for: randomPanel)
+                
+                taskRuntimeContainer.registerTask(task)
+                
+                taskAssigner.assignToSpecificAndPush (
+                    instruction: task.instruction,
+                    to: nameOfThePlayerHoldingTheInstruction
+                )
+                taskRuntimeContainer.registerTaskInstruction(task.instruction, to: nameOfThePlayerHoldingTheInstruction)
+                
+                // find out who plays the random panel
+                guard let nameOfThePlayerWhoPlaysThePanelPickedForTaskGeneration = panelRuntimeContainer.playerMapping.first(where: { $0.value.panelId == randomPanel.panelId })?.key else {
+                    debug("\(consoleIdentifier) Did fail to reassign new criteria. \(randomPanel.panelId) is not registered to be played by anyone")
+                    return
+                }
+                
+                taskAssigner.assignToSpecificAndPush (
+                    criteria: task.criteria,
+                    to: nameOfThePlayerWhoPlaysThePanelPickedForTaskGeneration
+                )
+                taskRuntimeContainer.registerTaskCriteria(task.criteria, to: nameOfThePlayerWhoPlaysThePanelPickedForTaskGeneration)
+        }
+    }
+    
+    private func handlePlayerInstructionReport ( _ event: InstructionReportEvent ) {
+        guard let relay = self.relay else {
+            debug("\(consoleIdentifier) Did fail to handle criteria report: relay is missing or not set"); return
+        }
+        
+        switch ( 
+            relay.assertPresent (
+                \.panelRuntimeContainer, \.gameRuntimeContainer, 
+                \.playerRuntimeContainer, \.taskRuntimeContainer, 
+                \.taskAssigner, \.taskGenerator, 
+                \.eventRouter, \.eventBroadcaster
+            ) 
+        ) {
+            case .failure ( let missingComponents ):
+                debug("\(consoleIdentifier) Did fail to handle criteria report: \(missingComponents) is missing or not set")
+                return
+                
+            case .success:
+                guard
+                    let gameRuntimeContainer = relay.gameRuntimeContainer,
+                    let panelRuntimeContainer = relay.panelRuntimeContainer,
+                    let playerRuntimeContainer = relay.playerRuntimeContainer,
+                    let taskRuntimeContainer = relay.taskRuntimeContainer,
+                    let taskAssigner = relay.taskAssigner,
+                    let taskGenerator = relay.taskGenerator,
+                    let eventBroadcaster = relay.eventBroadcaster
                 else {
-                    debug("\(consoleIdentifier) Did fail to reassign new task")
+                    debug("\(consoleIdentifier) Did fail to handle criteria report: not all required component for the relay are supplied")
                     return
                 }
                 
-                let task = taskGenerator.generate(for: playedPanel)
-                taskAssigner.assignToSpecificAndPush(criteria: task.criteria, to: event.submitterName)
-                taskAssigner.assignToSpecificAndPush(instruction: task.instruction, to: recordOfPlayerWhoHeldTheInstruction.address.displayName)
+                guard gameIsRunningOrPaused() else { return }
+                guard isOneOfListedPlayers(event.submitterName) else { return }
+                
+                if ( event.isAccomplished ) { criteriaIsAccomplished() }
+                    else { criteriaIsNotAccomplished(event.penaltyPoints) }
+                
+                guard let completeInstructionObject = taskRuntimeContainer.getTaskInstruction(withId: event.instructionId) else {
+                    debug("\(consoleIdentifier) Did fail to get complete instruction object: no such instruction found in taskRuntimeContainer")
+                    return
+                }
+                guard let completeGameTaskObject = taskRuntimeContainer.getTask(withId: completeInstructionObject.parentTaskId) else {
+                    debug("\(consoleIdentifier) Did fail to get complete task object: no such task found in taskRuntimeContainer")
+                    return
+                }
+                
+                // dismiss the instruction for said criteria for the player who held the instruction
+                guard let nameOfThePlayerHoldingCriteria = taskRuntimeContainer.playerTaskCriteriaMapping.first(where: { $0.value.contains { $0.id == completeGameTaskObject.criteria.id } })?.key else {
+                    debug("\(consoleIdentifier) Did fail to dismiss criteria \(completeGameTaskObject.criteria.id.prefix(4)): player holding it is not found in playerRuntimeContainer")
+                    return
+                }
+                
+                sendInstructionDismissal (
+                    for: completeGameTaskObject.instruction.id,
+                    to: event.submitterName,
+                    using: eventBroadcaster
+                )
+                sendCriteriaDismissal (
+                    for: completeGameTaskObject.criteria.id,
+                    to: nameOfThePlayerHoldingCriteria,
+                    using: eventBroadcaster
+                )
+                
+                // remove the mappings: both the instruction and the criteria
+                taskRuntimeContainer.playerTaskInstructionMapping[event.submitterName]?.removeAll { $0.id == completeGameTaskObject.instruction.id }
+                taskRuntimeContainer.playerTaskCriteriaMapping[nameOfThePlayerHoldingCriteria]?.removeAll { $0.id == completeGameTaskObject.criteria.id }
+                
+                // make new task to ensure the player that holds the instruction get new instruction replacing the old one
+                guard let randomPanel = panelRuntimeContainer.getRegisteredPanels().randomElement() else {
+                    debug("\(consoleIdentifier) Did fail to pluck a random panel. No panel is registered")
+                    return
+                }
+                
+                let task = taskGenerator.generate(for: randomPanel)
+                
+                taskRuntimeContainer.registerTask(task)
+                
+                taskAssigner.assignToSpecificAndPush (
+                    instruction: task.instruction,
+                    to: event.submitterName
+                )
+                taskRuntimeContainer.registerTaskInstruction(task.instruction, to: event.submitterName)
+                
+                // find out who plays the random panel
+                guard let nameOfThePlayerWhoPlaysThePanelPickedForTaskGeneration = panelRuntimeContainer.playerMapping.first(where: { $0.value.panelId == randomPanel.panelId })?.key else {
+                    debug("\(consoleIdentifier)  Did fail to reassign new criteria. \(randomPanel.panelId) is not registered to be played by anyone")
+                    return
+                }
+                
+                taskAssigner.assignToSpecificAndPush (
+                    criteria: task.criteria,
+                    to: nameOfThePlayerWhoPlaysThePanelPickedForTaskGeneration
+                )
+                taskRuntimeContainer.registerTaskCriteria(task.criteria, to: nameOfThePlayerWhoPlaysThePanelPickedForTaskGeneration)
         }
     }
     

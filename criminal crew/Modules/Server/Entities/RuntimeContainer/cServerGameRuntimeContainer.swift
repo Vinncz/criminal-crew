@@ -18,7 +18,7 @@ public class ServerGameRuntimeContainer : ObservableObject {
         } 
     }
     
-    public init ( taskLimit: Int = 0, penaltyLimit: Int = 0 ) {
+    public init ( taskLimit: Int = 20, penaltyLimit: Int = 20 ) {
         let pp = PenaltiesProgression (limit: penaltyLimit)
         let tp = TasksProgression     (limit: taskLimit)
         let gs = GameState.notStarted

@@ -38,7 +38,7 @@ final public class ServerComposer : UsesDependenciesInjector {
     public let ent_taskRuntimeContainer   : ServerTaskRuntimeContainer
     
     public init () {
-        router                   = GamePantry.GPEventRouter()
+        router                   = GPEventRouter()
         networkManager           = ServerNetworkManager(router: router, config: Self.configuration)
         localStorage             = LocalTemporaryStorage()
         
@@ -82,6 +82,9 @@ extension ServerComposer {
             router.openChannel(for:GPGameJoinRequestedEvent.self),
             router.openChannel(for:GPGameJoinVerdictDeliveredEvent.self),
             
+            router.openChannel(for:PenaltyDidReachLimitEvent.self),
+            router.openChannel(for:TaskDidReachLimitEvent.self),
+            
             router.openChannel(for:GPUnableToBrowseEvent.self),
             
             router.openChannel(for:GPGameStartRequestedEvent.self),
@@ -90,8 +93,8 @@ extension ServerComposer {
             router.openChannel(for:GPBlacklistedEvent.self),
             router.openChannel(for:GPTerminatedEvent.self),
             
-            router.openChannel(for:TaskReportEvent.self),
             router.openChannel(for:CriteriaReportEvent.self),
+            router.openChannel(for:InstructionReportEvent.self),
             router.openChannel(for:GPAcquaintanceStatusUpdateEvent.self),
             
             router.openChannel(for:InquiryAboutConnectedPlayersRequestedEvent.self)
@@ -202,8 +205,8 @@ extension ServerComposer {
         evtUC_hostSignalResponder.placeSubscription(on: InquiryAboutConnectedPlayersRequestedEvent.self)
         debug("[S] Placed subscription of HostSignalResponder to GPGameStartRequestedEvent, GPGameEndRequestedEvent, GPGameJoinVerdictDeliveredEvent, GPBlacklistedEvent, and GPTerminatedEvent")
         
-        evtUC_taskReportResponder.placeSubscription(on: TaskReportEvent.self)
         evtUC_taskReportResponder.placeSubscription(on: CriteriaReportEvent.self)
+        evtUC_taskReportResponder.placeSubscription(on: InstructionReportEvent.self)
         debug("[S] Placed subscription of TaskReportResponder to TaskReportEvent")
         
         evtUC_playerConnectionResponder.placeSubscription(on: GPAcquaintanceStatusUpdateEvent.self)

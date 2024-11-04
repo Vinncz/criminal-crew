@@ -7,12 +7,12 @@ public struct GameTaskInstruction : Identifiable, Hashable, Sendable {
     public let content         : String
     public let displayDuration : TimeInterval
     
-    public var parentTaskId : UUID?
+    public var parentTaskId : String
     
     public init ( id: String = UUID().uuidString, content: String, displayDuration: TimeInterval = 20 ) {
         self.id = id
         self.content         = content
-        self.parentTaskId    = nil
+        self.parentTaskId    = ""
         self.displayDuration = displayDuration
     }
     
@@ -20,7 +20,7 @@ public struct GameTaskInstruction : Identifiable, Hashable, Sendable {
 
 extension GameTaskInstruction {
     
-    public mutating func associate ( with parentTaskId: UUID ) {
+    public mutating func associate ( with parentTaskId: String ) {
         self.parentTaskId = parentTaskId
     }
     

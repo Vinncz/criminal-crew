@@ -29,15 +29,6 @@ public class CableGameViewController: BaseGameViewController, UsesDependenciesIn
     private let consoleIdentifier : String = "[C-PWR-VC]"
     
     public override func createFirstPanelView () -> UIView {
-        guard
-            let relay,
-            let panelPlayed = relay.panelRuntimeContainer?.panelPlayed,
-            let panelEntity = panelPlayed as? ClientWiresPanel
-        else {
-            debug("\(consoleIdentifier) Did fail to create first panel view: Either relay is missing or not set, panel played is empty, or wrong panel type is being supplied for this view controller")
-            return UIView()
-        }
-        
         containerView = UIView()
         guard let containerView else {
             return UIView()
@@ -63,15 +54,6 @@ public class CableGameViewController: BaseGameViewController, UsesDependenciesIn
     }
     
     public override func createSecondPanelView() -> UIView {
-        guard
-            let relay,
-            let panelPlayed = relay.panelRuntimeContainer?.panelPlayed,
-            let panelEntity = panelPlayed as? ClientWiresPanel
-        else {
-            debug("\(consoleIdentifier) Did fail to create second panel view: Either relay is missing or not set, panel played is empty, or wrong panel type is being supplied for this view controller")
-            return UIView()
-        }
-        
         landscapeContainerView = UIView()
         guard let landscapeContainerView else {
             return UIView()
@@ -81,13 +63,7 @@ public class CableGameViewController: BaseGameViewController, UsesDependenciesIn
         
         setupViewsForSecondPanel()
         randomizePositionsForSecondPanel(for: landscapeContainerView)
-        
-        let screenWidth = UIScreen.main.bounds.width
-        let screenWidthInMm = screenWidth / UIScreen.main.scale
-        
-        print("hello")
-        print("screen width used:\(screenWidthInMm)")
-        
+                
         let landscapeBackgroundImage = ViewFactory.addBackgroundImageView("client.panels.cables-panel.panel-background-center")
         landscapeContainerView.insertSubview(landscapeBackgroundImage, at: 0)
         landscapeBackgroundImage.translatesAutoresizingMaskIntoConstraints = false
@@ -112,14 +88,14 @@ public class CableGameViewController: BaseGameViewController, UsesDependenciesIn
                     let relay = self?.relay,
                     let selfSignalCommandCenter = relay.selfSignalCommandCenter,
                     let panelRuntimeContainer = relay.panelRuntimeContainer,
-                    let instructionId = panelRuntimeContainer.instructions.first?.id
+                    let instruction = panelRuntimeContainer.instruction
                 else {
-                    debug("\(self?.consoleIdentifier ?? "ClockGameViewController") Did fail to get selfSignalCommandCenter, failed to send timer expired report")
+                    debug("\(self?.consoleIdentifier ?? "ClockGameViewController") Did fail to send report of instruction's expiry: Relay and all of its requirements are not met")
                     return
                 }
                 
-                let isSuccess = selfSignalCommandCenter.sendIstructionReport(instructionId: instructionId, isAccomplished: isExpired)
-                debug("\(self?.consoleIdentifier ?? "ClockGameViewController") success in sending instruction did timer expired report, status is \(isSuccess)")
+                let isSuccess = selfSignalCommandCenter.sendIstructionReport(instructionId: instruction.id, isAccomplished: isExpired)
+                debug("\(self?.consoleIdentifier ?? "ClockGameViewController") Did send report of instruction's expiry. It was \(isSuccess ? "delivered" : "not delivered") to server. The last updated status is \(isExpired ? "accomplished" : "not done")")
             }
             .store(in: &cancellables)
     }
@@ -1188,10 +1164,10 @@ extension CableGameViewController {
     }
     
     private func bindInstruction(to panelRuntimeContainer: ClientPanelRuntimeContainer) {
-        panelRuntimeContainer.$instructions
+        panelRuntimeContainer.$instruction
             .receive(on: DispatchQueue.main)
-            .sink { [weak self] instructions in
-                guard let instruction = instructions.last else {
+            .sink { [weak self] instruction in
+                guard let instruction else {
                     debug("\(self?.consoleIdentifier ?? "SwitchGameViewModel") Did fail to update instructions. Instructions are empty.")
                     return
                 }

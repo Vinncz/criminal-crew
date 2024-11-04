@@ -15,6 +15,7 @@ public class LandingPageViewController : UIViewController, UsesDependenciesInjec
         weak var gameRuntimeContainer    : ClientGameRuntimeContainer?
         weak var panelRuntimeContainer   : ClientPanelRuntimeContainer?
         weak var serverBrowser           : ClientGameBrowser?
+             var resetServer             : () -> Void
              var publicizeRoom           : ( _ advertContent: [String: String] ) -> Void
              var navigate                : ( _ to: UIViewController ) -> Void
     }
@@ -39,6 +40,7 @@ public class LandingPageViewController : UIViewController, UsesDependenciesInjec
 extension LandingPageViewController {
     
     override public func viewDidLoad () {
+        self.relay?.resetServer()
         self.relay?.gameRuntimeContainer?.reset()
         self.relay?.panelRuntimeContainer?.reset()
         self.relay?.playerRuntimeContainer?.reset()
@@ -106,6 +108,7 @@ extension LandingPageViewController {
                         selfSignalCommandCenter : self.relay?.selfSignalCommandCenter,
                         playerRuntimeContainer  : self.relay?.playerRuntimeContainer, 
                         gameRuntimeContainer    : self.relay?.gameRuntimeContainer,
+                        panelRuntimeContainer   : self.relay?.panelRuntimeContainer,
                         publicizeRoom: { [weak self] advertContent in
                             self?.relay?.publicizeRoom(advertContent)
                         }, 

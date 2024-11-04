@@ -66,7 +66,6 @@ public class MultipeerTaskRepository: UsesDependenciesInjector, GPHandlesEvents 
                 debug("Event is recognized as GPTaskReceivedEvent")
                 let completionCriteria = event.completionCriteria
                 let taskId = event.taskId
-                let duration = event.duration
                 getTaskDataFromPeer(taskId: taskId, taskToBeDone: completionCriteria)
                 break
             case let event as GPPromptReceivedEvent:
@@ -75,7 +74,7 @@ public class MultipeerTaskRepository: UsesDependenciesInjector, GPHandlesEvents 
                 getPromptDataFromPeer(prompt)
                 break
             case let event as GPFinishGameEvent:
-                debug("Event is recognized as GPFinishGameEvent")
+                debug("Event is recognized as GPFinishGameEvent \(event)")
                 
                 break
             default :

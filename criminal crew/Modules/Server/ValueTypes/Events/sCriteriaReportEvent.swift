@@ -7,8 +7,8 @@ public struct CriteriaReportEvent : GPEvent, GPSendableEvent, GPReceivableEvent 
     public let isAccomplished : Bool
     public let penaltyPoints  : Int
     
-    public let id             : String = "CriteriaDidGetFulfilledReportEvent"
-    public let purpose        : String = "Reports to the server that a criteria has been fulfilled"
+    public let id             : String = "CriteriaReportEvent"
+    public let purpose        : String = "A report about the status of a GameTaskCriteria"
     public let instanciatedOn : Date   = .now
     
     public var payload        : [String: Any] = [:]
@@ -58,13 +58,12 @@ extension CriteriaReportEvent {
     
     public static func construct ( from payload: [String: Any] ) -> CriteriaReportEvent? {
         guard
-            "CriteriaDidGetFulfilledReportEvent" == payload[PayloadKeys.eventId.rawValue] as? String,
+            "CriteriaReportEvent" == payload[PayloadKeys.eventId.rawValue] as? String,
             let submitterName  = payload[PayloadKeys.submitterName.rawValue] as? String,
             let criteriaId     = payload[PayloadKeys.criteriaId.rawValue] as? String,
             let isAccomplished = Bool(payload[PayloadKeys.isAccomplished.rawValue] as? String ?? "false"),
             let penaltyPoints  = Int(payload[PayloadKeys.penaltyPoints.rawValue] as? String ?? "0")
         else {
-            debug("Construction of CriteriaDidGetFulfilledReportEvent failed: Payload is missing required keys.")
             return nil
         }
         

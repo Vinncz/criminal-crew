@@ -53,13 +53,11 @@ extension ConnectedPlayersNamesResponse {
             let names = payload[PayloadKeys.connectedPlayerNames.rawValue] as? String,
             let delimiter = payload[PayloadKeys.delimiter.rawValue] as? String
         else {
-            debug("Construction of ConnectedPlayerNamesResponse failed: Payload is missing required keys.")
             return nil
         }
         
         let arrayOfNames = names.split(separator: delimiter).map(String.init)
         guard arrayOfNames.count > 0 else {
-            debug("Construction of ConnectedPlayerNamesResponse failed: No names provided.")
             return nil
         }
         

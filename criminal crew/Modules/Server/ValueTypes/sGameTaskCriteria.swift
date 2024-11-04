@@ -7,12 +7,12 @@ public struct GameTaskCriteria : Identifiable, Hashable, Sendable {
     public let requirements     : [String]
     public let validityDuration : TimeInterval
     
-    public var parentTaskId : UUID?
+    public var parentTaskId : String
     
     public init ( id: String = UUID().uuidString, requirements: [String], validityDuration: TimeInterval = 20 ) {
         self.id = id
-        self.requirements      = requirements
-        self.parentTaskId     = nil
+        self.requirements     = requirements
+        self.parentTaskId     = ""
         self.validityDuration = validityDuration
     }
     
@@ -20,7 +20,7 @@ public struct GameTaskCriteria : Identifiable, Hashable, Sendable {
 
 extension GameTaskCriteria {
     
-    public mutating func associate ( with parentTaskId: UUID ) {
+    public mutating func associate ( with parentTaskId: String ) {
         self.parentTaskId = parentTaskId
     }
     

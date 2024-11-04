@@ -1,5 +1,4 @@
 import GamePantry
-import os
 
 public class HostSignalResponder : UseCase {
     
@@ -71,6 +70,7 @@ extension HostSignalResponder : GPHandlesEvents {
                 
             case let event as InquiryAboutConnectedPlayersRequestedEvent:
                 respondWithConnectedPlayerNames(event)
+                
             default:
                 debug("\(consoleIdentifier) Unhandled event: \(event)")
                 break
@@ -113,136 +113,33 @@ extension HostSignalResponder {
     
     private func respondToGameStartRequest ( _ event: GPGameStartRequestedEvent) {
         guard let relay = relay else {
-            debug("\(consoleIdentifier) Unable to respond to game start request: relay is missing or not set")
+            debug("\(consoleIdentifier) Did fail to respond to game start request: relay is missing or not set")
             return
         }
         
-        // reset everything first
-        relay.panelRuntimeContainer?.reset()
-        relay.gameRuntimeContainer?.reset()
-        relay.taskRuntimeContainer?.reset()
+        let requestee = event.signingKey
         
-        guard let gameRuntimeContainer = relay.gameRuntimeContainer else {
-            debug("\(consoleIdentifier) Unable to respond to game start request: gameRuntimeContainer is missing or not set")
-            return
-        }
-        
-        guard gameRuntimeContainer.state != .playing || gameRuntimeContainer.state != .paused else {
-            debug("\(consoleIdentifier) Game is already in progress or paused, ignoring the request..")
-            return
-        }
-        
-        guard let playerRuntimeContainer = relay.playerRuntimeContainer else {
-            debug("\(consoleIdentifier) Unable to respond to game start request: playerRuntimeContainer is missing or not set")
-            return
-        }
-        
-        guard 
-            let host = playerRuntimeContainer.hostAddr,
-                host.displayName == event.signingKey 
-        else {
-            debug("\(consoleIdentifier) Initiator is not the host, ignoring the request..")
-            return
-        }
-        
-        guard 
-            let minPlayerCount = relay.gameProcessConfig?.minPlayerCount,
-            playerRuntimeContainer.getWhitelistedPartiesAndTheirState().count >= minPlayerCount 
-        else {
-            debug("\(consoleIdentifier) Not enough players to start the game, ignoring the request..")
-            return
-        }
-        
-        guard let panelRuntimeContainer = relay.panelRuntimeContainer else {
-            debug("\(consoleIdentifier) Unable to respond to game start request: panelRuntimeContainer is missing or not set")
-            return
-        }
-        
-        guard let panelAssigner = relay.panelAssigner else {
-            debug("\(consoleIdentifier) Unable to respond to game start request: panelAssigner is missing or not set")
-            return
-        }
-        
-        guard panelAssigner.distributePanel() else {
-            debug("\(consoleIdentifier) Unable to start the game: not all players have been assigned a panel")
-            return
-        }
-        
-        guard let taskRuntimeContainer = relay.taskRuntimeContainer else {
-            debug("\(consoleIdentifier) Unable to start the game: taskRuntimeContainer is missing or not set")
-            return
-        }
-        
-        guard let taskGenerator = relay.taskGenerator else {
-            debug("\(consoleIdentifier) Unable to start the game: task generator is missing or not set")
-            return
-        }
-        
-        guard let taskAssigner = relay.taskAssigner else {
-            debug("\(consoleIdentifier) Unable to start the game: task assigner is missing or not set")
-            return
-        }
-        
-        DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
-            let playersAndPanels = panelRuntimeContainer.playerMapping
-            let panels = playersAndPanels.map { $0.value }
-            let players = playersAndPanels.map { $0.key }
-            
-            // one task contains one criteria and one instruction
-            // a player doesn't understand the concept of taks -- they only know instructions and criterias
-            //
-            // a player can be assigned multiple criterias and instructions,
-            //      but the criteria and the instruction from a given task may only reside on only one player
-            //      even though they may be the same player or not
-            // 
-            // a player must have at least one instruction, but they may have none criteria assigned to them
-            //      a player can store multiple instructions and criterias, so don't worry about it overwriting the old ones
-            // 
-            // the idea is to iterate through the generated tasks, and pick a player at random:
-            //      assign the instruction to the player
-            //      assign the criteria to the player
-            // it doesn't matter if the same player is assigned the instruction and the criteria which originates from one task,
-            //      but the criteria must reside in the player with matching panel
-            // 
-            // here we go
-            
-            // generate 3 initial tasks for each panel
-            // but do know that the tasks do not know from which panel they originate
-            // so we need to keep it somewhere
-            let panelsAndTasks = panels.map { panel in
-                let tasks = (0..<3).map { _ in taskGenerator.generate(for: panel) }
-                return (panel, tasks)
-            }
-            
-            let tasks = panelsAndTasks.flatMap { $0.1 }
-            
-            // assign both the criteria and the instruction to each a random player
-            tasks.forEach { task in
-                taskRuntimeContainer.registerTask(task)
+        switch ( 
+            relay.assertPresent (
+                \.gameRuntimeContainer, \.playerRuntimeContainer, 
+                \.panelRuntimeContainer, \.taskRuntimeContainer,
+                \.panelAssigner, \.taskGenerator, \.taskAssigner, 
+                \.gameProcessConfig
+            ) 
+        ) {
+            case .failure(let missingAttributes):
+                debug("\(consoleIdentifier) Unable to respond to game start request: relay's \(missingAttributes) is missing or not set")
+                return
                 
-                let randomPlayerForInstruction = players.randomElement()!
+            case .success:
+                resetContainersExceptPlayer()
+                guard gameIsNotRunningOrPaused() else { return }
+                guard hostIs(requestee) else { return }
+                guard panelsHasBeenDistributed() else { return }
+                guard initialTasksHasBeenAssigned() else { return }
                 
-                // if the player selected for criteria isn't the one that plays the panel, then reassign
-                // but why don't you just assign the criteria to the player that plays the panel?
-                let panelForThisTask = panelsAndTasks.first { $0.1.contains(task) }!.0
-                let playerForCriteria = playersAndPanels.first { $0.value.panelId == panelForThisTask.panelId }!.key
-                
-                taskRuntimeContainer.registerTaskCriteria(task.criteria, to: playerForCriteria)
-                taskRuntimeContainer.registerTaskInstruction(task.instruction, to: randomPlayerForInstruction)
-                
-                taskAssigner.assignToSpecificAndPush (
-                    criteria: task.criteria,
-                    to: playerForCriteria
-                )
-                
-                taskAssigner.assignToSpecificAndPush (
-                    instruction: task.instruction,
-                    to: randomPlayerForInstruction
-                )
-            }
+                relay.gameRuntimeContainer?.state = .playing
         }
-        
-        gameRuntimeContainer.state = .playing
     }
     
     private func respondToGameEndRequest ( _ event: GPGameEndRequestedEvent) {
@@ -334,36 +231,145 @@ extension HostSignalResponder {
             return
         }
         
-        guard let playerRuntimeContainer = relay.playerRuntimeContainer else {
-            debug("\(consoleIdentifier) Did fail to respond to terminated event: playerRuntimeContainer is missing or not set")
-            return
+        switch ( 
+            relay.assertPresent(
+                \.playerRuntimeContainer,
+                \.advertiserService
+            ) 
+        ) {
+            case .failure(let missingAttributes):
+                debug("\(consoleIdentifier) Unable to respond to terminated event: relay's \(missingAttributes) is missing or not set")
+                return
+                
+            case .success:
+                guard
+                    let playerRuntimeContainer = relay.playerRuntimeContainer,
+                    let advertService = relay.advertiserService
+                else {
+                    debug("\(consoleIdentifier) Did fail to respond to terminated event: playerRuntimeContainer, or advertiserService is missing or not set")
+                    return
+                }
+                
+                guard hostIsNot(event.subject) else { return }
+                guard let host = playerRuntimeContainer.hostAddr else {
+                    debug("\(consoleIdentifier) Did fail to terminate \(event.subject). Host is missing")
+                    return
+                }
+                guard let player = playerRuntimeContainer.getReportOnPlayer(named: event.subject) else {
+                    debug("\(consoleIdentifier) Did fail to terminate \(event.subject). Player is not in the game")
+                    return
+                }
+                
+                relay.terminatePlayer (
+                    GPTerminatedEvent (subject: player.address.displayName, reason: event.reason, authorizedBy: host.displayName)
+                )
+                playerRuntimeContainer.terminate(player.address.displayName)
+                advertService.pendingRequests.removeAll { $0.requestee.displayName == player.address.displayName }
+                
         }
-        
-        guard let host = playerRuntimeContainer.hostAddr else {
-            debug("\(consoleIdentifier) Did fail to respond to terminated event: host is missing or not set")
-            return
-        }
-        
-        if ( event.subject == host.displayName ) {
-            debug("\(consoleIdentifier) Host cannot be terminated, ignoring the request..")
-            return
-        }
-        
-        guard let player = playerRuntimeContainer.getReportOnPlayer(named: event.subject) else {
-            debug("\(consoleIdentifier) Player \(event.subject) is not in the game, ignoring the request to terminate..")
-            return
-        }
-        
-        guard let advertService = relay.advertiserService else {
-            debug("\(consoleIdentifier) Did fail to respond to terminated event: advertiserService is missing or not set")
-            return
-        }
-        
-        relay.terminatePlayer (
-            GPTerminatedEvent (subject: event.subject, reason: event.reason, authorizedBy: host.displayName)
-        )
-        playerRuntimeContainer.terminate(event.subject)
-        advertService.pendingRequests.removeAll { $0.requestee.displayName == event.subject }
     }
+    
+}
+
+extension HostSignalResponder {
+    
+    private func resetContainersExceptPlayer () {
+        relay?.panelRuntimeContainer?.reset()
+        relay?.gameRuntimeContainer?.reset()
+        relay?.taskRuntimeContainer?.reset()
+    }
+    
+    private func gameIsNotRunningOrPaused () -> Bool {
+        guard relay?.gameRuntimeContainer?.state != .playing || relay?.gameRuntimeContainer?.state != .paused else {
+            debug("\(consoleIdentifier) Did fail to start game. Game is already in progress or paused, ignoring the request..")
+            return false
+        }
+        
+        return true
+    }
+    
+    private func hostIs ( _ requesteeName: String ) -> Bool {
+        guard 
+            let host = relay?.playerRuntimeContainer?.hostAddr,
+                host.displayName == requesteeName
+        else {
+            debug("\(consoleIdentifier) Did fail to start the game. Requestor isn't the host")
+            return false
+        }
+        
+        return true
+    }
+    
+    private func panelsHasBeenDistributed () -> Bool {
+        guard relay?.panelAssigner?.distributePanel() ?? false else {
+            debug("\(consoleIdentifier) Did fail to start the game: not all players have been assigned a panel")
+            return false
+        }
+        
+        return true
+    }
+    
+    private func initialTasksHasBeenAssigned () -> Bool {
+        guard
+            let playerRuntimeContainer = relay?.playerRuntimeContainer,
+            let panelRuntimeContainer = relay?.panelRuntimeContainer,
+            let taskRuntimeContainer = relay?.taskRuntimeContainer,
+            let taskGenerator = relay?.taskGenerator,
+            let taskAssigner = relay?.taskAssigner
+        else {
+            debug("\(consoleIdentifier) Did fail to initialize and assign tasks: playerRuntimeContainer, panelRuntimeContainer, taskGenerator, or taskAssigner is missing or not set")
+            return false
+        }
+        
+        // checking and scheduling another try if the panelRuntimeContainer hasn't finished the mapping
+        let playerPool = playerRuntimeContainer.getWhitelistedPartiesAndTheirState().map { $0.key.displayName }
+        guard panelRuntimeContainer.playerMapping.count == playerPool.count else {
+            debug("\(consoleIdentifier) Did fail to initialize and assign tasks: panelRuntimeContainer hasn't finished the mapping of players to their respective panels. Rescheduling in another second")
+            
+            // recursively trying until the panelRuntimeContainer has finished the mapping
+            return self.initialTasksHasBeenAssigned()
+        }
+        
+        let playersAndPanels = panelRuntimeContainer.playerMapping
+        let panels = playersAndPanels.map { $0.value }
+        let players = playersAndPanels.map { $0.key }
+        
+        var instructions : [GameTaskInstruction] = []
+        
+        // generate first batch of tasks for each played panel
+        // also assign each of the player: their own panel's task
+        panels.forEach { panel in
+            let task = taskGenerator.generate(for: panel)
+            let panelHolder = playersAndPanels.first { $0.value.panelId == panel.panelId }!.key
+            
+            taskRuntimeContainer.registerTask(task)
+            taskRuntimeContainer.registerTaskCriteria(task.criteria, to: panelHolder)
+            
+            taskAssigner.assignToSpecificAndPush(criteria: task.criteria, to: panelHolder)
+            instructions.append(task.instruction)
+        }
+        
+        // give the instruction-half of the task to someone random
+        instructions.forEach { instruction in 
+            let randomPlayer = players.randomElement()!
+            taskRuntimeContainer.registerTaskInstruction(instruction, to: randomPlayer)
+            taskAssigner.assignToSpecificAndPush(instruction: instruction, to: randomPlayer)
+        }
+        
+        return true
+    }
+    
+    private func hostIsNot ( _ name: String ) -> Bool {
+        guard 
+            let host = relay?.playerRuntimeContainer?.hostAddr,
+                host.displayName != name
+        else {
+            debug("\(consoleIdentifier) Did fail to terminate \(name). Host cannot be terminated")
+            return false
+        }
+        
+        return true
+    }
+    
     
 }

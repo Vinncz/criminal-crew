@@ -44,7 +44,6 @@ extension HasBeenAssignedHost {
         guard
             "HasBeenAssignedHost" == payload[PayloadKeys.eventId.rawValue] as? String
         else {
-            debug("Construction of HasBeenAssignedHost failed: Payload is missing required keys.")
             return nil
         }
         

@@ -9,11 +9,11 @@ internal class SwitchGameViewModel {
     
     private var cancellables = Set<AnyCancellable>()
     
-    private let didPressedButton: PassthroughSubject<String, Never> = PassthroughSubject<String, Never>()
-    internal var taskCompletionStatus: PassthroughSubject<Bool, Never> = PassthroughSubject<Bool, Never>()
-    internal var changePrompt: PassthroughSubject<String, Never> = PassthroughSubject<String, Never>()
-    internal var finishGameAlert: PassthroughSubject<String, Never> = PassthroughSubject<String, Never>()
-    internal var timeIntervalSubject: PassthroughSubject<TimeInterval, Never> = PassthroughSubject<TimeInterval, Never>()
+    private  let didPressedButton     : PassthroughSubject<String, Never>       = PassthroughSubject<String, Never>()
+    internal var taskCompletionStatus : PassthroughSubject<Bool, Never>         = PassthroughSubject<Bool, Never>()
+    internal var changePrompt         : PassthroughSubject<String, Never>       = PassthroughSubject<String, Never>()
+    internal var finishGameAlert      : PassthroughSubject<String, Never>       = PassthroughSubject<String, Never>()
+    internal var timeIntervalSubject  : PassthroughSubject<TimeInterval, Never> = PassthroughSubject<TimeInterval, Never>()
     
     weak var timerDelegate: TimerReset?
     
@@ -25,11 +25,11 @@ internal class SwitchGameViewModel {
     
     private let consoleIdentifier : String = "[C-PSW-VM]"
     
-    init() {
+    init () {
         bind()
     }
     
-    private func bind() {
+    private func bind () {
         didPressedButton
             .sink { [weak self] accessibilityLabel in
                 guard
@@ -62,18 +62,24 @@ internal class SwitchGameViewModel {
     }
     
     private func validateTask(panelRuntimeContainer: ClientPanelRuntimeContainer) {
-        let criteriaId = panelRuntimeContainer.checkCriteriaCompletion()
+        let criteriaIds = panelRuntimeContainer.checkCriteriaCompletion()
         
-        if criteriaId != [] {
+        if !criteriaIds.isEmpty {
             guard
                 let relay = self.relay,
                 let selfSignalCommandCenter = relay.selfSignalCommandCenter
             else {
+                debug("\(consoleIdentifier) Did fail to send criteria completion report to server")
                 return
             }
             
-            let isSuccess = selfSignalCommandCenter.sendCriteriaReport(criteriaId: criteriaId.first ?? "", isAccomplished: true)
-            self.taskCompletionStatus.send(isSuccess)
+            criteriaIds.forEach { criteriaId in 
+                let isSuccess = selfSignalCommandCenter.sendCriteriaReport (
+                    criteriaId: criteriaId, 
+                    isAccomplished: true
+                )
+                self.taskCompletionStatus.send(isSuccess)                
+            }
         } else {
             self.taskCompletionStatus.send(false)
         }
@@ -107,10 +113,10 @@ extension SwitchGameViewModel {
     }
     
     private func bindInstruction(to panelRuntimeContainer: ClientPanelRuntimeContainer) {
-        panelRuntimeContainer.$instructions
+        panelRuntimeContainer.$instruction
             .receive(on: DispatchQueue.main)
-            .sink { [weak self] instructions in
-                guard let instruction = instructions.last else {
+            .sink { [weak self] instruction in
+                guard let instruction else {
                     debug("\(self?.consoleIdentifier ?? "SwitchGameViewModel") Did fail to update instructions. Instructions are empty.")
                     return
                 }
@@ -127,17 +133,16 @@ extension SwitchGameViewModel {
     
     internal func timerDidFinish(_ isExpired: Bool) {
         guard
-            let relay = relay,
+            let relay,
             let selfSignalCommandCenter = relay.selfSignalCommandCenter,
             let panelRuntimeContainer = relay.panelRuntimeContainer,
-            let instructionId = panelRuntimeContainer.instructions.first?.id
+            let instruction = panelRuntimeContainer.instruction
         else {
-            debug("\(consoleIdentifier) Did fail to get selfSignalCommandCenter, failed to send timer expired report")
+            debug("\(consoleIdentifier) Did fail to send report of instruction's expiry: Relay and all of its requirements are not met")
             return
         }
         
-        let isSuccess = selfSignalCommandCenter.sendIstructionReport(instructionId: instructionId, isAccomplished: isExpired)
-        debug("\(consoleIdentifier) success in sending instruction did timer expired report, status is \(isSuccess)")
-    }
-    
+        let isSuccess = selfSignalCommandCenter.sendIstructionReport(instructionId: instruction.id, isAccomplished: isExpired)
+        debug("\(consoleIdentifier) Did send report of instruction's expiry. It was \(isSuccess ? "delivered" : "not delivered") to server. The last updated status is \(isExpired ? "accomplished" : "not done")")
+    }    
 }

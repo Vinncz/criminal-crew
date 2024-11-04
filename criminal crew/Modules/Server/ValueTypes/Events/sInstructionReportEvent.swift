@@ -1,10 +1,3 @@
-//
-//  sInstructionReportEvent.swift
-//  criminal crew
-//
-//  Created by Hansen Yudistira on 01/11/24.
-//
-
 import GamePantry
 
 public struct InstructionReportEvent : GPEvent, GPSendableEvent, GPReceivableEvent {
@@ -14,8 +7,8 @@ public struct InstructionReportEvent : GPEvent, GPSendableEvent, GPReceivableEve
     public let isAccomplished : Bool
     public let penaltyPoints  : Int
     
-    public let id             : String = "InstructionDidTimeExpiredReportEvent"
-    public let purpose        : String = "Reports to the server that a instruction timer has been expired"
+    public let id             : String = "InstructionReportEvent"
+    public let purpose        : String = "A report about the status of a GameTaskInstruction"
     public let instanciatedOn : Date   = .now
     
     public var payload        : [String: Any] = [:]
@@ -65,13 +58,12 @@ extension InstructionReportEvent {
     
     public static func construct ( from payload: [String: Any] ) -> InstructionReportEvent? {
         guard
-            "InstructionDidTimeExpiredReportEvent" == payload[PayloadKeys.eventId.rawValue] as? String,
+            "InstructionReportEvent" == payload[PayloadKeys.eventId.rawValue] as? String,
             let submitterName  = payload[PayloadKeys.submitterName.rawValue] as? String,
             let instructionId  = payload[PayloadKeys.instructionId.rawValue] as? String,
             let isAccomplished = Bool(payload[PayloadKeys.isAccomplished.rawValue] as? String ?? "false"),
             let penaltyPoints  = Int(payload[PayloadKeys.penaltyPoints.rawValue] as? String ?? "0")
         else {
-            debug("Construction of InstructionDidTimeExpiredReportEvent failed: Payload is missing required keys.")
             return nil
         }
         

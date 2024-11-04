@@ -69,7 +69,6 @@ extension HasBeenAssignedTask {
             let rawCriteria = payload[PayloadKeys.criteria.rawValue] as? String,
             let delimiter = payload[PayloadKeys.delimiter.rawValue] as? String
         else {
-            debug("Construction of HasBeenAssignedTask failed: Payload is missing required keys.")
             return nil
         }
         

@@ -59,7 +59,6 @@ extension HasBeenAssignedInstruction {
             let instructionId = payload[PayloadKeys.instructionId.rawValue] as? String,
             let instruction   = payload[PayloadKeys.instruction.rawValue] as? String
         else {
-            debug("Construction of HasBeenAssignedInstruction failed: Payload is missing required keys.")
             return nil
         }
         

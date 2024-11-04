@@ -64,7 +64,6 @@ extension HasBeenAssignedCriteria {
             let requirements = payload[PayloadKeys.requirements.rawValue] as? String,
             let delimiter    = payload[PayloadKeys.delimiter.rawValue] as? String
         else {
-            debug("Construction of HasBeenAssignedCriteria failed: Payload is missing required keys.")
             return nil
         }
         

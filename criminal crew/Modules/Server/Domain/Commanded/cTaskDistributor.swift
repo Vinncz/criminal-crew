@@ -31,12 +31,12 @@ public protocol TaskDistributionStrategy {
     
 }
 
-public class RandomTaskDistributionStrategy : TaskDistributionStrategy {
-    
-    public init () {}
-    
-    public func distribute ( task: GameTask, fromPoolOf players: [String] ) {
-        let randomPlayer = players.randomElement()
+//public class RandomTaskDistributionStrategy : TaskDistributionStrategy {
+//    
+//    public init () {}
+//    
+//    public func distribute ( task: GameTask, fromPoolOf players: [String] ) {
+//        let randomPlayer = players.randomElement()
 //        relay?.eventBroadcaster?.broadcast(
 //            HasBeenAssignedTask(
 //                taskId: task.id.uuidString,
@@ -47,6 +47,6 @@ public class RandomTaskDistributionStrategy : TaskDistributionStrategy {
 //            ).representedAsData(),
 //            to: [randomPlayer]
 //        )
-    }
-    
-}
+//    }
+//    
+//}
