@@ -451,6 +451,7 @@ extension ClockGameViewController {
     private func bindInstruction(to panelRuntimeContainer: ClientPanelRuntimeContainer) {
         panelRuntimeContainer.$instruction
             .receive(on: DispatchQueue.main)
+            .debounce(for: .milliseconds(200), scheduler: RunLoop.main)
             .sink { [weak self] instruction in
                 guard let instruction else {
                     debug("\(self?.consoleIdentifier ?? "SwitchGameViewModel") Did fail to update instructions. Instructions are empty.")
@@ -462,4 +463,5 @@ extension ClockGameViewController {
             }
             .store(in: &cancellables)
     }
+    
 }
