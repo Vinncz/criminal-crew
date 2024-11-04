@@ -5,7 +5,8 @@ import UIKit
     
     public var serverComposer: ServerComposer { didSet { serverComposer$ = serverComposer } }
     public var clientComposer: ClientComposer { didSet { clientComposer$ = clientComposer } }
-    var queuedJobToAdmitTheHost : AnyCancellable?
+    public var queuedJobToAdmitTheHost: AnyCancellable?
+    public var subscriptions : Set<AnyCancellable> = []
     
     public init ( rootNavigationController: UINavigationController ) {
         let serverComposer = ServerComposer()
@@ -34,9 +35,16 @@ import UIKit
                 debug("[S-ADV] Made the server invisible in the network")
             },
             resetServerState: { [weak self] in 
-                self?.serverComposer.networkManager.eventBroadcaster.ceaseCommunication()
-                self?.serverComposer.ent_playerRuntimeContainer.reset()
-                self?.queuedJobToAdmitTheHost?.cancel()
+                guard let self else { return }
+                self.serverComposer.networkManager.advertiserService.stopAdvertising(on: self.serverComposer.networkManager.advertiserService)
+                self.serverComposer.networkManager.eventBroadcaster.ceaseCommunication()
+                self.serverComposer.networkManager.eventBroadcaster.reset()
+                self.serverComposer.ent_playerRuntimeContainer.reset()
+                self.queuedJobToAdmitTheHost?.cancel()
+                self.serverComposer.ent_playerRuntimeContainer.reset()
+                self.serverComposer.ent_taskRuntimeContainer.reset()
+                self.serverComposer.ent_gameRuntimeContainer.reset()
+                debug("[S-RLY] Did reset the server state")
             },
             placeJobToAdmitHost: { [weak self] hostID in
                 guard let self else { return }
@@ -50,34 +58,16 @@ import UIKit
                         }
                     }
                 }
-                let queuedJobToCancelHostAdmissionJob = self.serverComposer.ent_playerRuntimeContainer.$hostAddr.sink { host in
-                    if let host {
+                self.serverComposer.ent_playerRuntimeContainer.$hostAddr.sink { host in
+                    if host != nil {
                         self.queuedJobToAdmitTheHost?.cancel()
                         debug("[S-ADV] Cancelled the job to admit the host, as the host has been admitted")
                     } else {
                         debug("[S-ADV] Did not cancel host admission job: Host has not been admitted yet")
                     }
-                }
-            },
-            sendMockDataFromServer: { [weak self] in
-//                guard let self else { return }
-//                do {
-//                    try self.serverComposer.networkManager.eventBroadcaster.broadcast(
-//                        AssignTaskEvent(to: MCPeerID(displayName: "MOCK CLIENT"), GameTask(instruction: "SPIN AROUND 5X", completionCriteria: ["Dizzy", "Fell Down"])).representedAsData(), 
-//                        to: self.serverComposer.networkManager.eventBroadcaster.getPeers()
-//                    )
-//                    debug("Prompted to send data to client")
-//                } catch {
-//                    debug("\(error)")
-//                }
+                }.store(in: &subscriptions)
             }
         )
-        
-//        serverComposer.relay = ServerComposer.Relay (
-//            cancelHostAdmissionJob: { [weak self] in 
-//                self?.queuedJobToAdmitTheHost?.cancel()
-//            }
-//        )
     }
     
     @ObservationIgnored @Published public var serverComposer$ : ServerComposer

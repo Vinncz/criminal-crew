@@ -54,15 +54,15 @@ extension ServerSignalResponder : GPHandlesEvents {
                 didGetAssignedHost(event)
             case let event as HasBeenAssignedPanel:
                 didGetAssignedPanel(event)
-            case let event as HasBeenAssignedTask:
-                didGetAssignedTask(event)
             case let event as HasBeenAssignedCriteria:
                 didGetAssignedCriteria(event)
             case let event as HasBeenAssignedInstruction:
                 didGetAssignedInstruction(event)
                 
             case let event as InstructionDidGetDismissed:
-                didGetPromptDismissed(event)
+                didGetOrderToDismissDisplayedInstruction(event)
+            case let event as CriteriaDidGetDismissed:
+                didGetOrderToDismissSomeCriteria(event)
                 
             case let event as PenaltyDidReachLimitEvent:
                 didGetPenaltyLimitCue(event)
@@ -229,45 +229,6 @@ extension ServerSignalResponder {
         gameRuntime.state = .playing
     }
     
-    public func didGetAssignedTask ( _ event: HasBeenAssignedTask ) {
-        guard true == false else {
-            debug("\(consoleIdentifier) Did fail to handle didGetAssignedTask since this feature is deprecated")
-            return
-        }
-        
-        // guard let relay else { 
-        //     debug("\(consoleIdentifier) Relay is missing or not set")
-        //     return 
-        // }
-        
-        // guard 
-        //     let gameRuntime = relay.gameRuntime,
-        //     gameRuntime.state == .playing
-        // else {
-        //     debug("\(consoleIdentifier) Did fail to handle didGetAssignedTask since GameRuntime is missing or not set, or game is not in playing state")
-        //     return
-        // }
-        
-        // guard let panelRuntime = relay.panelRuntime else {
-        //     debug("\(consoleIdentifier) Did fail to handle didGetAssignedTask since PanelRuntime is missing or not set")
-        //     return
-        // }
-        
-        // let notOverwriting = panelRuntime.attachTask (
-        //     GameTask (
-        //         prompt: event.prompt, 
-        //         completionCriteria: event.completionCriteria,
-        //         duration: event.duration
-        //     )
-        // )
-        
-        // if notOverwriting {
-        //     debug("\(consoleIdentifier) Did sucessfully attached new task")
-        // } else {
-        //     debug("\(consoleIdentifier) Did overwrite old task")
-        // }
-    }
-    
     public func didGetAssignedInstruction ( _ event: HasBeenAssignedInstruction ) {
         guard let relay else { 
             debug("\(consoleIdentifier) Relay is missing or not set")
@@ -279,13 +240,11 @@ extension ServerSignalResponder {
             return
         }
         
-        panelRuntime.instructions.append (
-            GameTaskInstruction (
-                id: event.instructionId,
-                content: event.instruction, 
-                displayDuration: event.displayDuration
-            )
-        )
+        panelRuntime.instruction = GameTaskInstruction (
+                                        id: event.instructionId,
+                                        content: event.instruction, 
+                                        displayDuration: event.displayDuration
+                                    )
     }
     
     public func didGetAssignedCriteria ( _ event: HasBeenAssignedCriteria ) {
@@ -312,7 +271,7 @@ extension ServerSignalResponder {
 
 extension ServerSignalResponder {
     
-    public func didGetPromptDismissed ( _ event: InstructionDidGetDismissed ) {
+    public func didGetOrderToDismissDisplayedInstruction ( _ event: InstructionDidGetDismissed ) {
         guard let relay else { 
             debug("\(consoleIdentifier) Relay is missing or not set")
             return 
@@ -323,7 +282,29 @@ extension ServerSignalResponder {
             return
         }
         
-        panelRuntime.instructions.removeAll { $0.id == event.instructionId }
+        guard 
+            let displayedInstruction = panelRuntime.instruction,
+                displayedInstruction.id == event.instructionId 
+        else {
+            debug("\(consoleIdentifier) Did fail to dismiss ")
+            return
+        }
+        
+        relay.panelRuntime?.instruction = nil
+    }
+    
+    public func didGetOrderToDismissSomeCriteria ( _ event: CriteriaDidGetDismissed ) {
+        guard let relay else { 
+            debug("\(consoleIdentifier) Relay is missing or not set")
+            return 
+        }
+        
+        guard let panelRuntime = relay.panelRuntime else {
+            debug("\(consoleIdentifier) Did fail to handle criteria limit reached since PanelRuntime is missing or not set")
+            return
+        }
+        
+        relay.panelRuntime?.criterias.removeAll { $0.id == event.criteriaId }
     }
     
 }
@@ -379,17 +360,17 @@ extension ServerSignalResponder {
             let serverAddr = gameRuntime.playedServerAddr,
             gameRuntime.isHost == true
         else {
-            debug("\(consoleIdentifier) Did fail to handle didGetAdmissionRequest since GameRuntime is missing or not set, or is not connected to server, or self is not host")
+            debug("\(consoleIdentifier) Did fail to handle admission request. GameRuntime is missing or not set, or is not connected to server, or self is not host")
             return
         }
         
         guard let playerRuntime: ClientPlayerRuntimeContainer = relay.playerRuntime else {
-            debug("\(consoleIdentifier) Did fail to handle didGetAdmissionRequest since PanelRuntime is missing or not set")
+            debug("\(consoleIdentifier) Did fail to handle admission request. PanelRuntime is missing or not set")
             return
         }
         
         guard playerRuntime.joinRequestedPlayersNames.contains(event.subjectName) == false else {
-            debug("\(consoleIdentifier) Did fail to admit player: \(event.subjectName) has already requested to join or is already connected")
+            debug("\(consoleIdentifier) Did fail to admit player. \(event.subjectName) has already requested to join or has already joined")
             return
         }
         
@@ -441,11 +422,5 @@ extension ServerSignalResponder {
         
         playerRuntime.connectedPlayersNames = event.connectedPlayerNames
     }
-    
-    // TODO: 
-    // * Able to request the game to start
-    // * Able to request the game to end
-    // * Able to request overall penalty progression
-    // * Able to request overall task progression
     
 }

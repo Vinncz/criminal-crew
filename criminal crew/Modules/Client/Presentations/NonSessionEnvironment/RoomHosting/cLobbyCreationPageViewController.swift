@@ -25,6 +25,7 @@ public class LobbyCreationPageViewController : UIViewController, UsesDependencie
         weak var selfSignalCommandCenter : SelfSignalCommandCenter?
         weak var playerRuntimeContainer  : ClientPlayerRuntimeContainer?
         weak var gameRuntimeContainer    : ClientGameRuntimeContainer?
+        weak var panelRuntimeContainer   : ClientPanelRuntimeContainer?
              var publicizeRoom : ( _ advertContent: [String: String] ) -> Void
              var navigate      : ( _ to: UIViewController ) -> Void
     }
@@ -52,7 +53,7 @@ public class LobbyCreationPageViewController : UIViewController, UsesDependencie
         fatalError("init(coder:) has not been implemented")
     }
     
-    private let consoleIdentifer = "[C-LCV]"
+    private let consoleIdentifier = "[C-LCV]"
     
 }
 
@@ -142,6 +143,7 @@ extension LobbyCreationPageViewController {
         
         _ = self.relay?.selfSignalCommandCenter?.startBrowsingForServers()
         enableUpdateJobForConnectedNames()
+        enablePushToGameViewJob()
         
         self.relay?.gameRuntimeContainer?.state = .creatingLobby
         
@@ -161,12 +163,12 @@ extension LobbyCreationPageViewController {
     
     private func enableUpdateJobForConnectedNames () {
         guard let relay else {
-            debug("\(consoleIdentifer) Did fail to set up actions for list of pending players. Relay is missing or not set")
+            debug("\(consoleIdentifier) Did fail to set up actions for list of pending players. Relay is missing or not set")
             return
         }
         
         guard let playerRuntimeContainer = relay.playerRuntimeContainer else {
-            debug("\(consoleIdentifer) Did fail to set up actions for list of pending players. PlayerRuntimeContainer is missing or not set")
+            debug("\(consoleIdentifier) Did fail to set up actions for list of pending players. PlayerRuntimeContainer is missing or not set")
             return
         }
         
@@ -185,13 +187,53 @@ extension LobbyCreationPageViewController {
             }.store(in: &subscriptions)
     }
     
+    private func enablePushToGameViewJob () {
+        guard let relay else {
+            debug("\(consoleIdentifier) Did fail to set up actions for list of connected players. Relay is missing or not set")
+            return
+        }
+        
+        guard let panelRuntimeContainer = relay.panelRuntimeContainer else {
+            debug("\(consoleIdentifier) Did fail to set up actions for enablePushToGameViewJob. PanelRuntimeContainer is missing or not set")
+            return
+        }
+        
+        var vc : UIViewController? = nil
+        panelRuntimeContainer.$panelPlayed
+            .receive(on: DispatchQueue.main)
+            .sink { panel in
+                // delay 1 sec to make sure the panel is there
+                DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
+                    switch panel {
+                        case is ClientClockPanel:
+                            vc = ClockGameViewController()
+                                .withRelay(of: .init(panelRuntimeContainer: panelRuntimeContainer, selfSignalCommandCenter: self.relay?.selfSignalCommandCenter))
+                        case is ClientWiresPanel:
+                            vc = CableGameViewController()
+                                .withRelay(of: .init(panelRuntimeContainer: panelRuntimeContainer, selfSignalCommandCenter: self.relay?.selfSignalCommandCenter))
+                        case is ClientSwitchesPanel:
+                            vc = SwitchGameViewController()
+                                .withRelay(of: .init(panelRuntimeContainer: panelRuntimeContainer, selfSignalCommandCenter: self.relay?.selfSignalCommandCenter))
+                        default:
+                            debug("Did fail to set up game view controller")
+                            break
+                    }
+                    
+                    if let vc {
+                        relay.navigate(vc)
+                    }
+                }
+            }
+            .store(in: &subscriptions)
+    }
+    
 }
 
 extension LobbyCreationPageViewController {
     
     @objc private func exposeRoom ( _ sender: UIButton ) {
         guard let relay else {
-            debug("\(consoleIdentifer) Did fail to publicize room. Relay is missing or not set")
+            debug("\(consoleIdentifier) Did fail to publicize room. Relay is missing or not set")
             return
         }
         
@@ -207,12 +249,12 @@ extension LobbyCreationPageViewController {
     
     @objc private func updateJoinPermission ( _ sender: UISwitch ) {
         guard let relay else {
-            debug("\(consoleIdentifer) Did fail to update the join permission. Relay is missing or not set")
+            debug("\(consoleIdentifier) Did fail to update the join permission. Relay is missing or not set")
             return
         }
         
         guard let selfSignalCommandCenter = relay.selfSignalCommandCenter else {
-            debug("\(consoleIdentifer) Did fail to update the join permission. SelfSignalCommandCenter is missing or not set")
+            debug("\(consoleIdentifier) Did fail to update the join permission. SelfSignalCommandCenter is missing or not set")
             return
         }
         
@@ -222,17 +264,17 @@ extension LobbyCreationPageViewController {
     
     @objc private func refreshConnectedPlayersFromServer () {
         guard let relay else {
-            debug("\(consoleIdentifer) Did fail to refresh connected players. Relay is missing or not set")
+            debug("\(consoleIdentifier) Did fail to refresh connected players. Relay is missing or not set")
             return
         }
         
         guard let selfSignalCommandCenter = relay.selfSignalCommandCenter else {
-            debug("\(consoleIdentifer) Did fail to update the join permission. SelfSignalCommandCenter is missing or not set")
+            debug("\(consoleIdentifier) Did fail to update the join permission. SelfSignalCommandCenter is missing or not set")
             return
         }
         
         if !selfSignalCommandCenter.orderConnectedPlayerNames () {
-            debug("\(consoleIdentifer) Did fail to refresh connected players")
+            debug("\(consoleIdentifier) Did fail to refresh connected players")
         }
         
         tPendingPlayers.reloadData()
@@ -240,17 +282,17 @@ extension LobbyCreationPageViewController {
     
     @objc private func startGame () {
         guard let relay else {
-            debug("\(consoleIdentifer) Did fail to refresh connected players. Relay is missing or not set")
+            debug("\(consoleIdentifier) Did fail to refresh connected players. Relay is missing or not set")
             return
         }
         
         guard let selfSignalCommandCenter = relay.selfSignalCommandCenter else {
-            debug("\(consoleIdentifer) Did fail to update the join permission. SelfSignalCommandCenter is missing or not set")
+            debug("\(consoleIdentifier) Did fail to update the join permission. SelfSignalCommandCenter is missing or not set")
             return
         }
         
         if !selfSignalCommandCenter.startGame() {
-            debug("\(consoleIdentifer) Did fail to start the game")
+            debug("\(consoleIdentifier) Did fail to start the game")
         }
     }
     

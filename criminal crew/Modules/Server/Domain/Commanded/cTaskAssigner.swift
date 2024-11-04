@@ -16,54 +16,13 @@ public class TaskAssigner : UseCase {
 
 extension TaskAssigner {
     
-    public func assignToSpecificAndPush ( task: GameTask, to player: String ) {
-        fatalError("Deprecated")
-        
-        guard let relay else { 
-            debug("\(consoleIdentifier) Did fail to assign task to random player: relay is missing or not set") 
-            return 
-        }
-        
-        switch ( relay.check(\.playerRuntimeContainer, \.eventBroadcaster) ) {
-            case .failure (let missing):
-                debug("\(consoleIdentifier) Did fail to assign task to random player: \(missing) is missing or not set")
-                return
-                
-            case .success:
-                guard let playerRuntimeContainer = relay.playerRuntimeContainer,
-                      let eventBroadcaster = relay.eventBroadcaster 
-                else { return }
-                
-                guard let playerReport = playerRuntimeContainer.getReportOnPlayer(named: player) else {
-                    debug("\(consoleIdentifier) Did fail to assign task to \(player): player is not found")
-                    return
-                }
-                
-                do {
-                    try eventBroadcaster.broadcast (
-                        HasBeenAssignedTask (
-                            taskId: task.id.uuidString, 
-                            instruction: task.instruction.content, 
-                            criteria: task.criteria.requirements, 
-                            duration: 20,
-                            delimiter: "˛"
-                        ).representedAsData(),
-                        to: [playerReport.address]
-                    )
-                    debug("\(consoleIdentifier) Did assign \(task) to \(player)")
-                } catch {
-                    debug("\(consoleIdentifier) Did fail to assign task [S] to \(player)")
-                }
-        }
-    }
-    
     public func assignToSpecificAndPush ( instruction: GameTaskInstruction, to player: String ) {
         guard let relay else { 
             debug("\(consoleIdentifier) Did fail to assign instruction to specific player: relay is missing or not set") 
             return 
         }
         
-        switch ( relay.check(\.playerRuntimeContainer, \.eventBroadcaster) ) {
+        switch ( relay.assertPresent(\.playerRuntimeContainer, \.eventBroadcaster) ) {
             case .failure (let missing):
                 debug("\(consoleIdentifier) Did fail to assign task to specific player: \(missing) is missing or not set")
                 return
@@ -86,9 +45,9 @@ extension TaskAssigner {
                         ).representedAsData(),
                         to: [playerReport.address]
                     )
-                    debug("\(consoleIdentifier) Did assign \(instruction) to \(player)")
+                    debug("\(consoleIdentifier) Did assign instriction \(instruction.id) to \(player)")
                 } catch {
-                    debug("\(consoleIdentifier) Did fail to assign \(instruction) to \(player)")
+                    debug("\(consoleIdentifier) Did fail to assign instruction \(instruction.id) to \(player)")
                 }
         }
     }
@@ -99,7 +58,7 @@ extension TaskAssigner {
             return 
         }
         
-        switch ( relay.check(\.playerRuntimeContainer, \.eventBroadcaster) ) {
+        switch ( relay.assertPresent(\.playerRuntimeContainer, \.eventBroadcaster) ) {
             case .failure (let missing):
                 debug("\(consoleIdentifier) Did fail to assign task to specific player: \(missing) is missing or not set")
                 return
@@ -122,9 +81,9 @@ extension TaskAssigner {
                         ).representedAsData(),
                         to: [playerReport.address]
                     )
-                    debug("\(consoleIdentifier) Did assign \(criteria) to \(player)")
+                    debug("\(consoleIdentifier) Did assign \(criteria.id) to \(player)")
                 } catch {
-                    debug("\(consoleIdentifier) Did fail to assign \(criteria) to \(player)")
+                    debug("\(consoleIdentifier) Did fail to assign \(criteria.id) to \(player)")
                 }
         }
     }

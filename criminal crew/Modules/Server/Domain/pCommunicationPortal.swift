@@ -2,13 +2,13 @@ import Foundation
 
 public protocol CommunicationPortal {
     
-    func check ( _ keyPaths: PartialKeyPath<Self>... ) -> Result<Void, CommunicationPortalCheckError>
+    func assertPresent ( _ keyPaths: PartialKeyPath<Self>... ) -> Result<Void, CommunicationPortalCheckError>
     
 }
 
 extension CommunicationPortal {
     
-    public func check ( _ requestedAttributes: PartialKeyPath<Self>... ) -> Result<Void, CommunicationPortalCheckError> {
+    public func assertPresent ( _ requestedAttributes: PartialKeyPath<Self>... ) -> Result<Void, CommunicationPortalCheckError> {
         let mirror = Mirror(reflecting: self)
         var missingAttributes: [String] = []
         

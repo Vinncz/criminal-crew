@@ -49,7 +49,6 @@ extension InstructionDidGetDismissed {
             "InstructionDidGetDismissed" == payload[PayloadKeys.eventId.rawValue] as? String,
             let instructionId = payload[PayloadKeys.instructionId.rawValue] as? String
         else {
-            debug("Construction of InstructionDidGetDismissed failed: Payload is missing required keys.")
             return nil
         }
         

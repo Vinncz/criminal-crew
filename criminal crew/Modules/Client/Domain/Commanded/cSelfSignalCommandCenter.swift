@@ -345,7 +345,7 @@ extension SelfSignalCommandCenter {
                 ).representedAsData(), 
                 to: [serverAddr]
             )
-            debug("\(consoleIdentifier) Did send criteria report to server")
+            debug("\(consoleIdentifier) Did send criteria report \(criteriaId) to server. Criteria is \(isAccomplished ? "accomplished" : "not accomplished")")
             
             flowIsComplete = true
             

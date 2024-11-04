@@ -50,8 +50,6 @@ public class ClientComposer : UsesDependenciesInjector {
         var resetServerState       : () -> Void
         /// Admit self to self-made server
         var placeJobToAdmitHost    : ( _ hostId: MCPeerID ) -> Void
-        /// Debugging tool to send mock data from server to client
-        var sendMockDataFromServer : () -> Void
     }
 
     init ( navigationController: UINavigationController ) {
@@ -134,7 +132,8 @@ extension ClientComposer {
             router.openChannel(for:HasBeenAssignedInstruction.self),
             router.openChannel(for:HasBeenAssignedCriteria.self),
             
-            router.openChannel(for:InstructionDidGetDismissed.self)
+            router.openChannel(for:InstructionDidGetDismissed.self),
+            router.openChannel(for:CriteriaDidGetDismissed.self)
         else {
             debug("[C] Did fail to open all required channels for EventRouter")
             return
@@ -154,6 +153,7 @@ extension ClientComposer {
         evtUC_serverSignalResponder.placeSubscription(on: HasBeenAssignedCriteria.self)
         
         evtUC_serverSignalResponder.placeSubscription(on: InstructionDidGetDismissed.self)
+        evtUC_serverSignalResponder.placeSubscription(on: CriteriaDidGetDismissed.self)
         
         evtUC_serverSignalResponder.placeSubscription(on: PenaltyDidReachLimitEvent.self)
         evtUC_serverSignalResponder.placeSubscription(on: TaskDidReachLimitEvent.self)
@@ -170,6 +170,9 @@ extension ClientComposer {
                 gameRuntimeContainer: self.ent_gameRuntimeContainer,
                 panelRuntimeContainer: self.ent_panelRuntimeContainer,
                 serverBrowser: (self.networkManager.browser as! ClientGameBrowser),
+                resetServer: { [weak self] in
+                    self?.relay?.resetServerState()
+                },
                 publicizeRoom: { [weak self] advertContent in 
                     guard let self, let serverAddr = self.relay?.makeServerVisible(advertContent) else {
                         debug("[C] ClientComposer relay is missing or not set")
@@ -194,86 +197,6 @@ extension ClientComposer {
             )
         
         navigationController.pushViewController(landingPage, animated: true)
-    }
-    
-    private func placeInitialOldView () -> Void {
-        let mmvc = MainMenuViewController()
-        mmvc.relay = MainMenuViewController.Relay (
-            makeServerVisible   : { [weak self] advertContent in
-                guard let self, let serverAddr = self.relay?.makeServerVisible(advertContent) else {
-                    debug("[C] ClientComposer relay is missing or not set")
-                    return
-                }
-                
-                self.networkManager.browser.startBrowsing(self.networkManager.browser)
-                cancellableForAutoJoinSelfCreatedServer = self.networkManager.browser.$discoveredServers.sink { servers in
-                    servers.forEach { serv in
-                        if ( serv.serverId == serverAddr ) {
-                            self.networkManager.eventBroadcaster.approve(
-                                self.networkManager.browser.requestToJoin(serv.serverId)
-                            )
-                        }
-                    }
-                }
-                
-                relay?.placeJobToAdmitHost(self.networkManager.myself)
-            }, 
-            makeServerInvisible: { [weak self] in
-                self?.relay?.makeServerInvisible()
-                self?.relay?.resetServerState()
-            },
-            navigateTo          : { [weak self] vc in
-                self?.navigate(to: vc)
-            },
-            communicateToServer : { [weak self] data in
-                do {
-                    try self?.networkManager.eventBroadcaster.broadcast(data, to: self!.networkManager.eventBroadcaster.getPeers())
-                } catch {
-                    debug("Did fail to make broadcast to server: \(error)")
-                }
-            },
-            sendMockDataFromServer : { [weak self] in
-                self?.relay?.sendMockDataFromServer()
-            },
-            requestConnectedPlayerNames: { [weak self] in 
-                guard let self else { return }
-                try self.networkManager.eventBroadcaster.broadcast(
-                    InquiryAboutConnectedPlayersRequestedEvent(authorizedBy: self.networkManager.myself.displayName).representedAsData(),
-                    to: self.networkManager.eventBroadcaster.getPeers()
-                )
-            },
-            startSearchingForServers: { [weak self] in 
-                guard let self else { return }
-                self.networkManager.browser.startBrowsing(self.networkManager.browser)
-            },
-            stopSearchingForServers: { [weak self] in 
-                guard let self else { return }
-                self.networkManager.browser.stopBrowsing(self.networkManager.browser)
-            },
-            requestDiscoveredServersData: { [weak self] in 
-                guard let self else { return ["No discovered servers"] }
-                return self.networkManager.browser.discoveredServers.map {
-                    return $0.discoveryContext["roomName"] ?? "Unnamed server"
-                }
-            }
-        )
-        
-        // LEGACY REQUIREMENTS -------------------------------
-        switchRepository.relay = MultipeerTaskRepository.Relay (
-            communicateToServer: { [weak self] data in
-                do {
-                    try self?.networkManager.eventBroadcaster.broadcast(data, to: self!.networkManager.eventBroadcaster.getPeers())
-                    return true
-                } catch {
-                    debug("Did fail to make broadcast to server: \(error)")
-                    return false
-                }
-            }, eventRouter: self.router
-        )
-        switchRepository.placeSubscription(on: GPTaskReceivedEvent.self)
-        // ---------------------------------------------------
-        let switchView = SwitchGameViewController()
-        navigationController.pushViewController(switchView, animated: true)
     }
     
     public func navigate ( to destination: UIViewController ) {

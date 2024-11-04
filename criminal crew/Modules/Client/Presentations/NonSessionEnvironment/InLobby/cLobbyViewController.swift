@@ -107,7 +107,7 @@ extension LobbyViewController {
             return
         }
         
-        switch relay.check(\.selfSignalCommandCenter, \.playerRuntimeContainer) {
+        switch relay.assertPresent(\.selfSignalCommandCenter, \.playerRuntimeContainer) {
             case .success():
                 guard 
                     let selfCommandCenter = relay.selfSignalCommandCenter,
@@ -155,10 +155,10 @@ extension LobbyViewController {
                                 .withRelay(of: .init(panelRuntimeContainer: panelRuntimeContainer, selfSignalCommandCenter: self.relay?.selfSignalCommandCenter))
                         case is ClientWiresPanel:
                             vc = CableGameViewController()
-                                    .withRelay(of: .init(panelRuntimeContainer: panelRuntimeContainer))
+                                .withRelay(of: .init(panelRuntimeContainer: panelRuntimeContainer, selfSignalCommandCenter: self.relay?.selfSignalCommandCenter))
                         case is ClientSwitchesPanel:
                             vc = SwitchGameViewController()
-                                    .withRelay(of: .init(panelRuntimeContainer: panelRuntimeContainer))
+                                .withRelay(of: .init(panelRuntimeContainer: panelRuntimeContainer, selfSignalCommandCenter: self.relay?.selfSignalCommandCenter))
                         default:
                             debug("Did fail to set up game view controller")
                             break

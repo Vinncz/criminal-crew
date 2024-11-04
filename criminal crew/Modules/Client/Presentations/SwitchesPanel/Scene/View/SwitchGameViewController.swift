@@ -107,13 +107,14 @@ internal class SwitchGameViewController: BaseGameViewController {
     override open func setupGameContent() {
         guard
             let relay,
-            let panelRuntimeContainer = relay.panelRuntimeContainer
+            let panelRuntimeContainer = relay.panelRuntimeContainer,
+            let selfSignalCommandCenter = relay.selfSignalCommandCenter
         else {
             debug("\(consoleIdentifier) Did fail to setup gameContent. Relay and/or some of its attribute is missing or not set")
             return
         }
         
-        self.viewModel = SwitchGameViewModel().withRelay(of: .init(panelRuntimeContainer: panelRuntimeContainer))
+        self.viewModel = SwitchGameViewModel().withRelay(of: .init(panelRuntimeContainer: panelRuntimeContainer, selfSignalCommandCenter: selfSignalCommandCenter))
         
         bindViewModel()
         

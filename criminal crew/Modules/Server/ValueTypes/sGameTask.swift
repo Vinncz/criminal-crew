@@ -11,8 +11,8 @@ public struct GameTask : Identifiable, Hashable, Sendable {
         self.instruction = instruction
         self.criteria    = completionCriteria
         
-        self.instruction.associate(with: self.id)
-        self.criteria.associate(with: self.id)
+        self.instruction.associate(with: self.id.uuidString)
+        self.criteria.associate(with: self.id.uuidString)
     }
     
 }

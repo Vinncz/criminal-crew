@@ -33,11 +33,9 @@ public class ClientNetworkEventListener : GPGameEventListener {
             if !emit(parsedData) {
                 debug("\(consoleIdentifier) Did receive InquiryAboutConnectedPlayersRespondedEvent, but not shared via event router")
             }
-        } else if let parsedData = HasBeenAssignedTask.construct(from: fromData(data: data)!) {
-            if !emit(parsedData) {
-                debug("\(consoleIdentifier) Did receive HasBeenAssignedTask, but not shared via event router")
-            }
-        } else if let parsedData = HasBeenAssignedPanel.construct(from: fromData(data: data)!) {
+        } 
+        
+        else if let parsedData = HasBeenAssignedPanel.construct(from: fromData(data: data)!) {
             if !emit(parsedData) {
                 debug("\(consoleIdentifier) Did receive HasBeenAssignedPanel, but not shared via event router")
             }
@@ -49,12 +47,13 @@ public class ClientNetworkEventListener : GPGameEventListener {
             if !emit(parsedData) {
                 debug("\(consoleIdentifier) Did receive HasBeenAssignedHost, but not shared via event router")
             }
-        } 
-        else if let parsedData = HasBeenAssignedInstruction.construct(from: fromData(data: data)!) {
+        } else if let parsedData = HasBeenAssignedInstruction.construct(from: fromData(data: data)!) {
             if !emit(parsedData) {
                 debug("\(consoleIdentifier) Did receive HasBeenAssignedHost, but not shared via event router")
             }
-        } else if let parsedData = GPGameJoinRequestedEvent.construct(from: fromData(data: data)!) {
+        } 
+        
+        else if let parsedData = GPGameJoinRequestedEvent.construct(from: fromData(data: data)!) {
             if !emit(parsedData) {
                 debug("\(consoleIdentifier) Did receive GPGameJoinRequestedEvent, but not shared via event router")
             }
@@ -62,7 +61,29 @@ public class ClientNetworkEventListener : GPGameEventListener {
             if !emit(parsedData) {
                 debug("\(consoleIdentifier) Did receive GPTerminatedEvent, but not shared via event router")
             }
-        } else {
+        } 
+        
+        else if let parsedData = InstructionDidGetDismissed.construct(from: fromData(data: data)!) {
+            if !emit(parsedData) {
+                debug("\(consoleIdentifier) Did receive InstructionDidGetDismissed, but not shared via event router")
+            }
+        } else if let parsedData = CriteriaDidGetDismissed.construct(from: fromData(data: data)!) {
+            if !emit(parsedData) {
+                debug("\(consoleIdentifier) Did receive CriteriaDidGetDismissed, but not shared via event router")
+            }
+        }
+        
+        else if let parsedData = PenaltyDidReachLimitEvent.construct(from: fromData(data: data)!) {
+            if !emit(parsedData) {
+                debug("\(consoleIdentifier) Did receive PenaltyDidReachLimitEvent, but not shared via event router")
+            }
+        } else if let parsedData = TaskDidReachLimitEvent.construct(from: fromData(data: data)!) {
+            if !emit(parsedData) {
+                debug("\(consoleIdentifier) Did receive TaskDidReachLimitEvent, but not shared via event router")
+            }
+        }
+        
+        else {
             debug("\(consoleIdentifier) Did receive data, but could not parse it")
         }
     }

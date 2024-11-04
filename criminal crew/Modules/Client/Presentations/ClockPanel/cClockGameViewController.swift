@@ -32,7 +32,7 @@ internal class ClockGameViewController: BaseGameViewController, UsesDependencies
                     let relay = self?.relay,
                     let selfSignalCommandCenter = relay.selfSignalCommandCenter,
                     let panelRuntimeContainer = relay.panelRuntimeContainer,
-                    let instructionId = panelRuntimeContainer.instructions.first?.id
+                    let instructionId = panelRuntimeContainer.instruction?.id
                 else {
                     debug("\(self?.consoleIdentifier ?? "ClockGameViewController") Did fail to get selfSignalCommandCenter, failed to send timer expired report")
                     return
@@ -449,10 +449,10 @@ extension ClockGameViewController {
     }
     
     private func bindInstruction(to panelRuntimeContainer: ClientPanelRuntimeContainer) {
-        panelRuntimeContainer.$instructions
+        panelRuntimeContainer.$instruction
             .receive(on: DispatchQueue.main)
-            .sink { [weak self] instructions in
-                guard let instruction = instructions.last else {
+            .sink { [weak self] instruction in
+                guard let instruction else {
                     debug("\(self?.consoleIdentifier ?? "SwitchGameViewModel") Did fail to update instructions. Instructions are empty.")
                     return
                 }

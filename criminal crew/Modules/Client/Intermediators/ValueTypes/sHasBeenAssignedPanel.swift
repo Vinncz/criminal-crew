@@ -50,7 +50,6 @@ extension HasBeenAssignedPanel {
             "HasBeenAssignedPanel" == payload[PayloadKeys.eventId.rawValue] as? String,
             let panelId = payload[PayloadKeys.panelId.rawValue] as? String
         else {
-            debug("Construction of HasBeenAssignedPanel failed: Payload is missing required keys.")
             return nil
         }
         

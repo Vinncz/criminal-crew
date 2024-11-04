@@ -7,21 +7,21 @@ public class ClientPanelRuntimeContainer : ObservableObject {
             debug("\(consoleIdentifier) Did update played panel to \(panelPlayed?.panelId ?? "none")")
         }
     }
-    @Published public var instructions : [GameTaskInstruction] {
+    @Published public var instruction : GameTaskInstruction? {
         didSet {
-            debug("\(consoleIdentifier) Did update instructions to \(instructions.map{ $0.content })")
+            debug("\(consoleIdentifier) Did update instructions to \(instruction?.id.prefix(4) ?? "...")")
         }
     }
     @Published public var criterias : [GameTaskCriteria] {
         didSet {
-            debug("\(consoleIdentifier) Did update criterias to \(criterias.map{ $0.requirements })")
+            debug("\(consoleIdentifier) Did update criterias to \(criterias.map{ $0.id.prefix(4) })")
         }
     }
     
     public init () {
-        panelPlayed  = nil
-        instructions = []
-        criterias    = []
+        panelPlayed = nil
+        instruction = nil
+        criterias   = []
     }
     
     private let consoleIdentifier : String = "[C-PRN]"
@@ -52,9 +52,9 @@ extension ClientPanelRuntimeContainer {
     }
     
     public func reset () {
-        panelPlayed  = nil
-        instructions = []
-        criterias    = []
+        panelPlayed = nil
+        instruction = nil
+        criterias   = []
     }
     
 }
