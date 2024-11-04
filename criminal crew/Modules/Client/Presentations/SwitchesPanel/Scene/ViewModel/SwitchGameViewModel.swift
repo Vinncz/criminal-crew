@@ -1,6 +1,10 @@
 import Foundation
 import Combine
 
+protocol TimerReset: AnyObject {
+    func resetTimer()
+}
+
 internal class SwitchGameViewModel {
     
     private var cancellables = Set<AnyCancellable>()
@@ -10,6 +14,8 @@ internal class SwitchGameViewModel {
     internal var changePrompt         : PassthroughSubject<String, Never>       = PassthroughSubject<String, Never>()
     internal var finishGameAlert      : PassthroughSubject<String, Never>       = PassthroughSubject<String, Never>()
     internal var timeIntervalSubject  : PassthroughSubject<TimeInterval, Never> = PassthroughSubject<TimeInterval, Never>()
+    
+    weak var timerDelegate: TimerReset?
     
     var relay: Relay?
     struct Relay : CommunicationPortal {
@@ -74,6 +80,7 @@ internal class SwitchGameViewModel {
                 )
                 self.taskCompletionStatus.send(isSuccess)                
             }
+            timerDelegate?.resetTimer()
         } else {
             self.taskCompletionStatus.send(false)
         }

@@ -156,6 +156,10 @@ open class BaseGameViewController: UIViewController, GameContentProvider {
         }
     }
     
+    public func resetTimerAndAnimation() {
+        promptStackView.promptLabelView.resetTimerAndAnimation()
+    }
+    
 }
 
 extension BaseGameViewController: PromptViewDelegate {
