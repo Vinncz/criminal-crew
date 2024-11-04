@@ -114,6 +114,7 @@ internal class SwitchGameViewController: BaseGameViewController {
         }
         
         self.viewModel = SwitchGameViewModel().withRelay(of: .init(panelRuntimeContainer: panelRuntimeContainer))
+        viewModel?.timerDelegate = self
         
         bindViewModel()
         
@@ -222,6 +223,14 @@ extension SwitchGameViewController {
     func withRelay ( of relay: Relay ) -> Self {
         self.relay = relay
         return self
+    }
+    
+}
+
+extension SwitchGameViewController: TimerReset {
+    
+    func resetTimer() {
+        resetTimerAndAnimation()
     }
     
 }

@@ -61,7 +61,6 @@ open class PromptView: UIView {
             promptLabel.trailingAnchor.constraint(equalTo: promptBackground.trailingAnchor, constant: -16),
             
             timerRectangle.topAnchor.constraint(equalTo: topAnchor),
-            timerRectangle.leadingAnchor.constraint(equalTo: leadingAnchor),
             timerRectangle.trailingAnchor.constraint(equalTo: trailingAnchor),
             timerRectangle.bottomAnchor.constraint(equalTo: bottomAnchor),
             timerRectangle.widthAnchor.constraint(equalTo: widthAnchor),
@@ -99,6 +98,16 @@ open class PromptView: UIView {
     
     private func resetTimer(originalWidth: CGFloat) {
         self.timerRectangle.frame.size.width = originalWidth
+    }
+    
+    internal func resetTimerAndAnimation() {
+        countdownTimer?.invalidate()
+        countdownTimer = nil
+        
+        timerRectangle.layer.removeAllAnimations()
+        timerRectangle.frame.size.width = bounds.width
+        
+        timerInterval = nil
     }
     
     override open func layoutSubviews() {

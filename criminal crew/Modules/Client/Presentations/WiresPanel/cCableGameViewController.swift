@@ -124,6 +124,39 @@ public class CableGameViewController: BaseGameViewController, UsesDependenciesIn
             .store(in: &cancellables)
     }
     
+}
+
+extension CableGameViewController {
+    
+    public func checkConditionAndSendReportIfApplicable () {
+        guard let relay else {
+            debug("\(consoleIdentifier) Did fail to check criteria condition. Relay is missing or not set")
+            return
+        }
+        
+        switch (
+            relay.check(
+                \.panelRuntimeContainer,
+                 \.selfSignalCommandCenter
+            )
+        ) {
+            case .failure(let missingDependencies):
+                debug("\(consoleIdentifier) Relay is missing some dependencies: \(missingDependencies)")
+            case .success:
+                guard
+                    let panelRuntimeContainer = relay.panelRuntimeContainer,
+                    let selfSignalCommandCenter = relay.selfSignalCommandCenter
+                else {
+                    return
+                }
+                
+                let criteriaIds = panelRuntimeContainer.checkCriteriaCompletion()
+                criteriaIds.forEach { criteriaId in
+                    resetTimerAndAnimation()
+                    _ = selfSignalCommandCenter.sendCriteriaReport(criteriaId: criteriaId, isAccomplished: true)
+                }
+        }
+    }
     
 }
 
@@ -209,7 +242,7 @@ extension CableGameViewController {
 extension CableGameViewController {
     
     @objc func handleCableLeverTap(_ sender: UITapGestureRecognizer) {
-        print("Cable lever tapped!")
+        checkConditionAndSendReportIfApplicable()
     }
     
 }
