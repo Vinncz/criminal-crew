@@ -74,7 +74,6 @@ internal class SwitchGameViewModel {
             
             let isSuccess = selfSignalCommandCenter.sendCriteriaReport(criteriaId: criteriaId.first ?? "", isAccomplished: true)
             self.taskCompletionStatus.send(isSuccess)
-            timerDelegate?.resetTimer()
         } else {
             self.taskCompletionStatus.send(false)
         }
@@ -115,6 +114,7 @@ extension SwitchGameViewModel {
                     debug("\(self?.consoleIdentifier ?? "SwitchGameViewModel") Did fail to update instructions. Instructions are empty.")
                     return
                 }
+                self?.timerDelegate?.resetTimer()
                 self?.changePromptLabel(instruction.content)
                 self?.updateTimerInterval(to: instruction.displayDuration)
             }

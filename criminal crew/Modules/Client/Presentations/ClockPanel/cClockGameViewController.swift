@@ -262,7 +262,6 @@ extension ClockGameViewController {
         
         let completedTaskIds = panelRuntimeContainer.checkCriteriaCompletion()
         completedTaskIds.forEach { completedTaskId in
-            resetTimerAndAnimation()
             if !selfSignalCommandCenter.sendCriteriaReport (
                 criteriaId: completedTaskId, 
                 isAccomplished: true, 
@@ -457,6 +456,7 @@ extension ClockGameViewController {
                     debug("\(self?.consoleIdentifier ?? "SwitchGameViewModel") Did fail to update instructions. Instructions are empty.")
                     return
                 }
+                self?.resetTimerAndAnimation()
                 self?.changePromptText(instruction.content)
                 self?.changeTimeInterval(instruction.displayDuration)
             }

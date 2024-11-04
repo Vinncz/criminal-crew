@@ -152,7 +152,6 @@ extension CableGameViewController {
                 
                 let criteriaIds = panelRuntimeContainer.checkCriteriaCompletion()
                 criteriaIds.forEach { criteriaId in
-                    resetTimerAndAnimation()
                     _ = selfSignalCommandCenter.sendCriteriaReport(criteriaId: criteriaId, isAccomplished: true)
                 }
         }
@@ -1196,6 +1195,7 @@ extension CableGameViewController {
                     debug("\(self?.consoleIdentifier ?? "SwitchGameViewModel") Did fail to update instructions. Instructions are empty.")
                     return
                 }
+                self?.resetTimerAndAnimation()
                 self?.changePromptText(instruction.content)
                 self?.changeTimeInterval(instruction.displayDuration)
             }
