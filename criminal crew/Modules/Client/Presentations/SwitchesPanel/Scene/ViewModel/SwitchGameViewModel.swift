@@ -121,6 +121,7 @@ extension SwitchGameViewModel {
                     debug("\(self?.consoleIdentifier ?? "SwitchGameViewModel") Did fail to update instructions. Instructions are empty.")
                     return
                 }
+                self?.timerDelegate?.resetTimer()
                 self?.changePromptLabel(instruction.content)
                 self?.updateTimerInterval(to: instruction.displayDuration)
             }
