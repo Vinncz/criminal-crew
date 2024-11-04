@@ -111,13 +111,13 @@ extension CableGameViewController {
         }
         
         switch (
-            relay.check(
-                \.panelRuntimeContainer,
-                 \.selfSignalCommandCenter
+            relay.assertPresent(
+                \.panelRuntimeContainer, \.selfSignalCommandCenter
             )
         ) {
             case .failure(let missingDependencies):
                 debug("\(consoleIdentifier) Relay is missing some dependencies: \(missingDependencies)")
+                
             case .success:
                 guard
                     let panelRuntimeContainer = relay.panelRuntimeContainer,
@@ -1166,6 +1166,7 @@ extension CableGameViewController {
     private func bindInstruction(to panelRuntimeContainer: ClientPanelRuntimeContainer) {
         panelRuntimeContainer.$instruction
             .receive(on: DispatchQueue.main)
+            .debounce(for: .milliseconds(200), scheduler: RunLoop.main)
             .sink { [weak self] instruction in
                 guard let instruction else {
                     debug("\(self?.consoleIdentifier ?? "SwitchGameViewModel") Did fail to update instructions. Instructions are empty.")

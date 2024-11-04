@@ -13,11 +13,13 @@ open class PromptView: UIView {
     private let timerRectangle: UIView = UIView()
     public var timerInterval: TimeInterval? {
         didSet {
-            layoutSubviews()
+            startTimer()
         }
     }
     
     private var countdownTimer: Timer?
+    
+    let timerWidth: CGFloat = 200.0
     
     private let promptBackground = UIImageView(image: UIImage(named: "Prompt"))
     
@@ -61,10 +63,8 @@ open class PromptView: UIView {
             promptLabel.trailingAnchor.constraint(equalTo: promptBackground.trailingAnchor, constant: -16),
             
             timerRectangle.topAnchor.constraint(equalTo: topAnchor),
-            timerRectangle.trailingAnchor.constraint(equalTo: trailingAnchor),
+            timerRectangle.leadingAnchor.constraint(equalTo: leadingAnchor),
             timerRectangle.bottomAnchor.constraint(equalTo: bottomAnchor),
-            timerRectangle.widthAnchor.constraint(equalTo: widthAnchor),
-            timerRectangle.heightAnchor.constraint(equalTo: heightAnchor),
         ])
     }
     

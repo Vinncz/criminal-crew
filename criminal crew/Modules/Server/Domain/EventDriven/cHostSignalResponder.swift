@@ -350,10 +350,11 @@ extension HostSignalResponder {
         }
         
         // give the instruction-half of the task to someone random
-        instructions.forEach { instruction in 
-            let randomPlayer = players.randomElement()!
-            taskRuntimeContainer.registerTaskInstruction(instruction, to: randomPlayer)
-            taskAssigner.assignToSpecificAndPush(instruction: instruction, to: randomPlayer)
+        players.forEach { player in 
+            let instruction = instructions.randomElement()!
+            taskRuntimeContainer.registerTaskInstruction(instruction, to: player)
+            taskAssigner.assignToSpecificAndPush(instruction: instruction, to: player)
+            instructions.removeAll { $0.id == instruction.id }
         }
         
         return true

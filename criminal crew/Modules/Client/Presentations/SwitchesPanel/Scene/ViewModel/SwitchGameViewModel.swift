@@ -80,6 +80,7 @@ internal class SwitchGameViewModel {
                 )
                 self.taskCompletionStatus.send(isSuccess)                
             }
+            timerDelegate?.resetTimer()
         } else {
             self.taskCompletionStatus.send(false)
         }
@@ -115,6 +116,7 @@ extension SwitchGameViewModel {
     private func bindInstruction(to panelRuntimeContainer: ClientPanelRuntimeContainer) {
         panelRuntimeContainer.$instruction
             .receive(on: DispatchQueue.main)
+            .debounce(for: .milliseconds(200), scheduler: RunLoop.main)
             .sink { [weak self] instruction in
                 guard let instruction else {
                     debug("\(self?.consoleIdentifier ?? "SwitchGameViewModel") Did fail to update instructions. Instructions are empty.")

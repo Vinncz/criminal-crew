@@ -286,7 +286,7 @@ extension ServerSignalResponder {
             let displayedInstruction = panelRuntime.instruction,
                 displayedInstruction.id == event.instructionId 
         else {
-            debug("\(consoleIdentifier) Did fail to dismiss ")
+            debug("\(consoleIdentifier) Did fail to dismiss instruction. Mismatch in instruction ID: \(panelRuntime.instruction?.id ?? "ERROR") != \(event.instructionId)")
             return
         }
         

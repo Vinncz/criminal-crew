@@ -115,6 +115,7 @@ internal class SwitchGameViewController: BaseGameViewController {
         }
         
         self.viewModel = SwitchGameViewModel().withRelay(of: .init(panelRuntimeContainer: panelRuntimeContainer, selfSignalCommandCenter: selfSignalCommandCenter))
+        viewModel?.timerDelegate = self
         
         bindViewModel()
         
