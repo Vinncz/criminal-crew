@@ -23,7 +23,7 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         self.window?.backgroundColor    = .white
         self.window?.makeKeyAndVisible()
         
-        rootComposer?.coordinate()
+        rootComposer?.compose()
     }
 
     func sceneDidDisconnect ( _ scene: UIScene ) {

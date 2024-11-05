@@ -73,11 +73,11 @@ public class ClientNetworkEventListener : GPGameEventListener {
             }
         }
         
-        else if let parsedData = PenaltyDidReachLimitEvent.construct(from: fromData(data: data)!) {
+        else if let parsedData = PenaltyProgressionDidReachLimitEvent.construct(from: fromData(data: data)!) {
             if !emit(parsedData) {
                 debug("\(consoleIdentifier) Did receive PenaltyDidReachLimitEvent, but not shared via event router")
             }
-        } else if let parsedData = TaskDidReachLimitEvent.construct(from: fromData(data: data)!) {
+        } else if let parsedData = TaskProgressionDidReachLimitEvent.construct(from: fromData(data: data)!) {
             if !emit(parsedData) {
                 debug("\(consoleIdentifier) Did receive TaskDidReachLimitEvent, but not shared via event router")
             }

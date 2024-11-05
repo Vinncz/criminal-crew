@@ -120,6 +120,7 @@ extension LobbyViewController {
                     
                 playerRuntimeContainer.$connectedPlayersNames
                     .receive(on: DispatchQueue.main)
+                    .debounce(for: .milliseconds(800), scheduler: RunLoop.main)
                     .sink { [weak self] names in
                         self?.tPlayerNames.reloadData()
                         debug("Reloading joined players list with \(names)")

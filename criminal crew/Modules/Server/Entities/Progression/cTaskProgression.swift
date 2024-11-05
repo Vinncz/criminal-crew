@@ -10,6 +10,10 @@ public class TasksProgression : UsesDependenciesInjector, ObservableObject {
     
     public let limit    : Int
     public var relay    : Relay?
+    public struct Relay : CommunicationPortal {
+        weak var eventBroadcaster: ServerNetworkEventBroadcaster?
+        weak var playerRuntimeContainer: ServerPlayerRuntimeContainer?
+    }
     
     public init ( limit: Int, startingAt: Int = 0 ) {
         self.limit     = limit
@@ -17,19 +21,7 @@ public class TasksProgression : UsesDependenciesInjector, ObservableObject {
         self.progress  = startingAt
     }
     
-    public struct Relay : CommunicationPortal {
-        weak var eventRouter : GPEventRouter?
-    }
-    
     private let consoleIdentifier : String = "[S-TAS]"
-    
-}
-
-extension TasksProgression : GPEmitsEvents {
-    
-    public func emit ( _ event: GPEvent ) -> Bool {
-        return relay?.eventRouter?.route(TaskDidReachLimitEvent(currentProgression: progress, limit: limit)) ?? false
-    }
     
 }
 
@@ -38,8 +30,15 @@ extension TasksProgression {
     func advance ( by: Int ) {
         progress += by
         if progress >= limit {
-            if !emit(TaskDidReachLimitEvent(currentProgression: progress, limit: limit)) {
-                debug("Failed to emit task limit reached event")
+            guard let relay, let hostAddr = relay.playerRuntimeContainer?.hostAddr else { return }
+            
+            do {
+                try relay.eventBroadcaster?.broadcast(
+                    PenaltyProgressionDidReachLimitEvent(currentProgression: progress, limit: limit).representedAsData(),
+                    to: [hostAddr]
+                )
+            } catch {
+                debug("Failed to emit task limit reached event: \(error)")
             }
         }
     }

@@ -1,12 +1,12 @@
 import GamePantry
 import UIKit
 
-@Observable public class RootComposer : ObservableObject {
+public class RootComposer : Composer, ObservableObject {
     
-    public var serverComposer: ServerComposer { didSet { serverComposer$ = serverComposer } }
-    public var clientComposer: ClientComposer { didSet { clientComposer$ = clientComposer } }
-    public var queuedJobToAdmitTheHost: AnyCancellable?
-    public var subscriptions : Set<AnyCancellable> = []
+    public var serverComposer          : ServerComposer
+    public var clientComposer          : ClientComposer
+    public var queuedJobToAdmitTheHost : AnyCancellable?
+    public var subscriptions           : Set<AnyCancellable> = []
     
     public init ( rootNavigationController: UINavigationController ) {
         let serverComposer = ServerComposer()
@@ -14,14 +14,11 @@ import UIKit
         
         self.serverComposer = serverComposer
         self.clientComposer = clientComposer
-        
-        self.serverComposer$ = serverComposer
-        self.clientComposer$ = clientComposer
     }
     
-    public func coordinate () {
-        serverComposer.coordinate()
-        clientComposer.coordinate()
+    public func compose ( args: [String] = [] ) {
+        serverComposer.compose()
+        clientComposer.compose()
                 
         clientComposer.relay = ClientComposer.Relay (
             makeServerVisible: { [weak self] advertContent in
@@ -69,8 +66,5 @@ import UIKit
             }
         )
     }
-    
-    @ObservationIgnored @Published public var serverComposer$ : ServerComposer
-    @ObservationIgnored @Published public var clientComposer$ : ClientComposer
     
 }

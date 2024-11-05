@@ -80,6 +80,10 @@ extension ClientPanelRuntimeContainer {
             }
         }
         
+        if ( !criteriaId.isEmpty ) {
+            debug("\(consoleIdentifier) Did finish criterias: \(criteriaId.map{ $0.prefix(4) })")
+        }
+        
         return criteriaId
     }
     

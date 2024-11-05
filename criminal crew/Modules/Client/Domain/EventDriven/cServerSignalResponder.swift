@@ -64,9 +64,9 @@ extension ServerSignalResponder : GPHandlesEvents {
             case let event as CriteriaDidGetDismissed:
                 didGetOrderToDismissSomeCriteria(event)
                 
-            case let event as PenaltyDidReachLimitEvent:
+            case let event as PenaltyProgressionDidReachLimitEvent:
                 didGetPenaltyLimitCue(event)
-            case let event as TaskDidReachLimitEvent:
+            case let event as TaskProgressionDidReachLimitEvent:
                 didGetTaskLimitCue(event)
                 
             case let event as GPGameJoinRequestedEvent:
@@ -311,7 +311,7 @@ extension ServerSignalResponder {
 
 extension ServerSignalResponder {
     
-    public func didGetPenaltyLimitCue ( _ event: PenaltyDidReachLimitEvent ) {
+    public func didGetPenaltyLimitCue ( _ event: PenaltyProgressionDidReachLimitEvent ) {
         guard let relay else { 
             debug("\(consoleIdentifier) Relay is missing or not set")
             return 
@@ -326,9 +326,15 @@ extension ServerSignalResponder {
         }
         
         gameRuntime.state = .lose
+        
+        let losingScreen = GameLoseViewController()
+        losingScreen.relay = .init (
+            navController: relay.navController
+        )
+        relay.navController?.pushViewController(losingScreen, animated: true)
     }
     
-    public func didGetTaskLimitCue ( _ event: TaskDidReachLimitEvent ) {
+    public func didGetTaskLimitCue ( _ event: TaskProgressionDidReachLimitEvent ) {
         guard let relay else { 
             debug("\(consoleIdentifier) Relay is missing or not set")
             return 
@@ -343,6 +349,12 @@ extension ServerSignalResponder {
         }
         
         gameRuntime.state = .win
+        
+        let winningScreen = GameWinViewController()
+        winningScreen.relay = .init (
+            navController: relay.navController
+        )
+        relay.navController?.pushViewController(winningScreen, animated: true)
     }
     
 }

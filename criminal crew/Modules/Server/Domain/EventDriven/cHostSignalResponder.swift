@@ -372,5 +372,4 @@ extension HostSignalResponder {
         return true
     }
     
-    
 }

@@ -297,12 +297,12 @@ extension SelfSignalCommandCenter {
                 ).representedAsData(),
                 to: [serverAddr]
             )
-            debug("\(consoleIdentifier) Did send criteria report to server")
+            debug("\(consoleIdentifier) Did send instruction report \(instructionId) to server. Instruction is \(isAccomplished ? "accomplished" : "not accomplished")")
             
             flowIsComplete = true
             
         } catch {
-            debug("\(consoleIdentifier) Did fail to send criteria report to server: \(error)")
+            debug("\(consoleIdentifier) Did fail to send instruction report to server: \(error)")
             
         }
         

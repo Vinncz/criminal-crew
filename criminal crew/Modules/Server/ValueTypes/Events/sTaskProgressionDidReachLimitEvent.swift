@@ -1,12 +1,12 @@
 import GamePantry
 
-public struct PenaltyDidReachLimitEvent : GPEvent, GPSendableEvent, GPReceivableEvent {
+public struct TaskProgressionDidReachLimitEvent : GPEvent, GPSendableEvent, GPReceivableEvent {
     
     public let currentProgression : Int
     public let imposedLimit       : Int
     
-    public let id              : String = "PenaltyDidReachLimitEvent"
-    public let purpose         : String = "Notify the server and client alike, that the game will end due to the penalty limit being reached"
+    public let id              : String = "TaskDidReachLimitEvent"
+    public let purpose         : String = "Notify the server and client alike, that the game will end due to enough tasks being completed"
     public let instanciatedOn  : Date   = .now
     
     public var payload         : [String : Any] = [:]
@@ -18,12 +18,12 @@ public struct PenaltyDidReachLimitEvent : GPEvent, GPSendableEvent, GPReceivable
     
 }
 
-extension PenaltyDidReachLimitEvent {
+extension TaskProgressionDidReachLimitEvent {
     
     public enum PayloadKeys : String, CaseIterable {
-        case eventId = "eventId",
+        case eventId            = "eventId",
              currentProgression = "currentProgression",
-             imposedLimit = "imposedLimit"
+             imposedLimit       = "imposedLimit"
     }
     
     public func value ( for key: PayloadKeys ) -> Any? {
@@ -32,7 +32,7 @@ extension PenaltyDidReachLimitEvent {
     
 }
 
-extension PenaltyDidReachLimitEvent {
+extension TaskProgressionDidReachLimitEvent {
     
     public func representedAsData () -> Data {
         dataFrom {
@@ -46,18 +46,18 @@ extension PenaltyDidReachLimitEvent {
     
 }
 
-extension PenaltyDidReachLimitEvent {
+extension TaskProgressionDidReachLimitEvent {
     
-    public static func construct ( from payload: [String : Any] ) -> PenaltyDidReachLimitEvent? {
+    public static func construct ( from payload: [String : Any] ) -> TaskProgressionDidReachLimitEvent? {
         guard
-            "PenaltyDidReachLimitEvent" == payload[PayloadKeys.eventId.rawValue] as? String,
+            "TaskDidReachLimitEvent" == payload[PayloadKeys.eventId.rawValue] as? String,
             let currentProgression = payload[PayloadKeys.currentProgression.rawValue] as? Int,
             let imposedLimit = payload[PayloadKeys.imposedLimit.rawValue] as? Int
         else {
             return nil
         }
         
-        return PenaltyDidReachLimitEvent(currentProgression: currentProgression, limit: imposedLimit)
+        return TaskProgressionDidReachLimitEvent(currentProgression: currentProgression, limit: imposedLimit)
     }
     
 }

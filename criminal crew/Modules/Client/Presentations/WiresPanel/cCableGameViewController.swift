@@ -179,10 +179,10 @@ extension CableGameViewController {
         CableManager.shared.secondCableYellowStart.image = UIImage(named: "client.panels.cables-panel.yellow-cable-vertical")
         CableManager.shared.secondCableGreenStart.image = UIImage(named: "client.panels.cables-panel.green-cable-vertical")
         
-        CableManager.shared.secondCableRedEnd.image = UIImage(named: "client.panels.cables-panel.star-peg")
-        CableManager.shared.secondCableBlueEnd.image = UIImage(named: "client.panels.cables-panel.square-peg")
-        CableManager.shared.secondCableYellowEnd.image = UIImage(named: "client.panels.cables-panel.circle-peg")
-        CableManager.shared.secondCableGreenEnd.image = UIImage(named: "client.panels.cables-panel.triangle-peg")
+        CableManager.shared.starEnd.image = UIImage(named: "client.panels.cables-panel.star-peg")
+        CableManager.shared.squareEnd.image = UIImage(named: "client.panels.cables-panel.square-peg")
+        CableManager.shared.circleEnd.image = UIImage(named: "client.panels.cables-panel.circle-peg")
+        CableManager.shared.triangleEnd.image = UIImage(named: "client.panels.cables-panel.triangle-peg")
         
         CableManager.shared.secondCableRedHead.image = UIImage(named: "client.panels.cables-panel.cable-head.horizontal")
         CableManager.shared.secondCableBlueHead.image = UIImage(named: "client.panels.cables-panel.cable-head.horizontal")
@@ -195,10 +195,10 @@ extension CableGameViewController {
          CableManager.shared.secondCableBlueStart,
          CableManager.shared.secondCableYellowStart,
          CableManager.shared.secondCableGreenStart,
-         CableManager.shared.secondCableRedEnd,
-         CableManager.shared.secondCableBlueEnd,
-         CableManager.shared.secondCableYellowEnd,
-         CableManager.shared.secondCableGreenEnd,
+         CableManager.shared.starEnd,
+         CableManager.shared.squareEnd,
+         CableManager.shared.circleEnd,
+         CableManager.shared.triangleEnd,
          CableManager.shared.secondCableRedHead,
          CableManager.shared.secondCableBlueHead,
          CableManager.shared.secondCableYellowHead,
@@ -217,6 +217,21 @@ extension CableGameViewController {
 extension CableGameViewController {
     
     @objc func handleCableLeverTap(_ sender: UITapGestureRecognizer) {
+        let leverImagePulled = UIImage(named: "client.panels.cables-panel.cable-lever-pulled")
+        let leverImageDefault = UIImage(named: "client.panels.cables-panel.cable-lever")
+
+        // Animate the lever pull
+        UIView.transition(with: CableManager.shared.cableLever, duration: 0.2, options: .transitionCrossDissolve, animations: {
+            CableManager.shared.cableLever.image = leverImagePulled
+        }) { _ in
+            // Delay and revert to the original lever image
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                UIView.transition(with: CableManager.shared.cableLever, duration: 0.2, options: .transitionCrossDissolve, animations: {
+                    CableManager.shared.cableLever.image = leverImageDefault
+                })
+            }
+        }
+
         checkConditionAndSendReportIfApplicable()
     }
     
@@ -292,10 +307,10 @@ extension CableGameViewController {
             (CableManager.shared.secondCableGreenStart, CableManager.shared.secondCableGreenHead)
         ]
         let endPoints = [
-            CableManager.shared.secondCableRedEnd,
-            CableManager.shared.secondCableBlueEnd,
-            CableManager.shared.secondCableYellowEnd,
-            CableManager.shared.secondCableGreenEnd
+            CableManager.shared.starEnd,
+            CableManager.shared.squareEnd,
+            CableManager.shared.circleEnd,
+            CableManager.shared.triangleEnd
         ]
         
         let shuffledStartPointsAndHeads = startPointsAndHeads.shuffled()
@@ -412,10 +427,10 @@ extension CableGameViewController {
         secondStartPointIDs[CableManager.shared.secondCableYellowStart] = "RPYellowStartID"
         secondStartPointIDs[CableManager.shared.secondCableGreenStart] = "RPGreenStartID"
         
-        secondEndPointIDs[CableManager.shared.secondCableRedEnd] = "RPRedEndID"
-        secondEndPointIDs[CableManager.shared.secondCableBlueEnd] = "RPBlueEndID"
-        secondEndPointIDs[CableManager.shared.secondCableYellowEnd] = "RPYellowEndID"
-        secondEndPointIDs[CableManager.shared.secondCableGreenEnd] = "RPGreenEndID"
+        secondEndPointIDs[CableManager.shared.starEnd] = "RPStarEndID"
+        secondEndPointIDs[CableManager.shared.squareEnd] = "RPSquareEndID"
+        secondEndPointIDs[CableManager.shared.circleEnd] = "RPCircleEndID"
+        secondEndPointIDs[CableManager.shared.triangleEnd] = "RPTriangleEndID"
         
         secondCableHeads["RPRedStartID"] = CableManager.shared.secondCableRedHead
         secondCableHeads["RPBlueStartID"] = CableManager.shared.secondCableBlueHead
@@ -659,10 +674,10 @@ extension CableGameViewController {
             CableManager.shared.cableYellowEnd,
             CableManager.shared.cableGreenEnd,
             CableManager.shared.cableRedEnd,
-            CableManager.shared.secondCableRedEnd,
-            CableManager.shared.secondCableBlueEnd,
-            CableManager.shared.secondCableGreenEnd,
-            CableManager.shared.secondCableYellowEnd,
+            CableManager.shared.starEnd,
+            CableManager.shared.squareEnd,
+            CableManager.shared.triangleEnd,
+            CableManager.shared.circleEnd,
         ].compactMap { $0?.layer }
         
         if let id = self.cableHeads.first(where: { $0.value == tappedCableHeadView })?.key {
@@ -874,7 +889,7 @@ extension CableGameViewController {
         case CableManager.shared.cableRedHead, CableManager.shared.cableBlueHead, CableManager.shared.cableYellowHead, CableManager.shared.cableGreenHead:
             relevantEndPoints = [CableManager.shared.cableRedEnd, CableManager.shared.cableBlueEnd, CableManager.shared.cableYellowEnd, CableManager.shared.cableGreenEnd].compactMap { $0 }
         case CableManager.shared.secondCableRedHead, CableManager.shared.secondCableBlueHead, CableManager.shared.secondCableYellowHead, CableManager.shared.secondCableGreenHead:
-            relevantEndPoints = [CableManager.shared.secondCableRedEnd, CableManager.shared.secondCableBlueEnd, CableManager.shared.secondCableYellowEnd, CableManager.shared.secondCableGreenEnd].compactMap { $0 }
+            relevantEndPoints = [CableManager.shared.starEnd, CableManager.shared.squareEnd, CableManager.shared.circleEnd, CableManager.shared.triangleEnd].compactMap { $0 }
         default:
             return nil
         }
@@ -959,13 +974,13 @@ extension CableGameViewController {
                 updateCableLayerAfterConnection(cableHead: CableManager.shared.cableGreenHead, cableLayer: CableManager.shared.greenCableLayer!, borderLayer: CableManager.shared.greenBorderLayer!, endPoint: CableManager.shared.cableGreenEnd)
                     
             case CableManager.shared.secondCableRedStart:
-                updateCableLayerAfterConnection(cableHead: CableManager.shared.secondCableRedHead, cableLayer: CableManager.shared.secondRedCableLayer!, borderLayer: CableManager.shared.secondRedBorderLayer!, endPoint: CableManager.shared.secondCableRedEnd)
+                updateCableLayerAfterConnection(cableHead: CableManager.shared.secondCableRedHead, cableLayer: CableManager.shared.secondRedCableLayer!, borderLayer: CableManager.shared.secondRedBorderLayer!, endPoint: CableManager.shared.starEnd)
             case CableManager.shared.secondCableBlueStart:
-                updateCableLayerAfterConnection(cableHead: CableManager.shared.secondCableBlueHead, cableLayer: CableManager.shared.secondBlueCableLayer!, borderLayer: CableManager.shared.secondBlueBorderLayer!, endPoint: CableManager.shared.secondCableBlueEnd)
+                updateCableLayerAfterConnection(cableHead: CableManager.shared.secondCableBlueHead, cableLayer: CableManager.shared.secondBlueCableLayer!, borderLayer: CableManager.shared.secondBlueBorderLayer!, endPoint: CableManager.shared.squareEnd)
             case CableManager.shared.secondCableYellowStart:
-                updateCableLayerAfterConnection(cableHead: CableManager.shared.secondCableYellowHead, cableLayer: CableManager.shared.secondYellowCableLayer!, borderLayer: CableManager.shared.secondYellowBorderLayer!, endPoint: CableManager.shared.secondCableYellowEnd)
+                updateCableLayerAfterConnection(cableHead: CableManager.shared.secondCableYellowHead, cableLayer: CableManager.shared.secondYellowCableLayer!, borderLayer: CableManager.shared.secondYellowBorderLayer!, endPoint: CableManager.shared.circleEnd)
             case CableManager.shared.secondCableGreenStart:
-                updateCableLayerAfterConnection(cableHead: CableManager.shared.secondCableGreenHead, cableLayer: CableManager.shared.secondGreenCableLayer!, borderLayer: CableManager.shared.secondGreenBorderLayer!, endPoint: CableManager.shared.secondCableGreenEnd)
+                updateCableLayerAfterConnection(cableHead: CableManager.shared.secondCableGreenHead, cableLayer: CableManager.shared.secondGreenCableLayer!, borderLayer: CableManager.shared.secondGreenBorderLayer!, endPoint: CableManager.shared.triangleEnd)
             default:
                 break
             }

@@ -24,10 +24,10 @@ class CableManager {
     var secondCableYellowStart = UIImageView()
     var secondCableGreenStart = UIImageView()
     
-    var secondCableRedEnd = UIImageView()
-    var secondCableBlueEnd = UIImageView()
-    var secondCableYellowEnd = UIImageView()
-    var secondCableGreenEnd = UIImageView()
+    var starEnd = UIImageView()
+    var squareEnd = UIImageView()
+    var circleEnd = UIImageView()
+    var triangleEnd = UIImageView()
     
     var secondCableRedHead = UIImageView()
     var secondCableBlueHead = UIImageView()

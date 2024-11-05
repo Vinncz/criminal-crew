@@ -1,6 +1,6 @@
 import GamePantry
 
-final public class ServerComposer : UsesDependenciesInjector {
+final public class ServerComposer : Composer, UsesDependenciesInjector {
     
     static let configuration : GPGameProcessConfiguration = GamePantry.GPGameProcessConfiguration (
         debugEnabled : AppConfig.debugEnabled, 
@@ -15,9 +15,9 @@ final public class ServerComposer : UsesDependenciesInjector {
         // var cancelHostAdmissionJob: () -> Void
     }
     
-    public let router         : GamePantry.GPEventRouter
+    public let router         : GPEventRouter
     public let networkManager : ServerNetworkManager
-    public let localStorage   : GamePantry.GPGameTemporaryStorage
+    public let localStorage   : GPGameTemporaryStorage
     
     public let comUC_penaltyAssigner : PenaltyAssigner
     public let comUC_taskGenerator   : TaskGenerator
@@ -71,7 +71,7 @@ final public class ServerComposer : UsesDependenciesInjector {
 
 extension ServerComposer {
     
-    public final func coordinate () {
+    public final func compose ( args: [String] = [] ) {
         setupRelays()
         openRouterToEvents()
         subscribeUCsToEvents()
@@ -82,8 +82,8 @@ extension ServerComposer {
             router.openChannel(for:GPGameJoinRequestedEvent.self),
             router.openChannel(for:GPGameJoinVerdictDeliveredEvent.self),
             
-            router.openChannel(for:PenaltyDidReachLimitEvent.self),
-            router.openChannel(for:TaskDidReachLimitEvent.self),
+            router.openChannel(for:PenaltyProgressionDidReachLimitEvent.self),
+            router.openChannel(for:TaskProgressionDidReachLimitEvent.self),
             
             router.openChannel(for:GPUnableToBrowseEvent.self),
             

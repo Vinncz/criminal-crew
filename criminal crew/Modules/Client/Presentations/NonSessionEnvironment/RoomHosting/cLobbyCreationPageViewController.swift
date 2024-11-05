@@ -174,6 +174,7 @@ extension LobbyCreationPageViewController {
         
         playerRuntimeContainer.$joinRequestedPlayersNames
             .receive(on: DispatchQueue.main)
+            .debounce(for: .milliseconds(200), scheduler: RunLoop.main)
             .sink { [weak self] names in
                 self?.tPendingPlayers.reloadData()
                 debug("Reloading pending players list with \(names)")

@@ -18,18 +18,11 @@ public class PenaltiesProgression : UsesDependenciesInjector, ObservableObject {
     }
     
     public struct Relay : CommunicationPortal {
-        weak var eventRouter : GPEventRouter?
+        weak var eventBroadcaster: ServerNetworkEventBroadcaster?
+        weak var playerRuntimeContainer: ServerPlayerRuntimeContainer?
     }
     
     private let consoleIdentifier : String = "[S-PEN]"
-    
-}
-
-extension PenaltiesProgression : GPEmitsEvents {
-    
-    public func emit ( _ event: GPEvent ) -> Bool {
-        return relay?.eventRouter?.route(PenaltyDidReachLimitEvent(currentProgression: progress, limit: limit)) ?? false
-    }
     
 }
 
@@ -38,8 +31,15 @@ extension PenaltiesProgression {
     func advance ( by: Int ) {
         progress += by
         if progress >= limit {
-            if !emit(PenaltyDidReachLimitEvent(currentProgression: progress, limit: limit)) {
-                debug("Failed to emit penalty limit reached event")
+            guard let relay, let hostAddr = relay.playerRuntimeContainer?.hostAddr else { return }
+            
+            do {
+                try relay.eventBroadcaster?.broadcast(
+                    PenaltyProgressionDidReachLimitEvent(currentProgression: progress, limit: limit).representedAsData(),
+                    to: [hostAddr]
+                )
+            } catch {
+                debug("Failed to emit penalty limit reached event: \(error)")
             }
         }
     }

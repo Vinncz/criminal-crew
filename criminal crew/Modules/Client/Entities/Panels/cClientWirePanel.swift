@@ -8,12 +8,12 @@ public class ClientWiresPanel : ClientGamePanel, ObservableObject {
     public var leftPanelDestinationWires  : [String] = ["LPRedEndID", "LPBlueEndID", "LPYellowEndID", "LPGreenEndID"]
     
     public var rightPanelOriginWires      : [String] = ["RPRedStartID", "RPBlueStartID", "RPYellowStartID", "RPGreenStartID"]
-    public var rightPanelDestinationWires : [String] = ["RPRedEndID", "RPBlueEndID", "RPYellowEndID", "RPGreenEndID"]
+    public var rightPanelDestinationWires : [String] = ["RPStarEndID", "RPSquareEndID", "RPCircleEndID", "RPTriangleEndID"]
     
     public var connections : [[String]]
     
     public required init() {
-        connections = [[]]
+        connections = []
     }
     
     private let consoleIdentifier : String = "[C-PWR]"
@@ -50,27 +50,49 @@ extension ClientWiresPanel {
     /// CONVENTION
     /// [ [# #], [# #] ]
     public func validate ( _ completionCriterias: [String] ) -> Bool {
+        let splitCompletionCriteria = completionCriterias.map { $0.components(separatedBy: ",") }
         
-        // the completionCriterias should be converted to 2d array, which in its original form, is a 1d array
-        // each element in completionCriteria, a string, contains one either (leftPanelOriginWires or rightPanelOriginWires) and (leftPanelDestinationWires or rightPanelDestinationWires), separated by a space
-        // should it contain leftPanelOriginWires, the other one must be leftPanelDestinationWires; and vice versa
-        // this is the example of the passed completionCriteria : ["LPRedStartID LPRedEndID", "RPBlueStartID RPBlueEndID"]
-        let reshapedCompletionCriterias = completionCriterias.map { $0.components(separatedBy: " ") }
-        debug("\(consoleIdentifier) Reshaped completion criterias: \(reshapedCompletionCriterias)")
-        
-        // reshapedCompletionCriterias should be like this : [ [LPRedStartID, LPRedEndID], [RPBlueStartID, RPBlueEndID] ]
-        // now, we should check if the current connections are equal to reshapedCompletionCriterias
-        // by equal, it means that it only contains the same elements, regardless of the order
-        // we foreach the connections, and check every of its components are specified in reshapedCompletionCriterias
-        // if they are all specified, and the count of the connections is equal to the count of reshapedCompletionCriterias, then return true--otherwise false
-        return connections.allSatisfy { connection in
-            reshapedCompletionCriterias.contains { completionCriteria in
-                completionCriteria.allSatisfy { criteria in
-                    connection.contains(criteria)
+        if let leftPanelCriteria = splitCompletionCriteria.first, let rightPanelCriteria = splitCompletionCriteria.last {
+            let leftOrigin1 = leftPanelCriteria[0]
+            let leftDest1   = leftPanelCriteria[2]
+            let leftOrigin2 = leftPanelCriteria[1]
+            let leftDest2   = leftPanelCriteria[3]
+            
+            let rightOrigin1 = rightPanelCriteria[0]
+            let rightDest1   = rightPanelCriteria[2]
+            let rightOrigin2 = rightPanelCriteria[1]
+            let rightDest2   = rightPanelCriteria[3]
+            
+            let targetConnections: [[String]] = [
+                [leftOrigin1, leftDest1], 
+                [leftOrigin2, leftDest2], 
+                [rightOrigin1, rightDest1], 
+                [rightOrigin2, rightDest2]
+            ]
+                        
+            let connectionSet = Set(connections.map { Set($0) })
+            let targetSet     = Set(targetConnections.map { Set($0) })
+            
+            var isMatch = true
+            for target in targetSet {
+                var isFound = false
+                for connection in connectionSet {
+                    if connection == target {
+                        isFound = true
+                        break
+                    }
+                }
+                if !isFound {
+                    isMatch = false
+                    break
                 }
             }
-        } && connections.count == reshapedCompletionCriterias.count
+            
+            return isMatch
+        }
         
+        debug("\(consoleIdentifier) No valid condition")
+        return false
     }
     
 }

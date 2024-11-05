@@ -8,7 +8,26 @@ public class ServerWiresPanel : ServerGamePanel {
     public var leftPanelDestinationWires  : [String] = ["LPRedEndID", "LPBlueEndID", "LPYellowEndID", "LPGreenEndID"]
     
     public var rightPanelOriginWires      : [String] = ["RPRedStartID", "RPBlueStartID", "RPYellowStartID", "RPGreenStartID"]
-    public var rightPanelDestinationWires : [String] = ["RPRedEndID", "RPBlueEndID", "RPYellowEndID", "RPGreenEndID"]
+    public var rightPanelDestinationWires : [String] = ["RPStarEndID", "RPSquareEndID", "RPCircleEndID", "RPTriangleEndID"]
+    
+    public var wiresIdToSymbols = [
+        "LPRedStartID"   : "R",
+        "LPBlueStartID"  : "B",
+        "LPYellowStartID": "Y",
+        "LPGreenStartID" : "G",
+        "LPRedEndID"     : "R",
+        "LPBlueEndID"    : "B",
+        "LPYellowEndID"  : "Y",
+        "LPGreenEndID"   : "G",
+        "RPRedStartID"   : "R",
+        "RPBlueStartID"  : "B",
+        "RPYellowStartID": "Y",
+        "RPGreenStartID" : "G",
+        "RPStarEndID"    : "*",
+        "RPSquareEndID"  : "[]",
+        "RPCircleEndID"  : "O",
+        "RPTriangleEndID": "/_\\"
+    ]
     
     required public init () {
         leftPanelOriginWires = leftPanelOriginWires.shuffled()
@@ -39,17 +58,16 @@ extension ServerWiresPanel {
         let leftPanelConnection  = "\(leftPanelOriginWires.joined(separator: ",")),\(leftPanelDestinationWires.joined(separator: ","))"
         let rightPanelConnection = "\(rightPanelOriginWires.joined(separator: ",")),\(rightPanelDestinationWires.joined(separator: ","))"
         
-        // to map which wire is connected to which
-        let connectionMap = [
-            leftPanelOriginWires[0] : leftPanelDestinationWires[0],
-            leftPanelOriginWires[1] : leftPanelDestinationWires[1],
-            rightPanelOriginWires[0] : rightPanelDestinationWires[0],
-            rightPanelOriginWires[1] : rightPanelDestinationWires[1]
-        ]
-        
         return GameTask (
             instruction        : GameTaskInstruction (
-                content: "\(connectionMap)"
+                // use the rightPanelDestinationWiresMappingToSymbols to map the rightPanelDestinationWires to symbols
+                content: """
+                Connect the wires:
+                \(String(describing: wiresIdToSymbols[leftPanelOriginWires[0]] ?? "")) -> \(String(describing: wiresIdToSymbols[leftPanelDestinationWires[0]] ?? ""))
+                \(String(describing: wiresIdToSymbols[leftPanelOriginWires[1]] ?? "")) -> \(String(describing: wiresIdToSymbols[leftPanelDestinationWires[1]] ?? ""))
+                \(String(describing: wiresIdToSymbols[rightPanelOriginWires[0]] ?? "")) -> \(String(describing: wiresIdToSymbols[rightPanelDestinationWires[0]] ?? ""))
+                \(String(describing: wiresIdToSymbols[rightPanelOriginWires[1]] ?? "")) -> \(String(describing: wiresIdToSymbols[rightPanelDestinationWires[1]] ?? ""))
+                """
             ),
             completionCriteria : GameTaskCriteria(
                 requirements: [leftPanelConnection, rightPanelConnection]

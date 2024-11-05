@@ -61,75 +61,6 @@ extension PlayerTaskReportResponder : GPHandlesEvents {
 
 extension PlayerTaskReportResponder {
     
-    private func gameIsRunningOrPaused () -> Bool {
-        guard 
-            relay?.gameRuntimeContainer?.state == .playing || relay?.gameRuntimeContainer?.state == .paused
-        else {
-            debug("\(consoleIdentifier) Did fail to check game state: game is not running or paused")
-            return false
-        }
-        
-        return true
-    }
-    
-    private func isOneOfListedPlayers ( _ playerName: String ) -> Bool {
-        guard 
-            let playerReport = relay?.playerRuntimeContainer?.getReportOnPlayer(named: playerName),
-            playerReport.isBlacklisted == false
-        else {
-            debug("\(consoleIdentifier) Did fail to check player: player is missing or blacklisted")
-            return false
-        }
-        
-        return true
-    }
-    
-    private func criteriaIsAccomplished () {
-        relay?.gameRuntimeContainer?.tasksProgression.advance(by: 1)
-        debug("\(consoleIdentifier) Did advance the task progression by one")
-    }
-    
-    private func criteriaIsNotAccomplished ( _ penaltyPoints: Int ) {
-        relay?.gameRuntimeContainer?.penaltiesProgression.advance(by: penaltyPoints)
-        debug("\(consoleIdentifier) Did advance the penalty progression by \(penaltyPoints)")
-    }
-    
-    private func sendInstructionDismissal ( for instructionId: String, to playerName: String, using broadcaster: GPGameEventBroadcaster ) {
-        guard let playerRecord = relay?.playerRuntimeContainer?.getReportOnPlayer(named: playerName) else {
-            debug("\(consoleIdentifier) Did fail to signal instruction can safely be dismissed: player is not found in playerRuntimeContainer")
-            return
-        }
-        
-        do {
-            try broadcaster.broadcast (
-                InstructionDidGetDismissed (
-                    instructionId: instructionId
-                ).representedAsData(),
-                to: [playerRecord.address]
-            )
-        } catch {
-            debug("\(consoleIdentifier) Did fail to signal instruction can safely be dismissed: \(error)")
-        }
-    }
-    
-    private func sendCriteriaDismissal ( for criteriaId: String, to playerName: String, using broadcaster: GPGameEventBroadcaster ) {
-        guard let playerRecord = relay?.playerRuntimeContainer?.getReportOnPlayer(named: playerName) else {
-            debug("\(consoleIdentifier) Did fail to signal criteria can safely be dismissed: player is not found in playerRuntimeContainer")
-            return
-        }
-        
-        do {
-            try broadcaster.broadcast (
-                CriteriaDidGetDismissed (
-                    criteriaId: criteriaId
-                ).representedAsData(),
-                to: [playerRecord.address]
-            )
-        } catch {
-            debug("\(consoleIdentifier) Did fail to signal criteria can safely be dismissed: \(error)")
-        }
-    }
-    
     private func handlePlayerCriteriaReport ( _ event: CriteriaReportEvent ) {
         guard let relay = self.relay else {
             debug("\(consoleIdentifier) Did fail to handle criteria report: relay is missing or not set"); return
@@ -321,6 +252,79 @@ extension PlayerTaskReportResponder {
                     to: nameOfThePlayerWhoPlaysThePanelPickedForTaskGeneration
                 )
                 taskRuntimeContainer.registerTaskCriteria(task.criteria, to: nameOfThePlayerWhoPlaysThePanelPickedForTaskGeneration)
+        }
+    }
+    
+}
+
+extension PlayerTaskReportResponder {
+    
+    private func gameIsRunningOrPaused () -> Bool {
+        guard 
+            relay?.gameRuntimeContainer?.state == .playing || relay?.gameRuntimeContainer?.state == .paused
+        else {
+            debug("\(consoleIdentifier) Did fail to check game state: game is not running or paused")
+            return false
+        }
+        
+        return true
+    }
+    
+    private func isOneOfListedPlayers ( _ playerName: String ) -> Bool {
+        guard 
+            let playerReport = relay?.playerRuntimeContainer?.getReportOnPlayer(named: playerName),
+            playerReport.isBlacklisted == false
+        else {
+            debug("\(consoleIdentifier) Did fail to check player: player is missing or blacklisted")
+            return false
+        }
+        
+        return true
+    }
+    
+    private func criteriaIsAccomplished () {
+        relay?.gameRuntimeContainer?.tasksProgression.advance(by: 1)
+        debug("\(consoleIdentifier) Did advance the task progression by one")
+    }
+    
+    private func criteriaIsNotAccomplished ( _ penaltyPoints: Int ) {
+        relay?.gameRuntimeContainer?.penaltiesProgression.advance(by: penaltyPoints)
+        debug("\(consoleIdentifier) Did advance the penalty progression by \(penaltyPoints)")
+    }
+    
+    private func sendInstructionDismissal ( for instructionId: String, to playerName: String, using broadcaster: GPGameEventBroadcaster ) {
+        guard let playerRecord = relay?.playerRuntimeContainer?.getReportOnPlayer(named: playerName) else {
+            debug("\(consoleIdentifier) Did fail to signal instruction can safely be dismissed: player is not found in playerRuntimeContainer")
+            return
+        }
+        
+        do {
+            try broadcaster.broadcast (
+                InstructionDidGetDismissed (
+                    instructionId: instructionId
+                ).representedAsData(),
+                to: [playerRecord.address]
+            )
+        } catch {
+            debug("\(consoleIdentifier) Did fail to signal instruction can safely be dismissed: \(error)")
+        }
+    }
+    
+    private func sendCriteriaDismissal ( for criteriaId: String, to playerName: String, using broadcaster: GPGameEventBroadcaster ) {
+        guard let playerRecord = relay?.playerRuntimeContainer?.getReportOnPlayer(named: playerName) else {
+            debug("\(consoleIdentifier) Did fail to signal criteria can safely be dismissed: player is not found in playerRuntimeContainer")
+            return
+        }
+        
+        do {
+            try broadcaster.broadcast (
+                CriteriaDidGetDismissed (
+                    criteriaId: criteriaId
+                ).representedAsData(),
+                to: [playerRecord.address]
+            )
+        } catch {
+            debug("\(consoleIdentifier) Did fail to signal criteria can safely be dismissed: \(error)")
         }
     }
     

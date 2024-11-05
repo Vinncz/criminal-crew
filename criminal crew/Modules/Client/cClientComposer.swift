@@ -2,7 +2,7 @@ import GamePantry
 import UIKit
 import SwiftUI
 
-public class ClientComposer : UsesDependenciesInjector {
+public class ClientComposer : Composer, UsesDependenciesInjector {
     
     static let configuration : GPGameProcessConfiguration = GamePantry.GPGameProcessConfiguration (
         debugEnabled : AppConfig.debugEnabled, 
@@ -16,9 +16,9 @@ public class ClientComposer : UsesDependenciesInjector {
     
     public var relay          : Relay?
     
-    public let router         : GamePantry.GPEventRouter
+    public let router         : GPEventRouter
     public let networkManager : ClientNetworkManager
-    public let localStorage   : any GamePantry.GPGameTemporaryStorage
+    public let localStorage   : any GPGameTemporaryStorage
     
     private var cancellables  : Set<AnyCancellable> = []
     
@@ -33,11 +33,6 @@ public class ClientComposer : UsesDependenciesInjector {
     public let ent_panelRuntimeContainer  : ClientPanelRuntimeContainer
     public let ent_playerRuntimeContainer : ClientPlayerRuntimeContainer
     public let ent_gameRuntimeContainer   : ClientGameRuntimeContainer
-    // ---------------------------------------------------
-    
-    
-    // LEGACY REQUIREMENTS -------------------------------
-    public let switchRepository: MultipeerTaskRepository = MultipeerTaskRepository()
     // ---------------------------------------------------
     
     
@@ -78,7 +73,7 @@ public class ClientComposer : UsesDependenciesInjector {
 
 extension ClientComposer {
     
-    public func coordinate () -> Void {
+    public func compose ( args: [String] = [] ) -> Void {
         setupRelays()
         openRouterToEvents()
         subscribeUCsToEvents()
@@ -123,8 +118,8 @@ extension ClientComposer {
             router.openChannel(for:GPAcquaintanceStatusUpdateEvent.self),
             router.openChannel(for:ConnectedPlayersNamesResponse.self),
             
-            router.openChannel(for:PenaltyDidReachLimitEvent.self),
-            router.openChannel(for:TaskDidReachLimitEvent.self),
+            router.openChannel(for:PenaltyProgressionDidReachLimitEvent.self),
+            router.openChannel(for:TaskProgressionDidReachLimitEvent.self),
             
             router.openChannel(for:HasBeenAssignedHost.self),
             router.openChannel(for:HasBeenAssignedPanel.self),
@@ -155,8 +150,8 @@ extension ClientComposer {
         evtUC_serverSignalResponder.placeSubscription(on: InstructionDidGetDismissed.self)
         evtUC_serverSignalResponder.placeSubscription(on: CriteriaDidGetDismissed.self)
         
-        evtUC_serverSignalResponder.placeSubscription(on: PenaltyDidReachLimitEvent.self)
-        evtUC_serverSignalResponder.placeSubscription(on: TaskDidReachLimitEvent.self)
+        evtUC_serverSignalResponder.placeSubscription(on: PenaltyProgressionDidReachLimitEvent.self)
+        evtUC_serverSignalResponder.placeSubscription(on: TaskProgressionDidReachLimitEvent.self)
         evtUC_serverSignalResponder.placeSubscription(on: ConnectedPlayersNamesResponse.self)
         debug("[C] Placed subscription of ServerSignalResponder to GPAcquaintanceStatusUpdateEvent, HasBeenAssignedHost, HasBeenAssignedPanel, HasBeenAssignedTask, PenaltyDidReachLimitEvent, TaskDidReachLimitEvent, ConnectedPlayerNamesResponse")
     }
