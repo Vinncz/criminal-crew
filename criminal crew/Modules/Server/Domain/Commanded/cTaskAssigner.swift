@@ -41,7 +41,8 @@ extension TaskAssigner {
                     try eventBroadcaster.broadcast (
                         HasBeenAssignedInstruction (
                             instructionId: instruction.id,
-                            instruction: instruction.content
+                            instruction: instruction.content,
+                            displayDuration: instruction.displayDuration
                         ).representedAsData(),
                         to: [playerReport.address]
                     )

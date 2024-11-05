@@ -1,10 +1,3 @@
-//
-//  cClientColorPanel.swift
-//  criminal crew
-//
-//  Created by Hansen Yudistira on 01/11/24.
-//
-
 import GamePantry
 
 public class ClientColorPanel : ClientGamePanel, ObservableObject {
