@@ -12,7 +12,7 @@ public struct HasBeenAssignedInstruction : GPEvent, GPSendableEvent, GPReceivabl
     
     public var payload        : [String : Any]
     
-    public init ( instructionId: String, instruction: String, displayDuration: TimeInterval = 20 ) {
+    public init ( instructionId: String, instruction: String, displayDuration: TimeInterval) {
         self.instructionId   = instructionId
         self.instruction     = instruction
         self.displayDuration = displayDuration
@@ -57,14 +57,14 @@ extension HasBeenAssignedInstruction {
         guard
             "HasBeenAssignedInstruction" == payload[PayloadKeys.eventId.rawValue] as? String,
             let instructionId = payload[PayloadKeys.instructionId.rawValue] as? String,
-            let instruction   = payload[PayloadKeys.instruction.rawValue] as? String
+            let instruction   = payload[PayloadKeys.instruction.rawValue] as? String,
+            let displayDuration = payload[PayloadKeys.displayDuration.rawValue] as? String
         else {
             return nil
         }
         
-        var displayDuration: TimeInterval = 20
-        if let rawDisplayDuration = payload[PayloadKeys.displayDuration.rawValue] as? String {
-            displayDuration = TimeInterval(rawDisplayDuration) ?? 20
+        guard let displayDuration = TimeInterval(displayDuration) else {
+            return nil
         }
         
         return HasBeenAssignedInstruction (

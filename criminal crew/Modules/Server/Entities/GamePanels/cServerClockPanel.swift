@@ -31,7 +31,8 @@ extension ServerClockPanel {
         
         return GameTask (
             instruction: GameTaskInstruction (
-                content: prompt
+                content: prompt,
+                displayDuration: 30
             ), 
             completionCriteria: GameTaskCriteria.init (
                 requirements: completionCriteria
