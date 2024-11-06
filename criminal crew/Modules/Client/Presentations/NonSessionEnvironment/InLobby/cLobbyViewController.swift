@@ -6,6 +6,7 @@ public class LobbyViewController : UIViewController {
     let lPageTitle          : UILabel
     let lPageDesc           : UILabel
     let lConnectionStatus   : UILabel
+    let lMyName             : UILabel
     let bRefreshPlayerNames : UIButton
     let tPlayerNames        : UITableView
     
@@ -25,6 +26,7 @@ public class LobbyViewController : UIViewController {
         self.lPageTitle          = UILabel().labeled("Waiting Room").styled(.title).aligned(.left)
         self.lPageDesc           = UILabel().labeled("Awaiting the host to start the game •").styled(.caption).aligned(.left).withAlpha(of: 0.5)
         self.lConnectionStatus   = UILabel().labeled("Not connected").styled(.caption).aligned(.left).withAlpha(of: 0.5)
+        self.lMyName             = UILabel().labeled("You're known as: ").styled(.caption).aligned(.left).withAlpha(of: 0.5)
         self.bRefreshPlayerNames = UIButton().styled(.secondary).tagged(Self.refreshNames).withIcon(systemName: "arrow.trianglehead.clockwise.rotate.90")
         self.tPlayerNames        = UITableView()
         
@@ -61,7 +63,8 @@ extension LobbyViewController {
                                             Self.makeStack(direction: .horizontal, distribution: .fillEqually)
                                                 .thatHolds(
                                                     lPageDesc,
-                                                    lConnectionStatus
+                                                    lConnectionStatus,
+                                                    lMyName
                                                 )
                                         ),
                                     Self.makeStack(direction: .horizontal, distribution: .equalCentering)
@@ -77,6 +80,7 @@ extension LobbyViewController {
         tPlayerNames.register(RoomCell.self, forCellReuseIdentifier: RoomCell.identifier)
         tPlayerNames.delegate = self
         tPlayerNames.dataSource = self
+        tPlayerNames.backgroundColor = .white
         
         view.addSubview(vstack)
         
@@ -90,6 +94,8 @@ extension LobbyViewController {
         enableUpdateJobForConnectedNames()
         enablePushToGameViewJob()
         enableUpdateJobForConnection()
+        
+        lMyName.text = (lMyName.text ?? "") + "\(relay?.selfSignalCommandCenter?.whoAmI() ?? "Unknown")"
     }
     
     override public func viewDidDisappear ( _ animated: Bool ) {

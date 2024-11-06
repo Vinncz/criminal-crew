@@ -444,6 +444,7 @@ extension ClockGameViewController {
         self.relay = relay
         if let panelRuntimeContainer = relay.panelRuntimeContainer {
             bindInstruction(to: panelRuntimeContainer)
+            bindPenaltyProgression(panelRuntimeContainer)
         }
         return self
     }
@@ -460,6 +461,16 @@ extension ClockGameViewController {
                 self?.resetTimerAndAnimation()
                 self?.changePromptText(instruction.content)
                 self?.changeTimeInterval(instruction.displayDuration)
+            }
+            .store(in: &cancellables)
+    }
+    
+    private func bindPenaltyProgression(_ panelRunTimeContainer: ClientPanelRuntimeContainer) {
+        panelRunTimeContainer.$penaltyProgression
+            .receive(on: DispatchQueue.main)
+            .debounce(for: .milliseconds(200), scheduler: RunLoop.main)
+            .sink { [weak self] progression in
+                self?.updateLossCondition(intensity: CGFloat(progression))
             }
             .store(in: &cancellables)
     }

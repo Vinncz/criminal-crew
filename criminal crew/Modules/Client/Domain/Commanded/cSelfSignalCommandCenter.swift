@@ -261,7 +261,7 @@ extension SelfSignalCommandCenter {
         return flowIsComplete
     }
     
-    public func sendIstructionReport ( instructionId: String, isAccomplished: Bool, penaltiesGiven: Int = 0 ) -> Bool {
+    public func sendIstructionReport ( instructionId: String, isAccomplished: Bool, penaltiesGiven: Int = 1 ) -> Bool {
         var flowIsComplete = false
         
         guard let relay else {

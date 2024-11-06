@@ -109,10 +109,12 @@ extension LobbyCreationPageViewController {
         tPendingPlayers.register(PlayerCell.self, forCellReuseIdentifier: PlayerCell.identifier)
         tPendingPlayers.delegate   = pendingPlayersRefresher
         tPendingPlayers.dataSource = pendingPlayersRefresher
+        tPendingPlayers.backgroundColor = .white
         
         tJoinedPlayers.register(PlayerCell.self, forCellReuseIdentifier: PlayerCell.identifier)
         tJoinedPlayers.delegate   = joinedPlayersRefresher
         tJoinedPlayers.dataSource = joinedPlayersRefresher
+        tJoinedPlayers.backgroundColor = .white
         
         let vstack = Self.makeStack(direction: .vertical, distribution: .fillProportionally)
             .thatHolds(

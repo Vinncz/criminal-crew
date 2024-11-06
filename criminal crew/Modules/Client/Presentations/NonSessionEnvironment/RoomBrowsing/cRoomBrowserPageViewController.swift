@@ -65,6 +65,7 @@ extension RoomBrowserPageViewController {
         tDiscoveredServers.register(RoomCell.self, forCellReuseIdentifier: RoomCell.identifier)
         tDiscoveredServers.delegate = self
         tDiscoveredServers.dataSource = self
+        tDiscoveredServers.backgroundColor = .white
         
         view.addSubview(vstack)
         

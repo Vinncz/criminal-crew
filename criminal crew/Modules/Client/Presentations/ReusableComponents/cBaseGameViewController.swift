@@ -54,16 +54,6 @@ open class BaseGameViewController: UIViewController, GameContentProvider {
         view.backgroundColor = .systemBackground
         loseIndicatorView.translatesAutoresizingMaskIntoConstraints = false
         loseIndicatorView.isUserInteractionEnabled = false
-        view.addSubview(loseIndicatorView)
-        
-        NSLayoutConstraint.activate([
-            loseIndicatorView.topAnchor.constraint(equalTo: view.topAnchor),
-            loseIndicatorView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
-            loseIndicatorView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
-            loseIndicatorView.trailingAnchor.constraint(equalTo: view.trailingAnchor)
-        ])
-        
-        loseIndicatorView.updateLossEffect(intensity: 0.2)
         
         mainStackView.axis = .horizontal
         mainStackView.translatesAutoresizingMaskIntoConstraints = false
@@ -94,6 +84,15 @@ open class BaseGameViewController: UIViewController, GameContentProvider {
             promptView.widthAnchor.constraint(equalTo: rightStackView.widthAnchor ),
             secondPanelView.heightAnchor.constraint(equalTo: rightStackView.heightAnchor, multiplier: 0.6),
             secondPanelView.widthAnchor.constraint(equalTo: rightStackView.widthAnchor)
+        ])
+        
+        view.addSubview(loseIndicatorView)
+        
+        NSLayoutConstraint.activate([
+            loseIndicatorView.topAnchor.constraint(equalTo: view.topAnchor),
+            loseIndicatorView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
+            loseIndicatorView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            loseIndicatorView.trailingAnchor.constraint(equalTo: view.trailingAnchor)
         ])
     }
     

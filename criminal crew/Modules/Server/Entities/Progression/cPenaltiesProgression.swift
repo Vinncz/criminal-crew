@@ -4,7 +4,7 @@ public class PenaltiesProgression : UsesDependenciesInjector, ObservableObject {
     
     @Published public var progress : Int {
         didSet {
-            debug("\(consoleIdentifier) Did update penalty progresstion to: \(progress)")
+            debug("\(consoleIdentifier) Did update penalty progression to: \(progress)")
         }
     }
     

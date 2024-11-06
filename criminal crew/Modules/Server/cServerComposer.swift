@@ -29,7 +29,7 @@ final public class ServerComposer : Composer, UsesDependenciesInjector {
     public let evtUC_taskReportResponder       : PlayerTaskReportResponder
     public let evtUC_playerConnectionResponder : ServerPlayerConnectionResponder
     
-    // public let dmnUC_gameContinuumObserver   : GameContinuumDaemon
+    public let dmnUC_gameContinuumObserver   : GameContinuumDaemon
     // public let dmnUC_quickTimeEventInitiator : QuickTimeEventDaemon
     
     public let ent_playerRuntimeContainer : ServerPlayerRuntimeContainer
@@ -52,7 +52,7 @@ final public class ServerComposer : Composer, UsesDependenciesInjector {
         evtUC_taskReportResponder       = PlayerTaskReportResponder()
         evtUC_playerConnectionResponder = ServerPlayerConnectionResponder()
         
-        // dmnUC_gameContinuumObserver   = GameContinuumDaemon()
+        dmnUC_gameContinuumObserver   = GameContinuumDaemon()
         // dmnUC_quickTimeEventInitiator = QuickTimeEventDaemon()
         
         ent_playerRuntimeContainer = ServerPlayerRuntimeContainer()
@@ -75,6 +75,7 @@ extension ServerComposer {
         setupRelays()
         openRouterToEvents()
         subscribeUCsToEvents()
+        startDaemons()
     }
     
     private final func openRouterToEvents () {
@@ -190,6 +191,13 @@ extension ServerComposer {
             playerRuntimeContainer : self.ent_playerRuntimeContainer
         )
         debug("[S] PlayerConnectionResponder relay has been set up")
+        
+        dmnUC_gameContinuumObserver.relay = GameContinuumDaemon.Relay (
+            playerRuntimeContainer : self.ent_playerRuntimeContainer, 
+            gameRuntimeContainer   : self.ent_gameRuntimeContainer,
+            eventBroadcaster       : self.networkManager.eventBroadcaster
+        )
+        debug("[S] GameContinuumDaemon relay has been set up")
     }
     
     private final func subscribeUCsToEvents () {
@@ -213,5 +221,8 @@ extension ServerComposer {
         debug("[S] Placed subscription of PlayerConnectionResponder to GPAcquaintanceStatusUpdateEvent")
     }
     
+    private final func startDaemons () {
+        dmnUC_gameContinuumObserver.execute()
+    }
     
 }

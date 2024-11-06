@@ -11,7 +11,7 @@ public class GameWinViewController : UIViewController, UsesDependenciesInjector 
     var button : UIButton
     
     override init ( nibName nibNameOrNil: String?, bundle nibBundleOrNil: Bundle? ) {
-        self.label = Self.makeLabel("You Win!")
+        self.label = Self.makeLabel("You Win!").aligned(.center).styled(.title)
         self.button = UIButton().titled("Back to menu").styled(.borderedProminent)
         super.init(nibName: nil, bundle: nil)
     }
@@ -34,6 +34,7 @@ extension GameWinViewController {
         self.button = button.executes(self, action: #selector(backToMainMenu), for: .touchUpInside)
         
         view.backgroundColor = .white
+        navigationItem.hidesBackButton = true
         
         let vStack = Self.makeStack(direction: .vertical).thatHolds(
             label, 
@@ -48,4 +49,8 @@ extension GameWinViewController {
         ])
     }
     
+}
+
+#Preview {
+    GameWinViewController()
 }

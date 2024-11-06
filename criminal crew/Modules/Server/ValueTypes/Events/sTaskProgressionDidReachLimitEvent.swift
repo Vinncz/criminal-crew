@@ -51,13 +51,17 @@ extension TaskProgressionDidReachLimitEvent {
     public static func construct ( from payload: [String : Any] ) -> TaskProgressionDidReachLimitEvent? {
         guard
             "TaskDidReachLimitEvent" == payload[PayloadKeys.eventId.rawValue] as? String,
-            let currentProgression = payload[PayloadKeys.currentProgression.rawValue] as? Int,
-            let imposedLimit = payload[PayloadKeys.imposedLimit.rawValue] as? Int
+            let currentProgression = payload[PayloadKeys.currentProgression.rawValue] as? String,
+            let imposedLimit = payload[PayloadKeys.imposedLimit.rawValue] as? String
         else {
             return nil
         }
         
-        return TaskProgressionDidReachLimitEvent(currentProgression: currentProgression, limit: imposedLimit)
+        guard let intCurrentProgression = Int(currentProgression), let intLimit = Int(imposedLimit) else {
+            return nil
+        }
+        
+        return TaskProgressionDidReachLimitEvent(currentProgression: intCurrentProgression, limit: intLimit)
     }
     
 }

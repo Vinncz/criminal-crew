@@ -17,11 +17,17 @@ public class ClientPanelRuntimeContainer : ObservableObject {
             debug("\(consoleIdentifier) Did update criterias to \(criterias.map{ $0.id.prefix(4) })")
         }
     }
+    @Published public var penaltyProgression : Double {
+        didSet {
+            debug("\(consoleIdentifier) Did update penalty progression to \(penaltyProgression)")
+        }
+    }
     
     public init () {
         panelPlayed = nil
         instruction = nil
         criterias   = []
+        penaltyProgression = 0.0
     }
     
     private let consoleIdentifier : String = "[C-PRN]"

@@ -1,12 +1,12 @@
 import GamePantry
 
-public struct PenaltyProgressionDidReachLimitEvent : GPEvent, GPSendableEvent, GPReceivableEvent {
+public struct PenaltyProgressionUpdateEvent : GPEvent, GPSendableEvent, GPReceivableEvent {
     
     public let currentProgression : Int
     public let imposedLimit       : Int
     
-    public let id              : String = "PenaltyDidReachLimitEvent"
-    public let purpose         : String = "Notify the server and client alike, that the game will end due to the penalty limit being reached"
+    public let id              : String = "PenaltyProgressionUpdateEvent"
+    public let purpose         : String = "Notify the client that the game has reached a certain amount of percentages of the penalty limit"
     public let instanciatedOn  : Date   = .now
     
     public var payload         : [String : Any] = [:]
@@ -18,7 +18,7 @@ public struct PenaltyProgressionDidReachLimitEvent : GPEvent, GPSendableEvent, G
     
 }
 
-extension PenaltyProgressionDidReachLimitEvent {
+extension PenaltyProgressionUpdateEvent {
     
     public enum PayloadKeys : String, CaseIterable {
         case eventId = "eventId",
@@ -32,7 +32,7 @@ extension PenaltyProgressionDidReachLimitEvent {
     
 }
 
-extension PenaltyProgressionDidReachLimitEvent {
+extension PenaltyProgressionUpdateEvent {
     
     public func representedAsData () -> Data {
         dataFrom {
@@ -46,11 +46,11 @@ extension PenaltyProgressionDidReachLimitEvent {
     
 }
 
-extension PenaltyProgressionDidReachLimitEvent {
+extension PenaltyProgressionUpdateEvent {
     
-    public static func construct ( from payload: [String : Any] ) -> PenaltyProgressionDidReachLimitEvent? {
+    public static func construct ( from payload: [String : Any] ) -> PenaltyProgressionUpdateEvent? {
         guard
-            "PenaltyDidReachLimitEvent" == payload[PayloadKeys.eventId.rawValue] as? String,
+            "PenaltyProgressionUpdateEvent" == payload[PayloadKeys.eventId.rawValue] as? String,
             let currentProgression = payload[PayloadKeys.currentProgression.rawValue] as? String,
             let imposedLimit = payload[PayloadKeys.imposedLimit.rawValue] as? String
         else {
@@ -61,7 +61,7 @@ extension PenaltyProgressionDidReachLimitEvent {
             return nil
         }
         
-        return PenaltyProgressionDidReachLimitEvent(currentProgression: intCurrentProgression, limit: intLimit)
+        return PenaltyProgressionUpdateEvent(currentProgression: intCurrentProgression, limit: intLimit)
     }
     
 }

@@ -64,6 +64,9 @@ extension ServerSignalResponder : GPHandlesEvents {
             case let event as CriteriaDidGetDismissed:
                 didGetOrderToDismissSomeCriteria(event)
                 
+            case let event as PenaltyProgressionUpdateEvent:
+                didGetPenaltyProgressionUpdate(event)
+                
             case let event as PenaltyProgressionDidReachLimitEvent:
                 didGetPenaltyLimitCue(event)
             case let event as TaskProgressionDidReachLimitEvent:
@@ -304,7 +307,31 @@ extension ServerSignalResponder {
             return
         }
         
-        relay.panelRuntime?.criterias.removeAll { $0.id == event.criteriaId }
+        panelRuntime.criterias.removeAll { $0.id == event.criteriaId }
+    }
+    
+}
+
+extension ServerSignalResponder {
+    
+    public func didGetPenaltyProgressionUpdate ( _ event: PenaltyProgressionUpdateEvent ) {
+        guard let relay else {
+            debug("\(consoleIdentifier)")
+            return
+        }
+        
+        switch ( relay.assertPresent(\.panelRuntime) ) {
+            case .failure(let missingAttributes):
+                debug("\(consoleIdentifier) Did fail to handle penalty progression update: Relay is missing \(missingAttributes)")
+                break
+                
+            case .success:
+                let progression = Double(event.currentProgression)
+                let limit = Double(event.imposedLimit)
+                let progressionPercentage : Double = progression / limit
+                relay.panelRuntime?.penaltyProgression = progressionPercentage
+        }
+        
     }
     
 }
@@ -317,21 +344,32 @@ extension ServerSignalResponder {
             return 
         }
         
-        guard 
-            let gameRuntime = relay.gameRuntime,
-            gameRuntime.state == .playing
-        else {
-            debug("\(consoleIdentifier) Did fail to handle penalty limit reached, since GameRuntime is missing or not set, or game is not in playing state")
-            return
+        switch ( relay.assertPresent(\.gameRuntime, \.panelRuntime, \.playerRuntime) ) {
+            case .failure(let missingAttributes):
+                break
+            case .success:
+                guard 
+                    let gameRuntime = relay.gameRuntime,
+                    gameRuntime.state == .playing
+                else {
+                    debug("\(consoleIdentifier) Did fail to handle penalty limit reached, since GameRuntime is missing or not set, or game is not in playing state")
+                    return
+                }
+                
+                gameRuntime.state = .lose
+                
+                DispatchQueue.main.sync {
+                    let losingScreen = GameLoseViewController()
+                    losingScreen.relay = .init (
+                        navController: relay.navController
+                    )
+                    relay.navController?.pushViewController(losingScreen, animated: true)
+                }
+                
+                relay.gameRuntime?.reset()
+                relay.panelRuntime?.reset()
+                relay.playerRuntime?.reset()
         }
-        
-        gameRuntime.state = .lose
-        
-        let losingScreen = GameLoseViewController()
-        losingScreen.relay = .init (
-            navController: relay.navController
-        )
-        relay.navController?.pushViewController(losingScreen, animated: true)
     }
     
     public func didGetTaskLimitCue ( _ event: TaskProgressionDidReachLimitEvent ) {
@@ -340,21 +378,32 @@ extension ServerSignalResponder {
             return 
         }
         
-        guard 
-            let gameRuntime = relay.gameRuntime,
-            gameRuntime.state == .playing
-        else {
-            debug("\(consoleIdentifier) Did fail to handle tasks has been completed, since GameRuntime is missing or not set, or game is not in playing state")
-            return
+        switch ( relay.assertPresent(\.gameRuntime, \.panelRuntime, \.playerRuntime) ) {
+            case .failure(let missingAttributes):
+                break
+            case .success:
+                guard 
+                    let gameRuntime = relay.gameRuntime,
+                    gameRuntime.state == .playing
+                else {
+                    debug("\(consoleIdentifier) Did fail to handle tasks limit reached, since GameRuntime is missing or not set, or game is not in playing state")
+                    return
+                }
+                
+                gameRuntime.state = .lose
+                
+                DispatchQueue.main.sync {
+                    let winningScreen = GameWinViewController()
+                    winningScreen.relay = .init (
+                        navController: relay.navController
+                    )
+                    relay.navController?.pushViewController(winningScreen, animated: true)
+                }
+                
+                relay.gameRuntime?.reset()
+                relay.panelRuntime?.reset()
+                relay.playerRuntime?.reset()
         }
-        
-        gameRuntime.state = .win
-        
-        let winningScreen = GameWinViewController()
-        winningScreen.relay = .init (
-            navController: relay.navController
-        )
-        relay.navController?.pushViewController(winningScreen, animated: true)
     }
     
 }
