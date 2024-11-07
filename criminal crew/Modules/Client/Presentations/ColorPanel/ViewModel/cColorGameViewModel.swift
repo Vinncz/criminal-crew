@@ -9,6 +9,7 @@ internal class ColorGameViewModel {
     private let consoleIdentifier : String = "[C-PCO-VC]"
     
     internal func getColorArray() -> [String] {
+        return ["Red", "Yellow", "Blue", "Green", "Cyan", "Purple", "Orange", "White"]
         guard
             let relay = relay,
             let panelRuntimeContainer = relay.panelRuntimeContainer,
@@ -23,6 +24,7 @@ internal class ColorGameViewModel {
     }
     
     internal func getColorLabelArray() -> [String] {
+        return ["Red", "Yellow", "Blue", "Green", "Cyan", "Purple", "Orange", "White"]
         guard
             let relay = relay,
             let panelRuntimeContainer = relay.panelRuntimeContainer,

@@ -129,6 +129,7 @@ extension CableGameViewController {
                 let criteriaIds = panelRuntimeContainer.checkCriteriaCompletion()
                 criteriaIds.forEach { criteriaId in
                     _ = selfSignalCommandCenter.sendCriteriaReport(criteriaId: criteriaId, isAccomplished: true)
+                    self.completeTaskIndicator()
                 }
         }
     }
@@ -1200,7 +1201,7 @@ extension CableGameViewController {
             .receive(on: DispatchQueue.main)
             .debounce(for: .milliseconds(200), scheduler: RunLoop.main)
             .sink { [weak self] progression in
-                self?.updateLossCondition(intensity: CGFloat(progression))
+                self?.updateLossCondition(intensity: Float(progression))
             }
             .store(in: &cancellables)
     }

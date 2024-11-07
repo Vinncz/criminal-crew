@@ -100,7 +100,7 @@ open class BaseGameViewController: UIViewController, GameContentProvider {
         /// for subclass to override to fill their game settings
     }
     
-    public func updateLossCondition(intensity: CGFloat) {
+    public func updateLossCondition(intensity: Float) {
         loseIndicatorView.updateLossEffect(intensity: intensity)
     }
     
@@ -157,6 +157,10 @@ open class BaseGameViewController: UIViewController, GameContentProvider {
     
     public func resetTimerAndAnimation() {
         promptStackView.promptLabelView.resetTimerAndAnimation()
+    }
+    
+    public func completeTaskIndicator() {
+        loseIndicatorView.flashTaskCompletion()
     }
     
 }

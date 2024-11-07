@@ -1,12 +1,10 @@
 import UIKit
 
-internal class LeverIndicatorView: UIImageView {
+internal class ColorBulbIndicatorView: UIImageView {
     
-    internal var bulbColor: String
     private var isOn: Bool = false
     
-    init(imageName: String) {
-        self.bulbColor = imageName
+    init() {
         super.init(frame: .zero)
         setupImageView()
     }
@@ -20,11 +18,14 @@ internal class LeverIndicatorView: UIImageView {
         contentMode = .scaleAspectFit
     }
     
-    internal func toggleState() {
-        isOn.toggle()
-        
-        let newImageName = isOn ? "\(bulbColor) Bulb On" : "Bulb Off"
-        image = UIImage(named: newImageName)
+    internal func toggleOn(bulbColor: String) {
+        isOn = true
+        image = UIImage(named: "\(bulbColor) Bulb On")
+    }
+    
+    internal func toggleOff() {
+        isOn = false
+        image = UIImage(named: "Bulb Off")
     }
     
 }

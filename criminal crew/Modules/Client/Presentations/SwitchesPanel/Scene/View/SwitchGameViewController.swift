@@ -141,6 +141,9 @@ internal class SwitchGameViewController: BaseGameViewController {
             .receive(on: DispatchQueue.main)
             .sink { [weak self] isSuccess in
                 self?.showTaskAlert(isSuccess: isSuccess)
+                if isSuccess {
+                    self?.completeTaskIndicator()
+                }
             }
             .store(in: &cancellables)
         viewModel.finishGameAlert
@@ -238,7 +241,7 @@ extension SwitchGameViewController {
             .receive(on: DispatchQueue.main)
             .debounce(for: .milliseconds(200), scheduler: RunLoop.main)
             .sink { [weak self] progression in
-                self?.updateLossCondition(intensity: CGFloat(progression))
+                self?.updateLossCondition(intensity: Float(progression))
             }
             .store(in: &cancellables)
     }
