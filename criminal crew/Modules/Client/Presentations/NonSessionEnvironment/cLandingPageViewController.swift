@@ -77,6 +77,15 @@ extension LandingPageViewController {
         ])
     }
     
+    override public func viewDidAppear ( _ animated: Bool ) {
+        self.relay?.gameRuntimeContainer?.reset()
+        self.relay?.playerRuntimeContainer?.reset()
+        self.relay?.panelRuntimeContainer?.reset()
+        self.relay?.eventBroadcaster?.reset()
+        self.relay?.serverBrowser?.reset()
+        self.relay?.resetServer()
+    }
+    
 }
 
 extension LandingPageViewController {
@@ -97,11 +106,11 @@ extension LandingPageViewController {
                         panelRuntimeContainer   : self.relay?.panelRuntimeContainer,
                         gameRuntimeContainer    : self.relay?.gameRuntimeContainer,
                         navigate                : { [weak self] to in
-                            debug("browse room did navigate from landing page")
                             self?.relay?.navigate(to)
                         }
                     )
                 relay.navigate(serverBrowserPage)
+                
             case Self.hostRoomButtonId:
                 let lobbyCreationPage = LobbyCreationPageViewController()
                     lobbyCreationPage.relay = LobbyCreationPageViewController.Relay (
@@ -113,11 +122,11 @@ extension LandingPageViewController {
                             self?.relay?.publicizeRoom(advertContent)
                         }, 
                         navigate: { [weak self] to in 
-                            debug("host room did navigate from landing page")
                             self?.relay?.navigate(to)
                         }
                     )
                 relay.navigate(lobbyCreationPage)
+                
             default:
                 debug("\(consoleIdentifer) Unhandled button tag: \(sender.tag)")
                 break

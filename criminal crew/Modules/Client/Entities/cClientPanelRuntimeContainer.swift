@@ -61,6 +61,7 @@ extension ClientPanelRuntimeContainer {
         panelPlayed = nil
         instruction = nil
         criterias   = []
+        penaltyProgression = 0.0
     }
     
 }

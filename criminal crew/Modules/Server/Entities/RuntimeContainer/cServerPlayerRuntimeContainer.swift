@@ -95,6 +95,7 @@ extension ServerPlayerRuntimeContainer {
     public func reset () {
         blacklistedParties.removeAll()
         acquaintancedParties.removeAll()
+        hostAddr = nil
         debug("\(consoleIdentifier) Did reset PlayerRuntimeContainer")
     }
     

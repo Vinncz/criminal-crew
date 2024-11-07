@@ -175,14 +175,15 @@ extension LobbyCreationPageViewController {
         }
         
         playerRuntimeContainer.$joinRequestedPlayersNames
-            .receive(on: DispatchQueue.main)
             .debounce(for: .milliseconds(200), scheduler: RunLoop.main)
+            .receive(on: DispatchQueue.main)
             .sink { [weak self] names in
                 self?.tPendingPlayers.reloadData()
                 debug("Reloading pending players list with \(names)")
             }.store(in: &subscriptions)
             
         playerRuntimeContainer.$connectedPlayersNames
+            .debounce(for: .milliseconds(200), scheduler: RunLoop.main)
             .receive(on: DispatchQueue.main)
             .sink { [weak self] names in
                 self?.tJoinedPlayers.reloadData()
@@ -203,28 +204,26 @@ extension LobbyCreationPageViewController {
         
         var vc : UIViewController? = nil
         panelRuntimeContainer.$panelPlayed
+            .debounce(for: .milliseconds(200), scheduler: RunLoop.main)
             .receive(on: DispatchQueue.main)
             .sink { panel in
-                // delay 1 sec to make sure the panel is there
-                DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
-                    switch panel {
-                        case is ClientClockPanel:
-                            vc = ClockGameViewController()
-                                .withRelay(of: .init(panelRuntimeContainer: panelRuntimeContainer, selfSignalCommandCenter: self.relay?.selfSignalCommandCenter))
-                        case is ClientWiresPanel:
-                            vc = CableGameViewController()
-                                .withRelay(of: .init(panelRuntimeContainer: panelRuntimeContainer, selfSignalCommandCenter: self.relay?.selfSignalCommandCenter))
-                        case is ClientSwitchesPanel:
-                            vc = SwitchGameViewController()
-                                .withRelay(of: .init(panelRuntimeContainer: panelRuntimeContainer, selfSignalCommandCenter: self.relay?.selfSignalCommandCenter))
-                        default:
-                            debug("Did fail to set up game view controller")
-                            break
-                    }
-                    
-                    if let vc {
-                        relay.navigate(vc)
-                    }
+                switch panel {
+                    case is ClientClockPanel:
+                        vc = ClockGameViewController()
+                            .withRelay(of: .init(panelRuntimeContainer: panelRuntimeContainer, selfSignalCommandCenter: self.relay?.selfSignalCommandCenter))
+                    case is ClientWiresPanel:
+                        vc = CableGameViewController()
+                            .withRelay(of: .init(panelRuntimeContainer: panelRuntimeContainer, selfSignalCommandCenter: self.relay?.selfSignalCommandCenter))
+                    case is ClientSwitchesPanel:
+                        vc = SwitchGameViewController()
+                            .withRelay(of: .init(panelRuntimeContainer: panelRuntimeContainer, selfSignalCommandCenter: self.relay?.selfSignalCommandCenter))
+                    default:
+                        debug("Did fail to set up game view controller")
+                        break
+                }
+                
+                if let vc {
+                    relay.navigate(vc)
                 }
             }
             .store(in: &subscriptions)

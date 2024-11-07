@@ -34,9 +34,12 @@ extension EventRelayer : GPHandlesEvents {
             debug("\(consoleIdentifier) Did fail to place subscription: eventRouter is missing or not set"); return
         }
         
-        eventRouter.subscribe(to: eventType)?.sink { event in
-            self.handle(event)
-        }.store(in: &subscriptions)
+        eventRouter.subscribe(to: eventType)?
+            .debounce(for: .milliseconds(100), scheduler: RunLoop.current)
+            .sink { event in
+                self.handle(event)
+            }
+            .store(in: &subscriptions)
     }
     
     private func handle ( _ event: GPEvent ) {
@@ -88,7 +91,7 @@ extension EventRelayer {
             return
         }
         
-        guard let player = relay.playerRegistry?.getAcquaintancedPartiesAndTheirState().keys.first else {
+        guard let player = relay.playerRegistry?.hostAddr else {
             debug("\(consoleIdentifier) Did fail to respond to \(event): player is missing or not set or empty")
             return
         }

@@ -9,7 +9,7 @@ public class ClientGameRuntimeContainer : ObservableObject {
     }
     @Published public var playedServerAddr     : MCPeerID? {
         didSet {
-            debug("\(consoleIdentifier) Did update played server addr to \(playedServerAddr?.displayName ?? "Unnamed server")")
+            debug("\(consoleIdentifier) Did update played server addr to \(playedServerAddr?.displayName ?? "nil")")
         }
     }
     @Published public var connectionState      : MCSessionState {
@@ -69,8 +69,8 @@ extension ClientGameRuntimeContainer {
     
     public func reset () {
         state                = .notStarted
-        connectionState      = .notConnected
         playedServerAddr     = nil
+        connectionState      = .notConnected
         isHost               = false
         admissionPolicy      = .approvalRequired
     }

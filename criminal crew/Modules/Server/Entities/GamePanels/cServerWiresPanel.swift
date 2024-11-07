@@ -11,22 +11,22 @@ public class ServerWiresPanel : ServerGamePanel {
     public var rightPanelDestinationWires : [String] = ["RPStarEndID", "RPSquareEndID", "RPCircleEndID", "RPTriangleEndID"]
     
     public var wiresIdToSymbols = [
-        "LPRedStartID"   : "R",
-        "LPBlueStartID"  : "B",
-        "LPYellowStartID": "Y",
-        "LPGreenStartID" : "G",
-        "LPRedEndID"     : "R",
-        "LPBlueEndID"    : "B",
-        "LPYellowEndID"  : "Y",
-        "LPGreenEndID"   : "G",
-        "RPRedStartID"   : "R",
-        "RPBlueStartID"  : "B",
-        "RPYellowStartID": "Y",
-        "RPGreenStartID" : "G",
+        "LPRedStartID"   : "Red",
+        "LPBlueStartID"  : "Blue",
+        "LPYellowStartID": "Yellow",
+        "LPGreenStartID" : "Green",
+        "LPRedEndID"     : "Red",
+        "LPBlueEndID"    : "Blue",
+        "LPYellowEndID"  : "Yellow",
+        "LPGreenEndID"   : "Green",
+        "RPRedStartID"   : "Red",
+        "RPBlueStartID"  : "Blue",
+        "RPYellowStartID": "Yellow",
+        "RPGreenStartID" : "Green",
         "RPStarEndID"    : "*",
-        "RPSquareEndID"  : "[]",
-        "RPCircleEndID"  : "O",
-        "RPTriangleEndID": "/_\\"
+        "RPSquareEndID"  : "□",
+        "RPCircleEndID"  : "◯",
+        "RPTriangleEndID": "∆"
     ]
     
     required public init () {
@@ -60,17 +60,19 @@ extension ServerWiresPanel {
         
         return GameTask (
             instruction        : GameTaskInstruction (
-                // use the rightPanelDestinationWiresMappingToSymbols to map the rightPanelDestinationWires to symbols
-                content: """
-                Connect the wires:
-                \(String(describing: wiresIdToSymbols[leftPanelOriginWires[0]] ?? "")) -> \(String(describing: wiresIdToSymbols[leftPanelDestinationWires[0]] ?? ""))
-                \(String(describing: wiresIdToSymbols[leftPanelOriginWires[1]] ?? "")) -> \(String(describing: wiresIdToSymbols[leftPanelDestinationWires[1]] ?? ""))
-                \(String(describing: wiresIdToSymbols[rightPanelOriginWires[0]] ?? "")) -> \(String(describing: wiresIdToSymbols[rightPanelDestinationWires[0]] ?? ""))
-                \(String(describing: wiresIdToSymbols[rightPanelOriginWires[1]] ?? "")) -> \(String(describing: wiresIdToSymbols[rightPanelDestinationWires[1]] ?? ""))
-                """
+                content: 
+                    """
+                    Connect the cables:
+                    \(String(describing: wiresIdToSymbols[leftPanelOriginWires[0]] ?? "")) -> \(String(describing: wiresIdToSymbols[leftPanelDestinationWires[0]] ?? ""))
+                    \(String(describing: wiresIdToSymbols[leftPanelOriginWires[1]] ?? "")) -> \(String(describing: wiresIdToSymbols[leftPanelDestinationWires[1]] ?? ""))
+                    \(String(describing: wiresIdToSymbols[rightPanelOriginWires[0]] ?? "")) -> \(String(describing: wiresIdToSymbols[rightPanelDestinationWires[0]] ?? ""))
+                    \(String(describing: wiresIdToSymbols[rightPanelOriginWires[1]] ?? "")) -> \(String(describing: wiresIdToSymbols[rightPanelDestinationWires[1]] ?? ""))
+                    """,
+                displayDuration: 24
             ),
             completionCriteria : GameTaskCriteria(
-                requirements: [leftPanelConnection, rightPanelConnection]
+                requirements: [leftPanelConnection, rightPanelConnection],
+                validityDuration: 24
             )
         )
     }

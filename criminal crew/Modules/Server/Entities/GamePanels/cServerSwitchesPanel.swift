@@ -38,10 +38,15 @@ extension ServerSwitchesPanel {
         
         return GameTask (
             instruction: GameTaskInstruction (
-                content: "Activate \(levers[0]), \(levers[1]), \(levers[2]), \(switches[0]), and \(switches[1])"
+                content: 
+                    """
+                    Activate these levers & switches: \(levers[0]), \(levers[1]), \(levers[2]), \(switches[0]), and \(switches[1])
+                    """,
+                displayDuration: 18
             ), 
             completionCriteria: GameTaskCriteria (
-                requirements: ["\(levers[0])", "\(levers[1])", "\(levers[2])", "\(switches[0])", "\(switches[1])"]
+                requirements: ["\(levers[0])", "\(levers[1])", "\(levers[2])", "\(switches[0])", "\(switches[1])"],
+                validityDuration: 18
             )
         )
     }

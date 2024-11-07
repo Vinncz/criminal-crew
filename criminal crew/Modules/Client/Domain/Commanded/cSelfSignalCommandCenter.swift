@@ -45,9 +45,29 @@ extension SelfSignalCommandCenter {
 
 extension SelfSignalCommandCenter {
     
+    public func resetBroadcaster () -> Bool {
+        var flowIsComplete = false
+        
+        guard let relay else {
+            debug("\(consoleIdentifier) Did fail to reset broadcaster: relay is missing or not set")
+            return flowIsComplete
+        }
+        
+        guard let broadcaster = relay.eventBroadcaster as? ServerNetworkEventBroadcaster else {
+            debug("\(consoleIdentifier) Did fail to reset broadcaster: broadcaster is missing or not set")
+            return flowIsComplete
+        }
+        
+        broadcaster.reset()
+        debug("\(consoleIdentifier) Did reset broadcaster")
+        
+        flowIsComplete = true
+        
+        return flowIsComplete
+    }
+    
     /// Stops browser from browsing, removes all discovered servers, and resets it to state before `startBrowsing()` was called
     public func resetBrowser () -> Bool {
-        
         var flowIsComplete = false
         
         guard let relay else {

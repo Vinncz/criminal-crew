@@ -38,9 +38,11 @@ extension ServerSignalResponder : GPHandlesEvents {
             return 
         }
         
-        eventRouter.subscribe(to: eventType)?.sink { [weak self] event in
-            self?.handle(event)
-        }.store(in: &subscriptions)
+        eventRouter.subscribe(to: eventType)?
+            .sink { [weak self] event in
+                self?.handle(event)
+            }
+            .store(in: &subscriptions)
     }
     
     private func handle ( _ event: GPEvent ) {
@@ -102,15 +104,6 @@ extension ServerSignalResponder {
             debug("\(consoleIdentifier) Did fail to handle didGetConnectionUpdate since Browser is missing or not set")
             return
         }
-        
-        // It turns out that even though you're not the one that's being requested to join into,
-        // youre notified if another player joins in
-        
-        // therefore, only the first acquaintance update through here gonna be the real server's address
-        // the rest is just another players joining in
-        
-        // however, you gotta check it to the known server addr (from the first acquaintance update)
-        // because you might disconnect and reconnect to server
         
         guard gameRuntime.playedServerAddr == nil else {
             var consoleMsg = ""

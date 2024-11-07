@@ -52,6 +52,11 @@ public class GameServerAdvertiser : GPGameServerAdvertiser {
         self.startAdvertising(what: newAdvertContent, on: self)
     }
     
+    public func reset () {
+        self.stopAdvertising(on: self)
+        self.pendingRequests.removeAll()
+    }
+    
     private let consoleIdentifier : String = "[S-ADV]"
     
 }
