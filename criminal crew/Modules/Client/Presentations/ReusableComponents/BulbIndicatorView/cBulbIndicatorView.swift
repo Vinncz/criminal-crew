@@ -1,9 +1,16 @@
+//
+//  LeverIndicatorView.swift
+//  CriminalCrew
+//
+//  Created by Hansen Yudistira on 11/10/24.
+//
+
 import UIKit
 
-internal class LeverIndicatorView: UIImageView {
+internal class BulbIndicatorView: UIImageView {
     
     internal var bulbColor: String
-    private var isOn: Bool = false
+    internal var isOn: Bool = false
     
     init(imageName: String) {
         self.bulbColor = imageName

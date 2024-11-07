@@ -269,6 +269,7 @@ extension ClockGameViewController {
             ) {
                 debug("\(consoleIdentifier) Did fail to tell server that self has completed a task")
             }
+            self.completeTaskIndicator()
         }
     }
     
@@ -470,7 +471,7 @@ extension ClockGameViewController {
             .receive(on: DispatchQueue.main)
             .debounce(for: .milliseconds(200), scheduler: RunLoop.main)
             .sink { [weak self] progression in
-                self?.updateLossCondition(intensity: CGFloat(progression))
+                self?.updateLossCondition(intensity: Float(progression))
             }
             .store(in: &cancellables)
     }

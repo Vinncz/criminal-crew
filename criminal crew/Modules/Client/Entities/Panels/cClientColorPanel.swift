@@ -4,8 +4,8 @@ public class ClientColorPanel : ClientGamePanel, ObservableObject {
     
     public let panelId : String = "SwitchesPanel"
     
-    private var colorArray  : [String] = ["Red", "Yellow", "Blue", "Green", "Pink", "Purple", "Orange", "White"]
-    private var colorLabelArray  : [String] = ["Red", "Yellow", "Blue", "Green", "Pink", "Purple", "Orange", "White"]
+    private var colorArray  : [String] = ["Red", "Yellow", "Blue", "Green", "Cyan", "Purple", "Orange", "White"]
+    private var colorLabelArray  : [String] = ["Red", "Yellow", "Blue", "Green", "Cyan", "Purple", "Orange", "White"]
     
     private var pressedButtons: [String] = []
     
