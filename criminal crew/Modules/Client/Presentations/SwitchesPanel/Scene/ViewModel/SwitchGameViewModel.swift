@@ -7,7 +7,6 @@ internal class SwitchGameViewModel {
     
     private  let didPressedButton     : PassthroughSubject<String, Never>       = PassthroughSubject<String, Never>()
     internal var taskCompletionStatus : PassthroughSubject<Bool, Never>         = PassthroughSubject<Bool, Never>()
-    internal var finishGameAlert      : PassthroughSubject<String, Never>       = PassthroughSubject<String, Never>()
     
     var relay: Relay?
     struct Relay : CommunicationPortal {
@@ -67,11 +66,6 @@ internal class SwitchGameViewModel {
         } else {
             self.taskCompletionStatus.send(false)
         }
-    }
-    
-    private func finishGameAlert(_ winningCondition: Bool) {
-        let message = winningCondition ? "You won!" : "You lost!"
-        finishGameAlert.send(message)
     }
     
     private func showAlert(for error: Error) {

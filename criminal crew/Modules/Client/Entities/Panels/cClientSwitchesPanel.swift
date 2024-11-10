@@ -56,7 +56,6 @@ extension ClientSwitchesPanel {
     /// [ n(#)  ]
     public func validate ( _ completionCriterias: [String] ) -> Bool {
         var flowIsCompleted : Bool = false
-        print("completionCriteria = \(completionCriterias), pressedButtons = \(pressedButtons)")
         guard
             Set(pressedButtons) == Set(completionCriterias)
         else {
