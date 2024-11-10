@@ -11,7 +11,8 @@ public class ClientComposer : Composer, UsesDependenciesInjector {
         serviceType  : AppConfig.serviceType,
         timeout      : 10
     )
-    
+
+    public let id : String = "ClientComposer"
     public let navigationController : UINavigationController
     
     public var relay          : Relay?

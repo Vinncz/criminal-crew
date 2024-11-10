@@ -10,6 +10,8 @@ final public class ServerComposer : Composer, UsesDependenciesInjector {
         timeout      : 10
     )
     
+    public let id : String = "ServerComposer"
+    
     public var relay          : Relay?
     public struct Relay : CommunicationPortal {
         // var cancelHostAdmissionJob: () -> Void

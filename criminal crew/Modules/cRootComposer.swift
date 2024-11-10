@@ -3,6 +3,8 @@ import UIKit
 
 public class RootComposer : Composer, ObservableObject {
     
+    public let id : String = "RootComposer"
+    
     public var serverComposer          : ServerComposer
     public var clientComposer          : ClientComposer
     public var queuedJobToAdmitTheHost : AnyCancellable?

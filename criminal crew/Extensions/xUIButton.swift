@@ -2,11 +2,13 @@ import UIKit
 
 extension UIButton {
     
+    /// A chain-up method. Sets the title of the button, and returns the updated button.
     public func titled ( _ title: String, whenStateIs: UIControl.State = .normal ) -> Self {
         self.setTitle(title, for: whenStateIs)
         return self
     }
     
+    /// A chain-up method. Selects a method for execution, specify when the method should be executed, and returns the updated button attached with said criteria.
     public func executes ( _ target: Any?, action: Selector, for controlEvents: UIControl.Event) -> Self {
         self.addTarget(target, action: action, for: controlEvents)
         return self
@@ -19,11 +21,13 @@ extension UIButton {
              text
     }
     
+    /// A chain-up method. Sets the tag of the button, and returns the updated button.
     public func tagged ( _ tag: Int ) -> Self {
         self.tag = tag
         return self
     }
     
+    /// A chain-up method. Sets the style of the button, and returns the updated button, styled.
     public func styled ( _ style: Style ) -> Self {
         switch style {
             case .borderedProminent:
@@ -50,6 +54,7 @@ extension UIButton {
         return self
     }
     
+    /// A chain-up method. Sets the padding of the button, and returns the updated button.
     public func padded ( _ padding: CGFloat, on edge: UIRectEdge? = .all ) -> Self {
         var config = self.configuration ?? UIButton.Configuration.filled()
         
@@ -74,6 +79,7 @@ extension UIButton {
         return self
     }
     
+    /// A chain-up method. Adds padding to the button, and returns the updated button with new added paddings.
     public func additivePadding ( _ padding: CGFloat, on edge: UIRectEdge? = .all ) -> Self {
         var config = self.configuration ?? UIButton.Configuration.filled()
         
@@ -98,6 +104,7 @@ extension UIButton {
         return self
     }
     
+    /// A chain-up method. Sets the role of the button, and returns the updated button.
     public func roled ( _ role: UIButton.Role ) -> Self {
         self.role = role
         if role == .destructive || role == .cancel {
@@ -106,6 +113,7 @@ extension UIButton {
         return self
     }
     
+    /// A chain-up method. Sets the icon of the button, and returns the updated button with icon as specified.
     public func withIcon ( _ icon: UIImage, for role: UIButton.Role = .normal ) -> Self {
         self.setImage(icon, for: .normal)
         self.setImage(icon, for: .highlighted)
@@ -114,6 +122,7 @@ extension UIButton {
         return self
     }
     
+    /// A chain-up method. Sets the icon of the button, and returns the updated button with icon as specified.
     public func withIcon ( systemName: String ) -> Self {
         self.setImage(UIImage(systemName: systemName), for: .normal)
         self.setImage(UIImage(systemName: systemName), for: .highlighted)
