@@ -63,10 +63,8 @@ extension ServerWiresPanel {
                 content: 
                     """
                     Connect the cables:
-                    \(String(describing: wiresIdToSymbols[leftPanelOriginWires[0]] ?? "")) -> \(String(describing: wiresIdToSymbols[leftPanelDestinationWires[0]] ?? ""))
-                    \(String(describing: wiresIdToSymbols[leftPanelOriginWires[1]] ?? "")) -> \(String(describing: wiresIdToSymbols[leftPanelDestinationWires[1]] ?? ""))
-                    \(String(describing: wiresIdToSymbols[rightPanelOriginWires[0]] ?? "")) -> \(String(describing: wiresIdToSymbols[rightPanelDestinationWires[0]] ?? ""))
-                    \(String(describing: wiresIdToSymbols[rightPanelOriginWires[1]] ?? "")) -> \(String(describing: wiresIdToSymbols[rightPanelDestinationWires[1]] ?? ""))
+                    \(String(describing: wiresIdToSymbols[leftPanelOriginWires[0]] ?? "")) -> \(String(describing: wiresIdToSymbols[leftPanelDestinationWires[0]] ?? "")) • \(String(describing: wiresIdToSymbols[leftPanelOriginWires[1]] ?? "")) -> \(String(describing: wiresIdToSymbols[leftPanelDestinationWires[1]] ?? ""))
+                    \(String(describing: wiresIdToSymbols[rightPanelOriginWires[0]] ?? "")) -> \(String(describing: wiresIdToSymbols[rightPanelDestinationWires[0]] ?? "")) • \(String(describing: wiresIdToSymbols[rightPanelOriginWires[1]] ?? "")) -> \(String(describing: wiresIdToSymbols[rightPanelDestinationWires[1]] ?? ""))
                     """,
                 displayDuration: 24
             ),

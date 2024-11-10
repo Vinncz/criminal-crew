@@ -1,4 +1,4 @@
-import GamePantry
+import Foundation
 
 public struct GameTask : Identifiable, Hashable, Sendable {
     
@@ -11,8 +11,8 @@ public struct GameTask : Identifiable, Hashable, Sendable {
         self.instruction = instruction
         self.criteria    = completionCriteria
         
-        self.instruction.associate(with: self.id.uuidString)
-        self.criteria.associate(with: self.id.uuidString)
+        self.instruction.associate(withParent: self.id.uuidString)
+        self.criteria.associate(withParent: self.id.uuidString)
     }
     
 }

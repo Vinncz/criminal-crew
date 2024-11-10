@@ -2,11 +2,7 @@ import GamePantry
 
 public class ServerTaskRuntimeContainer : ObservableObject {
     
-    @Published public var tasks : [GameTask] {
-        didSet {
-//            debug("\(consoleIdentifier) Did update registered tasks to: \(tasks.map{ $0.instruction.id.prefix(4) })")
-        }
-    }
+    @Published public var tasks : [GameTask]
     @Published public var playerTaskInstructionMapping : [String: [GameTaskInstruction]] {
         didSet {
             debug("\(consoleIdentifier) Did update player-instruction mapping to: \(playerTaskInstructionMapping.map{ playerName, instructions in return "\(playerName): \(instructions.map{ $0.id.prefix(4) })"  })")

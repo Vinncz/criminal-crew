@@ -25,7 +25,7 @@ extension ServerClockPanel {
         
         let prompt = 
         """
-        Turn longhand to \(minuteHandSymbol), shorthand to \(hourHandSymbol)
+        Minute to \(minuteHandSymbol), hour to \(hourHandSymbol)
         Then these symbols \(switchSymbols.joined(separator: ", "))
         """
         let completionCriteria : [String] = [

@@ -40,7 +40,8 @@ extension ServerSwitchesPanel {
             instruction: GameTaskInstruction (
                 content: 
                     """
-                    Activate these levers & switches: \(levers[0]), \(levers[1]), \(levers[2]), \(switches[0]), and \(switches[1])
+                    Activate these levers: \(levers[0]), \(levers[1]), \(levers[2]), 
+                    and these switches: \(switches[0]), and \(switches[1])
                     """,
                 displayDuration: 18
             ), 
