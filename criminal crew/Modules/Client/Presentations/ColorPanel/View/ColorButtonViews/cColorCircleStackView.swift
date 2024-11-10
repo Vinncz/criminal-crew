@@ -21,18 +21,19 @@ internal class ColorCircleStackView: UIStackView {
     private func setupStackView() {
         axis = .vertical
         alignment = .center
-        spacing = 16
+        spacing = 8
+        distribution = .fillEqually
         isUserInteractionEnabled = true
         
         colorCircleButtonViewArray = []
-        
-        let columnPerRow = colorArray.count / 2
+        let colorArrayHalf = colorArray.count / 2
         for row in 0..<2 {
             let colorColumnStackView = ViewFactory.createHorizontalStackView()
             colorColumnStackView.alignment = .center
-            colorColumnStackView.spacing = 16
-            for column in 0..<columnPerRow {
-                let button = ColorCircleButtonView(colorName: colorArray[row * columnPerRow + column], colorLabelName: colorLabelArray[row * columnPerRow + column])
+            colorColumnStackView.spacing = 32
+            colorColumnStackView.distribution = .fillEqually
+            for column in 0..<4 {
+                let button = ColorCircleButtonView(colorName: colorArray[row * colorArrayHalf + column], colorLabelName: colorLabelArray[row * colorArrayHalf + column])
                 colorCircleButtonViewArray.append(button)
                 colorColumnStackView.addArrangedSubview(button)
             }

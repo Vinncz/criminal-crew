@@ -28,12 +28,14 @@ extension ServerPanelRuntimeContainer {
         static let cablesPanel   = ServerWiresPanel.self
         static let symbolsPanel  = ServerClockPanel.self
         static let switchesPanel = ServerSwitchesPanel.self
+        static let colorPanel = ServerColorPanel.self
     }
     
     public static let availablePanelTypes : [ServerGamePanel.Type] = [
         ServerWiresPanel.self,
         ServerClockPanel.self,
         ServerSwitchesPanel.self,
+        ServerColorPanel.self
     ]
     
 }

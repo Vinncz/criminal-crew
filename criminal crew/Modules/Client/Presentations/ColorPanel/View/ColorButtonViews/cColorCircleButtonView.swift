@@ -30,34 +30,22 @@ internal class ColorCircleButtonView: UIStackView {
     
     private func setupView() {
         axis = .vertical
-        spacing = 16
-        layoutMargins = UIEdgeInsets(top: 16, left: 16, bottom: 16, right: 16)
-        isLayoutMarginsRelativeArrangement = true
+        spacing = 4
         isUserInteractionEnabled = true
         
         colorCircleButton = ColorCircleButton(colorName: colorName, labelName: colorLabelName)
-        if let colorCircleButton = colorCircleButton {
-            print("add target to button circle")
-            colorCircleButton.addTarget(self, action: #selector(colorCircleTapped(_:)), for: .touchUpInside)
-            colorCircleButton.translatesAutoresizingMaskIntoConstraints
-            = false
-            addArrangedSubview(colorCircleButton)
-            
-            NSLayoutConstraint.activate([
-                colorCircleButton.heightAnchor.constraint(equalTo: heightAnchor, multiplier: 0.8)
-            ])
-        }
-        
         labelView = ColorLabelView(text: colorLabelName)
-        if let labelView = labelView {
+        
+        if let colorCircleButton = colorCircleButton, let labelView = labelView {
+            colorCircleButton.addTarget(self, action: #selector(colorCircleTapped(_:)), for: .touchUpInside)
+            addArrangedSubview(colorCircleButton)
             addArrangedSubview(labelView)
-            labelView.translatesAutoresizingMaskIntoConstraints = false
             
             NSLayoutConstraint.activate([
+                colorCircleButton.heightAnchor.constraint(equalTo: heightAnchor, multiplier: 0.8),
                 labelView.heightAnchor.constraint(equalTo: heightAnchor, multiplier: 0.2),
             ])
         }
-        
     }
     
     @objc private func colorCircleTapped(_ sender: ColorCircleButton) {
