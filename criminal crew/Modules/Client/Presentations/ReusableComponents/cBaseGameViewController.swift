@@ -39,11 +39,12 @@ open class BaseGameViewController: UIViewController, GameContentProvider {
     }
     
     open override func viewDidLoad() {
+        setupViewModel()
         navigationItem.hidesBackButton = true
         contentProvider = self
         if let contentProvider = contentProvider {
-            addContentToFirstPanelView(contentProvider.createFirstPanelView())
             addContentToSecondPanelView(contentProvider.createSecondPanelView())
+            addContentToFirstPanelView(contentProvider.createFirstPanelView())
         }
         super.viewDidLoad()
         setupView()
@@ -98,6 +99,10 @@ open class BaseGameViewController: UIViewController, GameContentProvider {
     
     open func setupGameContent() {
         /// for subclass to override to fill their game settings
+    }
+    
+    open func setupViewModel() {
+        /// for subclass to override to initiate their view model
     }
     
     public func updateLossCondition(intensity: Float) {

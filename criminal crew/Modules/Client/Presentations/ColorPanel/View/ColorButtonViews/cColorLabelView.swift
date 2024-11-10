@@ -25,14 +25,14 @@ internal class ColorLabelView: UIView {
         addSubview(label)
         
         NSLayoutConstraint.activate([
-            labelBox.leadingAnchor.constraint(equalTo: self.leadingAnchor, constant: 4),
-            labelBox.trailingAnchor.constraint(equalTo: self.trailingAnchor, constant: -4),
-            labelBox.topAnchor.constraint(equalTo: self.topAnchor, constant: 4),
-            labelBox.bottomAnchor.constraint(equalTo: self.bottomAnchor, constant: -4),
-            label.leadingAnchor.constraint(equalTo: labelBox.leadingAnchor, constant: 4),
-            label.trailingAnchor.constraint(equalTo: labelBox.trailingAnchor, constant: -4),
-            label.topAnchor.constraint(equalTo: labelBox.topAnchor, constant: 4),
-            label.bottomAnchor.constraint(equalTo: labelBox.bottomAnchor, constant: -4)
+            labelBox.leadingAnchor.constraint(equalTo: self.leadingAnchor),
+            labelBox.trailingAnchor.constraint(equalTo: self.trailingAnchor),
+            labelBox.topAnchor.constraint(equalTo: self.topAnchor),
+            labelBox.bottomAnchor.constraint(equalTo: self.bottomAnchor),
+            label.leadingAnchor.constraint(equalTo: labelBox.leadingAnchor),
+            label.trailingAnchor.constraint(equalTo: labelBox.trailingAnchor),
+            label.topAnchor.constraint(equalTo: labelBox.topAnchor),
+            label.bottomAnchor.constraint(equalTo: labelBox.bottomAnchor)
         ])
     }
     

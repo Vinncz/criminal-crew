@@ -22,16 +22,16 @@ internal class ColorCircleButton: UIButton, ToggleButtonState {
         
         imageView?.contentMode = .scaleAspectFit
         backgroundColor = .clear
-        accessibilityLabel = "\(colorName),\(labelName)"
+        accessibilityLabel = "\(colorName) \(labelName)"
     }
     
     internal func toggleButtonState() {
         switch buttonState {
             case .on:
-                setImage(UIImage(named: "\(colorName) Lever Off")?.withRenderingMode(.alwaysOriginal), for: .normal)
+                setImage(UIImage(named: "\(colorName) Circle Button Off")?.withRenderingMode(.alwaysOriginal), for: .normal)
                 buttonState = .off
             case .off:
-                setImage(UIImage(named: "\(colorName) Lever On")?.withRenderingMode(.alwaysOriginal), for: .normal)
+                setImage(UIImage(named: "\(colorName) Circle Button On")?.withRenderingMode(.alwaysOriginal), for: .normal)
                 buttonState = .on
         }
     }
