@@ -19,12 +19,13 @@ internal class ColorPanelView: UIView {
     private func setupColorPanelGrid() {
         let leverGridStackView = ViewFactory.createVerticalStackView()
         leverGridStackView.distribution = .fillEqually
+        leverGridStackView.spacing = 4
         leverGridStackView.translatesAutoresizingMaskIntoConstraints = false
         
         for rowIndex in 0..<2 {
             let rowStackView = ViewFactory.createHorizontalStackView()
             rowStackView.distribution = .fillEqually
-            rowStackView.translatesAutoresizingMaskIntoConstraints = false
+            rowStackView.spacing = 4
             let colorArrayHalf = colorArray.count / 2
             for columnIndex in 0..<4 {
                 let button = ColorSquareButton(imageName: colorArray[rowIndex * colorArrayHalf + columnIndex])

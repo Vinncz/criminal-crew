@@ -42,8 +42,8 @@ internal class ColorGameViewController: BaseGameViewController {
             colorSequenceView.translatesAutoresizingMaskIntoConstraints = false
             
             NSLayoutConstraint.activate([
-                colorSequenceView.leadingAnchor.constraint(equalTo: firstPanelContainerView.leadingAnchor, constant: 32),
-                colorSequenceView.trailingAnchor.constraint(equalTo: firstPanelContainerView.trailingAnchor, constant: -32),
+                colorSequenceView.leadingAnchor.constraint(equalTo: firstPanelContainerView.leadingAnchor, constant: 16),
+                colorSequenceView.trailingAnchor.constraint(equalTo: firstPanelContainerView.trailingAnchor, constant: -16),
                 colorSequenceView.topAnchor.constraint(equalTo: firstPanelContainerView.topAnchor, constant: 16),
                 colorSequenceView.bottomAnchor.constraint(equalTo: firstPanelContainerView.bottomAnchor, constant: -16)
             ])

@@ -16,7 +16,7 @@ internal class ColorSquareButton: UIButton, ToggleButtonState {
     }
     
     private func setupButton(imageName: String) {
-        if let image = UIImage(named: "\(imageName) Circle Button Off")?.withRenderingMode(.alwaysOriginal) {
+        if let image = UIImage(named: "\(imageName) Square Button Off")?.withRenderingMode(.alwaysOriginal) {
             setImage(image, for: .normal)
         }
         
@@ -28,16 +28,16 @@ internal class ColorSquareButton: UIButton, ToggleButtonState {
     internal func toggleButtonState() {
         switch buttonState {
             case .on:
-                setImage(UIImage(named: "\(colorSquareColor) Circle Button Off")?.withRenderingMode(.alwaysOriginal), for: .normal)
+                setImage(UIImage(named: "\(colorSquareColor) Square Button Off")?.withRenderingMode(.alwaysOriginal), for: .normal)
                 buttonState = .off
             case .off:
-                setImage(UIImage(named: "\(colorSquareColor) Circle Button On")?.withRenderingMode(.alwaysOriginal), for: .normal)
+                setImage(UIImage(named: "\(colorSquareColor) Square Button On")?.withRenderingMode(.alwaysOriginal), for: .normal)
                 buttonState = .on
         }
     }
     
     internal func resetButtonState() {
-        setImage(UIImage(named: "\(colorSquareColor) Circle Button Off")?.withRenderingMode(.alwaysOriginal), for: .normal)
+        setImage(UIImage(named: "\(colorSquareColor) Square Button Off")?.withRenderingMode(.alwaysOriginal), for: .normal)
         buttonState = .off
     }
     
