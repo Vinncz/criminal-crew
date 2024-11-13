@@ -9,6 +9,7 @@ import UIKit
 import Combine
 
 open class BaseGameViewController: UIViewController, GameContentProvider {
+    
     open func createFirstPanelView() -> UIView {
         return UIView()
     }
@@ -161,7 +162,7 @@ open class BaseGameViewController: UIViewController, GameContentProvider {
     }
     
     public func resetTimerAndAnimation() {
-        promptStackView.promptLabelView.resetTimerAndAnimation()
+        promptStackView.promptLabelView.timerView.resetTimerAndAnimation()
     }
     
     public func completeTaskIndicator() {

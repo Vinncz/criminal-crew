@@ -7,7 +7,7 @@
 
 import UIKit
 
-open class TimeView: UIImageView {
+open class EarpieceView: UIImageView {
     
     init () {
         super.init(frame: .zero)
@@ -19,8 +19,8 @@ open class TimeView: UIImageView {
     }
     
     private func setupView () {
-        let timeImage = UIImage(named: "Earpiece")
-        image = timeImage
+        let earpieceImage = UIImage(named: "Earpiece")
+        image = earpieceImage
         contentMode = .scaleToFill
     }
     
