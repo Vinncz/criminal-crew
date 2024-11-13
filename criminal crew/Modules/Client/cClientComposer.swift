@@ -196,11 +196,11 @@ extension ClientComposer {
                 }
             )
         
-        navigationController.pushViewController(landingPage, animated: true)
+        navigationController.pushViewController(landingPage, animated: false)
     }
     
     public func navigate ( to destination: UIViewController ) {
-        self.navigationController.pushViewController(destination, animated: true)
+        self.navigationController.pushViewController(destination, animated: false)
     }
     
 }
