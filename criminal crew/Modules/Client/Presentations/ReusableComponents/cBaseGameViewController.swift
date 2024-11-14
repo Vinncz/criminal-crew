@@ -42,8 +42,8 @@ open class BaseGameViewController: UIViewController, GameContentProvider {
         navigationItem.hidesBackButton = true
         contentProvider = self
         if let contentProvider = contentProvider {
-            addContentToFirstPanelView(contentProvider.createFirstPanelView())
             addContentToSecondPanelView(contentProvider.createSecondPanelView())
+            addContentToFirstPanelView(contentProvider.createFirstPanelView())
         }
         super.viewDidLoad()
         setupView()
@@ -95,6 +95,8 @@ open class BaseGameViewController: UIViewController, GameContentProvider {
             secondPanelView.heightAnchor.constraint(equalTo: rightStackView.heightAnchor, multiplier: 0.6),
             secondPanelView.widthAnchor.constraint(equalTo: rightStackView.widthAnchor)
         ])
+        
+        mainStackView.bringSubviewToFront(firstPanelView)
     }
     
     open func setupGameContent() {
@@ -114,6 +116,8 @@ open class BaseGameViewController: UIViewController, GameContentProvider {
             view.leadingAnchor.constraint(equalTo: firstPanelView.leadingAnchor),
             view.trailingAnchor.constraint(equalTo: firstPanelView.trailingAnchor),
         ])
+        
+        firstPanelView.bringSubviewToFront(view)
     }
     
     public func addContentToSecondPanelView(_ view: UIView) {

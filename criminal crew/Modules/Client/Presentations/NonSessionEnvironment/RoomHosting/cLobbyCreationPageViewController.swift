@@ -215,6 +215,9 @@ extension LobbyCreationPageViewController {
                         case is ClientSwitchesPanel:
                             vc = SwitchGameViewController()
                                 .withRelay(of: .init(panelRuntimeContainer: panelRuntimeContainer, selfSignalCommandCenter: self.relay?.selfSignalCommandCenter))
+                        case is ClientCardPanel:
+                            vc = CardSwipeViewController()
+                                .withRelay(of: .init(panelRuntimeContainer: panelRuntimeContainer, selfSignalCommandCenter: self.relay?.selfSignalCommandCenter))
                         default:
                             debug("Did fail to set up game view controller")
                             break

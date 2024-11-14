@@ -3,7 +3,6 @@ import Combine
 
 public class CableGameViewController: BaseGameViewController, UsesDependenciesInjector {
     
-//    public var connections: [[String]] = []
     public var currentCableHead: UIImageView?
     public var connectedCableHeads: Set<UIImageView> = []
     
@@ -220,11 +219,10 @@ extension CableGameViewController {
         let leverImagePulled = UIImage(named: "client.panels.cables-panel.cable-lever-pulled")
         let leverImageDefault = UIImage(named: "client.panels.cables-panel.cable-lever")
 
-        // Animate the lever pull
         UIView.transition(with: CableManager.shared.cableLever, duration: 0.2, options: .transitionCrossDissolve, animations: {
             CableManager.shared.cableLever.image = leverImagePulled
         }) { _ in
-            // Delay and revert to the original lever image
+            
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
                 UIView.transition(with: CableManager.shared.cableLever, duration: 0.2, options: .transitionCrossDissolve, animations: {
                     CableManager.shared.cableLever.image = leverImageDefault
@@ -274,19 +272,16 @@ extension CableGameViewController {
             }
 
             NSLayoutConstraint.activate([
-                // Start Point Constraints
                 startPoint.bottomAnchor.constraint(equalTo: target.safeAreaLayoutGuide.bottomAnchor, constant: -40),
-                startPoint.leadingAnchor.constraint(equalTo: target.leadingAnchor, constant: CGFloat(CGFloat(16 + (index * 70)) + startPointLeadingConstant)),  // Responsive leading
+                startPoint.leadingAnchor.constraint(equalTo: target.leadingAnchor, constant: CGFloat(CGFloat(16 + (index * 70)) + startPointLeadingConstant)),
                 startPoint.widthAnchor.constraint(equalToConstant: 50 ),
                 startPoint.heightAnchor.constraint(equalToConstant: 50),
 
-                // End Point Constraints
                 endPoint.topAnchor.constraint(equalTo: target.safeAreaLayoutGuide.topAnchor),
                 endPoint.leadingAnchor.constraint(equalTo: target.leadingAnchor, constant: CGFloat(CGFloat(16 + (index * 70)) + startPointLeadingConstant)), // Responsive leading
                 endPoint.widthAnchor.constraint(equalToConstant: 50),
                 endPoint.heightAnchor.constraint(equalToConstant: 50),
 
-                // Cable Head Constraints
                 cableHead.centerXAnchor.constraint(equalTo: startPoint.centerXAnchor),
                 cableHead.centerYAnchor.constraint(equalTo: startPoint.centerYAnchor, constant: -25),  // Responsive vertical offset
                 cableHead.widthAnchor.constraint(equalToConstant: 40),
@@ -717,16 +712,24 @@ extension CableGameViewController {
             switch nearestEndPoint {
             case CableManager.shared.cableGreenEnd:
                 nearestEndPoint.image = UIImage(named: "client.panels.cables-panel.green-cable-vertical")
-                
+                nearestEndPoint.transform = CGAffineTransform(rotationAngle: .pi)
             case CableManager.shared.cableRedEnd:
                 nearestEndPoint.image = UIImage(named: "client.panels.cables-panel.red-cable-vertical")
-                
+                nearestEndPoint.transform = CGAffineTransform(rotationAngle: .pi)
             case CableManager.shared.cableBlueEnd:
                 nearestEndPoint.image = UIImage(named: "client.panels.cables-panel.blue-cable-vertical")
-                
+                nearestEndPoint.transform = CGAffineTransform(rotationAngle: .pi)
             case CableManager.shared.cableYellowEnd:
                 nearestEndPoint.image = UIImage(named: "client.panels.cables-panel.yellow-cable-vertical")
-                
+                nearestEndPoint.transform = CGAffineTransform(rotationAngle: .pi)
+            case CableManager.shared.starEnd:
+                nearestEndPoint.image = UIImage(named: "client.panels.cables-panel.star-peg")
+            case CableManager.shared.squareEnd:
+                nearestEndPoint.image = UIImage(named: "client.panels.cables-panel.square-peg")
+            case CableManager.shared.triangleEnd:
+                nearestEndPoint.image = UIImage(named: "client.panels.cables-panel.triangle-peg")
+            case CableManager.shared.circleEnd:
+                nearestEndPoint.image = UIImage(named: "client.panels.cables-panel.circle-peg")
             default:
                 break
             }
@@ -920,7 +923,7 @@ extension CableGameViewController {
         
         var newCenter : CGPoint = CGPoint(x: endPoint.center.x, y: endPoint.center.y)
         
-        if distanceToEndpoint < 20 {
+        if distanceToEndpoint < 35 {
             if let startID = startPointIDs[startHead],
                let endID = endPointIDs[endPoint] 
             {                
@@ -932,7 +935,7 @@ extension CableGameViewController {
             } else if let startID = secondStartPointIDs[startHead],
                       let endID = secondEndPointIDs[endPoint] 
             {                
-                newCenter.x -= 22
+                newCenter.x -= 18
                 panelEntity.connections.append([startID, endID])
                 landscapeContainerView?.layer.insertSublayer(cableHead.layer, below: endPoint.layer)
                 cableHead.transform = CGAffineTransform.identity
@@ -953,12 +956,24 @@ extension CableGameViewController {
             switch endPoint {
             case CableManager.shared.cableGreenEnd:
                 endPoint.image = UIImage(named: "client.panels.cables-panel.green-cable-endPoint")
+                endPoint.transform = CGAffineTransform(rotationAngle: 0)
             case CableManager.shared.cableRedEnd:
                 endPoint.image = UIImage(named: "client.panels.cables-panel.red-cable-endPoint")
+                endPoint.transform = CGAffineTransform(rotationAngle: 0)
             case CableManager.shared.cableBlueEnd:
                 endPoint.image = UIImage(named: "client.panels.cables-panel.blue-cable-endPoint")
+                endPoint.transform = CGAffineTransform(rotationAngle: 0)
             case CableManager.shared.cableYellowEnd:
                 endPoint.image = UIImage(named: "client.panels.cables-panel.yellow-cable-endPoint")
+                endPoint.transform = CGAffineTransform(rotationAngle: 0)
+            case CableManager.shared.starEnd:
+                endPoint.image = UIImage(named: "client.panels.cables-panel.star-cover")
+            case CableManager.shared.squareEnd:
+                endPoint.image = UIImage(named: "client.panels.cables-panel.square-cover")
+            case CableManager.shared.circleEnd:
+                endPoint.image = UIImage(named: "client.panels.cables-panel.circle-cover")
+            case CableManager.shared.triangleEnd:
+                endPoint.image = UIImage(named: "client.panels.cables-panel.triangle-cover")
             default:
                 break
             }
@@ -972,7 +987,6 @@ extension CableGameViewController {
                 updateCableLayerAfterConnection(cableHead: CableManager.shared.cableYellowHead, cableLayer: CableManager.shared.yellowCableLayer!, borderLayer: CableManager.shared.yellowBorderLayer!, endPoint: CableManager.shared.cableYellowEnd)
             case CableManager.shared.cableGreenStart:
                 updateCableLayerAfterConnection(cableHead: CableManager.shared.cableGreenHead, cableLayer: CableManager.shared.greenCableLayer!, borderLayer: CableManager.shared.greenBorderLayer!, endPoint: CableManager.shared.cableGreenEnd)
-                    
             case CableManager.shared.secondCableRedStart:
                 updateCableLayerAfterConnection(cableHead: CableManager.shared.secondCableRedHead, cableLayer: CableManager.shared.secondRedCableLayer!, borderLayer: CableManager.shared.secondRedBorderLayer!, endPoint: CableManager.shared.starEnd)
             case CableManager.shared.secondCableBlueStart:
