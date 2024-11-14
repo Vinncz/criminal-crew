@@ -64,7 +64,7 @@ internal class TimerView: UIView {
         
         let animation = CABasicAnimation(keyPath: "strokeEnd")
         animation.toValue = 0
-        animation.duration = 50
+        animation.duration = duration
         animation.fillMode = .forwards
         animation.isRemovedOnCompletion = false
         animation.delegate = self
