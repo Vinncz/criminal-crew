@@ -1,25 +1,23 @@
 import UIKit
 
-public class GameLoseViewController : UIViewController, UsesDependenciesInjector {
+public class DisconnectViewController : UIViewController, UsesDependenciesInjector {
     
     public var relay: Relay?
     public struct Relay : CommunicationPortal {
         weak var navController: UINavigationController?
     }
     
-    private let label : UILabel
-    private let bMainMenu : UIButton
-    private let bRestart : UIButton
+    private var label : UILabel
+    private var bMainMenu : UIButton
     private let loseDialogView: UIImageView
     
     private let mainMenuId: Int = 1
     private let restartId: Int = 2
     
     override init ( nibName nibNameOrNil: String?, bundle nibBundleOrNil: Bundle? ) {
-        self.label = EndDialogLabel(label: "Your crew failed too many tasks")
-        self.bMainMenu = ButtonWithImage(imageName: "main_menu_button", tag: mainMenuId)
-        self.bRestart = ButtonWithImage(imageName: "restart_button", tag: restartId)
-        self.loseDialogView = EndDialogView(label: "JOB FAILED !!")
+        self.label = EndDialogLabel(label: "you got disconnected from the crew")
+        self.bMainMenu = ButtonWithImage(imageName: "return_to_server_button", tag: mainMenuId)
+        self.loseDialogView = EndDialogView(label: "NO SIGNAL ...")
         super.init(nibName: nil, bundle: nil)
     }
     
@@ -37,7 +35,7 @@ public class GameLoseViewController : UIViewController, UsesDependenciesInjector
     
 }
 
-extension GameLoseViewController {
+extension DisconnectViewController {
     
     public override func viewDidLoad () {
         super.viewDidLoad()
@@ -48,9 +46,7 @@ extension GameLoseViewController {
         let buttonStack = ViewFactory.createHorizontalStackView()
         
         bMainMenu.addTarget(self, action: #selector(backToMainMenu), for: .touchUpInside)
-        bRestart.addTarget(self, action: #selector(restartGame), for: .touchUpInside)
         buttonStack.addArrangedSubview(bMainMenu)
-        buttonStack.addArrangedSubview(bRestart)
         
         view.addSubview(loseDialogView)
         view.addSubview(label)
@@ -91,5 +87,5 @@ extension GameLoseViewController {
 }
 
 #Preview {
-    GameLoseViewController()
+    DisconnectViewController()
 }

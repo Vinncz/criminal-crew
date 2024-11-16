@@ -950,6 +950,8 @@ extension CableGameViewController {
             let tapGesture = UITapGestureRecognizer(target: self, action: #selector(handleCableHeadTap(_:)))
             cableHead.addGestureRecognizer(tapGesture)
             cableHead.isUserInteractionEnabled = true
+            
+            AudioManager.shared.playSoundEffect(fileName: "plugging_cable")
 
             switch endPoint {
             case CableManager.shared.cableGreenEnd:

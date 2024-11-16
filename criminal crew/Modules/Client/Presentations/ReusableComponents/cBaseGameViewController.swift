@@ -50,6 +50,13 @@ open class BaseGameViewController: UIViewController, GameContentProvider {
         super.viewDidLoad()
         setupView()
         setupGameContent()
+        AudioManager.shared.playBackgroundMusic(fileName: "background_music1")
+    }
+    
+    override open func viewDidDisappear(_ animated: Bool) {
+        super.viewDidDisappear(animated)
+        AudioManager.shared.stopBackgroundMusic()
+        AudioManager.shared.stopSoundEffects()
     }
     
     private func setupView() {
@@ -87,6 +94,10 @@ open class BaseGameViewController: UIViewController, GameContentProvider {
             secondPanelView.heightAnchor.constraint(equalTo: rightStackView.heightAnchor, multiplier: 0.6),
             secondPanelView.widthAnchor.constraint(equalTo: rightStackView.widthAnchor)
         ])
+        
+        let spotlight = SpotlightEffectView(frame: view.bounds)
+        spotlight.isUserInteractionEnabled = false
+        view.addSubview(spotlight)
         
         view.addSubview(loseIndicatorView)
         

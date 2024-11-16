@@ -20,8 +20,7 @@ internal class EndDialogLabel: UILabel {
         text = label
         textColor = .white
         font = UIFont(name: "RobotoMono-Medium", size: 17)
-        textColor = .white
-        numberOfLines = 0
+        adjustsFontSizeToFitWidth = true
         textAlignment = .center
     }
     
