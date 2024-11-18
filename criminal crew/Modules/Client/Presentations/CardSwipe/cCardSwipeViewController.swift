@@ -22,6 +22,9 @@ public class CardSwipeViewController: BaseGameViewController {
     public var swipeCards = [UIImageView]()
     public var containerView: UIView?
     public var landscapeContainerView: UIView?
+    public var cardColorIndicator: [CAShapeLayer] = []
+    
+    public var isPanelProcessing: Bool = false
     
     public var relay: Relay?
     public struct Relay : CommunicationPortal {
@@ -112,12 +115,14 @@ public class CardSwipeViewController: BaseGameViewController {
         
         setupTapGestureForNumPad()
         placeJobToUpdateNumberPadLabelTextFromEntity()
+        
+        timerPublisher()
     }
     
     enum CardColor: String {
         case green, blue, yellow, red
     }
-    
+
     func setupViewsForFirstPanel(for target: UIView) {
         cardSwiperBelowPart.image = UIImage(named: "cardSwiperBelowPart")
         cardSwiperBelowPart.contentMode = .scaleAspectFit
@@ -130,9 +135,7 @@ public class CardSwipeViewController: BaseGameViewController {
             let swipeCard = UIImageView(image: UIImage(named: "swipeCard\(color.rawValue.capitalized)"))
             swipeCard.contentMode = .scaleAspectFit
             swipeCard.translatesAutoresizingMaskIntoConstraints = false
-      
             swipeCard.accessibilityIdentifier = color.rawValue
-            
             target.addSubview(swipeCard)
             swipeCards.append(swipeCard)
         }
@@ -141,17 +144,33 @@ public class CardSwipeViewController: BaseGameViewController {
         cardSwiperPart.contentMode = .scaleAspectFit
         cardSwiperPart.translatesAutoresizingMaskIntoConstraints = false
         target.addSubview(cardSwiperPart)
+
+        let rectangleWidth: CGFloat = 20
+        let rectangleHeight: CGFloat = 5
+        let rectangleSpacing: CGFloat = -2
         
-        
+        for i in 0..<4 {
+            let rectangleLayer = CAShapeLayer()
+            rectangleLayer.path = UIBezierPath(rect: CGRect(x: 0, y: 0, width: rectangleWidth, height: rectangleHeight)).cgPath
+            rectangleLayer.fillColor = UIColor.gray.cgColor
+            rectangleLayer.frame = CGRect(
+                x: (UIScreen.main.bounds.width - rectangleWidth) / 2,
+                y: cardSwiperPart.frame.maxY + CGFloat(i) * (rectangleHeight + rectangleSpacing),
+                width: rectangleWidth,
+                height: rectangleHeight
+            )
+            
+            target.layer.addSublayer(rectangleLayer)
+            cardColorIndicator.append(rectangleLayer)
+        }
     }
 
     func constraintForFirstPanel(for target: UIView) {
-
         let cardWidth: CGFloat = 180
         let cardHeight: CGFloat = 120
         let cardYSpacing: CGFloat = -90
-        let cardXSpacing: CGFloat = 25
-        let yLevelSpacing: CGFloat = 10
+        let cardXSpacing: CGFloat = 30
+        let yLevelSpacing: CGFloat = 6
         var temp: Int = 0
         
         let screenWidth = UIScreen.main.bounds.width
@@ -160,24 +179,29 @@ public class CardSwipeViewController: BaseGameViewController {
         var originalPositionx: CGFloat = 0
         var originalPositiony: CGFloat = 0
         var cardOrginalPositonSpacing: CGFloat = 0
+        var indicatorStartX: CGFloat = 0
+        var indicatorYlevel: CGFloat = 0
         
         if screenWidthInMm >= 318 {
             originalPositionx = 135
             originalPositiony = 273
             cardOrginalPositonSpacing = 40
-            
+            indicatorStartX = 175
+            indicatorYlevel = 140
         } else if screenWidthInMm >= 291 {
-            originalPositionx = 120
+            originalPositionx = 122
             originalPositiony = 250
             cardOrginalPositonSpacing = 63
-            
+            indicatorStartX = 160
+            indicatorYlevel = 126
         } else if screenWidthInMm >= 284 {
-            originalPositionx = 120
+            originalPositionx = 115
             originalPositiony = 250
             cardOrginalPositonSpacing = 63
+            indicatorStartX = 156
+            indicatorYlevel = 134
         }
-
-
+        
         NSLayoutConstraint.activate([
             cardSwiperPart.widthAnchor.constraint(equalTo: target.widthAnchor, multiplier: 0.7),
             cardSwiperPart.heightAnchor.constraint(equalTo: target.heightAnchor, multiplier: 0.5),
@@ -190,10 +214,8 @@ public class CardSwipeViewController: BaseGameViewController {
             cardSwiperBelowPart.topAnchor.constraint(equalTo: target.topAnchor)
         ])
        
-
         for (index, card) in swipeCards.enumerated() {
-            
-            if index >= 2{
+            if index >= 2 {
                 temp += 30
             }
             
@@ -207,10 +229,20 @@ public class CardSwipeViewController: BaseGameViewController {
             let centerX = target.center.x + (originalPositionx + CGFloat(index) * cardXSpacing)
             let centerY = index == 0 ? cardSwiperPart.frame.maxY + originalPositiony : swipeCards[index - 1].frame.maxY - cardOrginalPositonSpacing + CGFloat(temp)
             originalCardPositions[card] = CGPoint(x: centerX, y: centerY)
-            
         }
+        
+        let rectangleWidth: CGFloat = 40
+        let rectangleSpacing: CGFloat = -10
+        let totalWidth = CGFloat(cardColorIndicator.count) * rectangleWidth + CGFloat(cardColorIndicator.count - 1) * rectangleSpacing
+        let startX = (target.bounds.width - totalWidth) / 2 + indicatorStartX
+
+        for (index, rectangleLayer) in cardColorIndicator.enumerated() {
+            let xPosition = startX + CGFloat(index) * (rectangleWidth + rectangleSpacing)
+            rectangleLayer.frame = CGRect(x: xPosition, y: cardSwiperPart.frame.maxY + indicatorYlevel, width: rectangleWidth, height: 20)
+        }
+        
     }
-    
+
     func setupViewsForSecondPanel(for target: UIView) {
         numPadPanel.image = UIImage(named: "numberPanel")
         numPadDeleteButton.image = UIImage(named: "Delete Button Off")
@@ -291,7 +323,7 @@ public class CardSwipeViewController: BaseGameViewController {
         NSLayoutConstraint.activate([
             numPadPanel.widthAnchor.constraint(equalToConstant: numPadPanelSize.width),
             numPadPanel.heightAnchor.constraint(equalToConstant: numPadPanelSize.height),
-            numPadPanel.topAnchor.constraint(equalTo: target.topAnchor, constant: 20), //20
+            numPadPanel.topAnchor.constraint(equalTo: target.topAnchor, constant: 20),
             numPadPanel.trailingAnchor.constraint(equalTo: target.trailingAnchor, constant: panelTrailingAnchor)
         ])
 
@@ -313,7 +345,7 @@ public class CardSwipeViewController: BaseGameViewController {
             displayLabel.widthAnchor.constraint(equalToConstant: numPadPanelSize.width),
             displayLabel.heightAnchor.constraint(equalToConstant: numPadPanelSize.height),
             displayLabel.centerXAnchor.constraint(equalTo: numPadPanel.centerXAnchor),
-            displayLabel.leadingAnchor.constraint(equalTo: numPadPanel.leadingAnchor, constant: displayLabelLeadingAnchor) //20
+            displayLabel.leadingAnchor.constraint(equalTo: numPadPanel.leadingAnchor, constant: displayLabelLeadingAnchor)
         ])
 
         for i in 1...9 {
@@ -337,8 +369,8 @@ public class CardSwipeViewController: BaseGameViewController {
                 button.leadingAnchor.constraint(equalTo: target.leadingAnchor, constant: 30 + CGFloat(col) * (numPadButtonSize.width + buttonSpacing)),
                 button.topAnchor.constraint(equalTo: numPadPanel.bottomAnchor, constant: numPadLeadingAnchor  + CGFloat(row) * (numPadButtonSize.height + buttonSpacing)),
                     
-                label.centerXAnchor.constraint(equalTo: button.centerXAnchor),
-                label.centerYAnchor.constraint(equalTo: button.centerYAnchor)
+                label.centerXAnchor.constraint(equalTo: button.centerXAnchor, constant: 2),
+                label.topAnchor.constraint(equalTo: button.topAnchor, constant: 1)
             ])
         }
     }
@@ -358,6 +390,7 @@ public class CardSwipeViewController: BaseGameViewController {
         let translation = gesture.translation(in: containerView)
         let newCenter = CGPoint(x: card.center.x + translation.x, y: card.center.y + translation.y)
 
+
         switch gesture.state {
         case .began:
             print("Card being dragged")
@@ -368,7 +401,7 @@ public class CardSwipeViewController: BaseGameViewController {
                 let restrictedArea = swiperFrame.insetBy(dx: -100, dy: 0)
                 
                 if restrictedArea.contains(newCenter) {
-                    card.center.y += 1
+                    card.center.y += 0.3
                 }
                 
                 if !restrictedArea.contains(newCenter) {
@@ -377,7 +410,7 @@ public class CardSwipeViewController: BaseGameViewController {
             }
             
             let swipeArea = cardSwiperBelowPart.frame.insetBy(dx: -100, dy: 100)
-            if swipeArea.contains(newCenter) {
+            if swipeArea.contains(newCenter) && isPanelProcessing == false {
                 
                 guard
                     let relay,
@@ -391,27 +424,25 @@ public class CardSwipeViewController: BaseGameViewController {
                 let leftSwipeArea = CGRect(
                     x: cardSwiperBelowPart.frame.minX,
                     y: cardSwiperBelowPart.frame.minY,
-                    width: 20,
+                    width: 60,
                     height: cardSwiperBelowPart.frame.height
                 )
                 
                 let rightSwipeArea = CGRect(
                     x: cardSwiperBelowPart.frame.maxX - 20,
                     y: cardSwiperBelowPart.frame.minY,
-                    width: 20,
+                    width: 60,
                     height: cardSwiperBelowPart.frame.height
                 )
                 
                 if leftSwipeArea.contains(newCenter) && leftSideTouched == false {
                     swipeGesture.append("left")
                     leftSideTouched = true
-                    
                 }
                 
                 if rightSwipeArea.contains(newCenter) && rightSideTouched == false {
                     swipeGesture.append("right")
                     rightSideTouched = true
-                    
                 }
                 
                 if swipeGesture == ["left", "right"] {
@@ -443,11 +474,31 @@ public class CardSwipeViewController: BaseGameViewController {
                         default:
                             break;
                     }
-                    
+   
+                    let colorMap: [String: UIColor] = [
+                        "green": UIColor.green,
+                        "red": UIColor.red,
+                        "blue": UIColor.blue,
+                        "yellow": UIColor.yellow
+                    ]
+
+                    let displayCardColor = panelEntity.cardSequenceInput
+                    let count = min(cardColorIndicator.count, displayCardColor.count)
+
+                    for i in 0..<count {
+                        let colorName = displayCardColor[i]
+                        
+                        if let color = colorMap[colorName] {
+                            cardColorIndicator[i].fillColor = color.cgColor
+                        } else {
+                            cardColorIndicator[i].fillColor = UIColor.gray.cgColor
+                        }
+                    }
+
                     leftSideTouched = false
                     rightSideTouched = false
                     swipeGesture.removeAll()
-     
+
                 }
                 
                 if swipeGesture == ["right", "left"] {
@@ -528,7 +579,9 @@ public class CardSwipeViewController: BaseGameViewController {
         guard let button = sender.view as? UIImageView else { return }
         let tappedNumber = String(button.tag)
         
-        _ = panelEntity.tapNumber(on: tappedNumber)
+        if isPanelProcessing == false {
+            _ = panelEntity.tapNumber(on: tappedNumber)
+        }
     }
 
     @objc func handleDeleteButtonTap() {
@@ -554,17 +607,25 @@ public class CardSwipeViewController: BaseGameViewController {
             return
         }
         
+        isPanelProcessing = true
+        
         let isSuccessful = checkSituationAndReportCompletionIfApplicable()
         
         if !isSuccessful {
             displayLabel.text = "Err"
+        } else {
+            displayLabel.text = "Ok!"
         }
         
-        print("\(panelEntity.cardSequenceInput), \(panelEntity.numberPadSequenceInput)")
+        let count = cardColorIndicator.count
+        for i in 0..<count {
+            cardColorIndicator[i].fillColor = UIColor.gray.cgColor
+        }
         
-        DispatchQueue.main.asyncAfter(deadline: .now() + 3.0){
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.5){
             self.displayLabel.text = ""
             panelEntity.clearAllInput()
+            self.isPanelProcessing = false
         }
     }
     
@@ -644,6 +705,29 @@ extension CardSwipeViewController {
                 self?.resetTimerAndAnimation()
                 self?.changePromptText(instruction.content)
                 self?.changeTimeInterval(instruction.displayDuration)
+            }
+            .store(in: &subscriptions)
+    }
+    
+}
+
+extension CardSwipeViewController {
+    
+    private func timerPublisher() {
+        timerUpPublisher
+            .sink { [weak self] isExpired in
+                guard
+                    let relay = self?.relay,
+                    let selfSignalCommandCenter = relay.selfSignalCommandCenter,
+                    let panelRuntimeContainer = relay.panelRuntimeContainer,
+                    let instruction = panelRuntimeContainer.instruction
+                else {
+                    debug("\(self?.consoleIdentifier ?? "ClockGameViewController") Did fail to send report of instruction's expiry: Relay and all of its requirements are not met")
+                    return
+                }
+  
+                let isSuccess = selfSignalCommandCenter.sendIstructionReport(instructionId: instruction.id, isAccomplished: isExpired, penaltiesGiven: 1)
+                debug("\(self?.consoleIdentifier ?? "ClockGameViewController") Did send report of instruction's expiry. It was \(isSuccess ? "delivered" : "not delivered") to server. The last updated status is \(isExpired ? "accomplished" : "not done")")
             }
             .store(in: &subscriptions)
     }

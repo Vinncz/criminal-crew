@@ -21,7 +21,7 @@ extension ServerCardPanel {
         let cardColorOriginSet = Set(cardColor)
         let cardNumberOriginSet = Set(numpadNumber)
         
-        let cardColorOrigin = Array(cardColorOriginSet.shuffled().prefix(4))
+        let cardColorOrigin = Array(cardColorOriginSet.shuffled().prefix(2))
         let cardNumberOrigin = Array(cardNumberOriginSet.shuffled().prefix(4))
         
         let cardColorTaskCombination = "\(cardColorOrigin.joined(separator: ","))"
