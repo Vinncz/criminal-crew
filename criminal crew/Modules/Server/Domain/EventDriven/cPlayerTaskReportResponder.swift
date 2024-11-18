@@ -145,8 +145,8 @@ extension PlayerTaskReportResponder {
                 taskRuntimeContainer.registerTaskInstruction(task.instruction, to: nameOfThePlayerHoldingTheInstruction)
                 
                 // find out who plays the random panel
-                guard let nameOfThePlayerWhoPlaysThePanelPickedForTaskGeneration = panelRuntimeContainer.playerMapping.first(where: { $0.value.panelId == randomPanel.panelId })?.key else {
-                    debug("\(consoleIdentifier) Did fail to reassign new criteria. \(randomPanel.panelId) is not registered to be played by anyone")
+                guard let nameOfThePlayerWhoPlaysThePanelPickedForTaskGeneration = panelRuntimeContainer.playerMapping.first(where: { $0.value.id == randomPanel.id })?.key else {
+                    debug("\(consoleIdentifier) Did fail to reassign new criteria. \(randomPanel.id) is not registered to be played by anyone")
                     return
                 }
                 
@@ -242,8 +242,8 @@ extension PlayerTaskReportResponder {
                 taskRuntimeContainer.registerTaskInstruction(task.instruction, to: event.submitterName)
                 
                 // find out who plays the random panel
-                guard let nameOfThePlayerWhoPlaysThePanelPickedForTaskGeneration = panelRuntimeContainer.playerMapping.first(where: { $0.value.panelId == randomPanel.panelId })?.key else {
-                    debug("\(consoleIdentifier)  Did fail to reassign new criteria. \(randomPanel.panelId) is not registered to be played by anyone")
+                guard let nameOfThePlayerWhoPlaysThePanelPickedForTaskGeneration = panelRuntimeContainer.playerMapping.first(where: { $0.value.id == randomPanel.id })?.key else {
+                    debug("\(consoleIdentifier)  Did fail to reassign new criteria. \(randomPanel.id) is not registered to be played by anyone")
                     return
                 }
                 

@@ -1,29 +1,39 @@
 import GamePantry
+import os
 
 public class ServerGameRuntimeContainer : ObservableObject {
     
     @Published public var state : GameState { 
         didSet {
-            debug("\(consoleIdentifier) Did update game state to: \(state)")
+            Logger.server.log("\(self.consoleIdentifier) Did update game state to: \(String(describing: self.state))")
         } 
+    }
+    @Published public var difficulty : GameDifficulty {
+        didSet {
+            Logger.server.log("\(self.consoleIdentifier) Did update game difficulty to: \(String(describing: self.difficulty))")
+        }
     }
     @Published public var penaltiesProgression : PenaltiesProgression { 
         didSet {
-            debug("\(consoleIdentifier) Did update penalties progression to: \(penaltiesProgression)")
+            Logger.server.log("\(self.consoleIdentifier) Did update penalties progression to: \(String(describing: self.penaltiesProgression))")
         } 
     }
     @Published public var tasksProgression : TasksProgression { 
         didSet { 
-            debug("\(consoleIdentifier) Did update task progression to: \(tasksProgression)")
+            Logger.server.log("\(self.consoleIdentifier) Did update task progression to: \(String(describing: self.tasksProgression))")
         } 
     }
     
-    public init ( taskLimit: Int = 20, penaltyLimit: Int = 12 ) {
-        let pp = PenaltiesProgression (limit: penaltyLimit)
-        let tp = TasksProgression     (limit: taskLimit)
-        let gs = GameState.notStarted
+    public init () {
+        let gs : GameState      = .notStarted
+        let df : GameDifficulty = .pro
         
-        state  = gs
+        state      = gs
+        difficulty = df
+        
+        let pp = PenaltiesProgression (limit: df.losingThreshold_penaltyLimit)
+        let tp = TasksProgression     (limit: df.winningThreshold_taskLimit)
+        
         penaltiesProgression = pp
         tasksProgression     = tp
     }
@@ -41,11 +51,16 @@ public class ServerGameRuntimeContainer : ObservableObject {
 extension ServerGameRuntimeContainer {
     
     public func reset () {
-        self.state = .notStarted
+        self.state      = .notStarted
+        self.difficulty = .pro
+        
         let oldPenaltyProgression = self.penaltiesProgression
         self.penaltiesProgression = PenaltiesProgression(limit: oldPenaltyProgression.limit)
+        
         let oldTaskProgression    = self.tasksProgression
         self.tasksProgression     = TasksProgression(limit: oldTaskProgression.limit)
+        
+        Logger.server.log("\(self.consoleIdentifier) Did reset game runtime container")
     }
     
 }

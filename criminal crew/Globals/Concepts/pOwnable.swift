@@ -10,7 +10,7 @@ public protocol Ownable<Owner> {
     associatedtype Owner : Hashable
     
     /// The owner of the object.
-    var owner : Owner { get }
+    var owner : Owner? { get }
     
     /// A chain-up method. Sets the owner of the object, and returns the updated object.
     mutating func owned ( by owner: Owner ) -> Self

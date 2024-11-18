@@ -1,7 +1,7 @@
 import UIKit
 import Combine
 
-internal class ClockGameViewController: BaseGameViewController, UsesDependenciesInjector {
+internal class ClockGameViewController : BaseGameViewController, UsesDependenciesInjector {
     
     var switchStackView: SwitchStackView?
     
@@ -294,7 +294,7 @@ extension ClockGameViewController {
             
         }
     }
-
+    
     func setCurrentSymbol ( _ symbol: String, for hand: UIView ) {
         guard 
             let relay,

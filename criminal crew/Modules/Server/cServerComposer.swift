@@ -119,6 +119,12 @@ extension ServerComposer {
         )
         debug("[S] TaskAssigner relay has been set up")
         
+        comUC_taskGenerator.relay = TaskGenerator.Relay (
+            gameRuntimeContainer  : self.ent_gameRuntimeContainer,
+            panelRuntimeContainer : self.ent_panelRuntimeContainer,
+            taskRuntimeContainer  : self.ent_taskRuntimeContainer
+        )
+        
         comUC_panelAssigner.relay = PanelAssigner.Relay (
             eventBroadcaster       : self.networkManager.eventBroadcaster,
             playerRuntimeContainer : self.ent_playerRuntimeContainer,

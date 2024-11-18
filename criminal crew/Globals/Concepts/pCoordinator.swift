@@ -8,13 +8,13 @@ public protocol Coordinator : AnyObject, Identifiable {
     /// Unique identifier identifying the coordinator
     var id : String { get }
     
-    /// The navigation controller that the coordinator may manipulate
+    /// The navigation controller that the coordinator may manipulate.
     var navigationController : UINavigationController? { get set }
     
-    /// The parent coordinator, where self may have been invoked from
+    /// The parent coordinator, where self may have been invoked from.
     var parent               : (any Coordinator)? { get set }
     
-    /// The child coordinators, who self may invoke
+    /// The child coordinators, who self may invoke.
     var children             : [any Coordinator] { get set }
     
     /// Coordinates the navigation flow of the application
@@ -40,17 +40,17 @@ extension Coordinator {
 
 extension Coordinator {
     
-    /// Adds a child coordinator to the parent coordinator
+    /// Adds a child coordinator to the parent coordinator.
     public func add ( child: any Coordinator ) {
         children.append(child)
     }
     
-    /// Removes a child coordinator from the parent coordinator
+    /// Removes a child coordinator from the parent coordinator.
     public func remove ( child: any Coordinator ) {
         children = children.filter { $0.id != child.id }
     }
     
-    /// Removes all child coordinators from the parent coordinator
+    /// Removes all child coordinators from the parent coordinator.
     public func removeAllChildren () {
         children.removeAll()
     }

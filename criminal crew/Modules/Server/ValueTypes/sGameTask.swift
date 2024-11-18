@@ -7,7 +7,7 @@ public struct GameTask : Identifiable, Hashable, Sendable {
     public let id : UUID = UUID()
     
     /// Describes which panel produced this task
-    public var owner : String
+    public var owner : String?
     
     /// The instruction that guides how to fulfill the task
     public var instruction : GameTaskInstruction
@@ -19,8 +19,6 @@ public struct GameTask : Identifiable, Hashable, Sendable {
         self.instruction = instruction
         self.criteria    = completionCriteria
         
-        self.owner = ""
-        
         self.instruction.associate(withParent: self.id.uuidString)
         self.criteria.associate(withParent: self.id.uuidString)
     }
@@ -29,11 +27,13 @@ public struct GameTask : Identifiable, Hashable, Sendable {
 
 extension GameTask : Ownable {
     
+    /// A chain-up method. Associates self with the panel which produced self.
     public mutating func owned ( by owner: String ) -> Self {
         self.owner = owner
         return self
     }
     
+    /// A chain-up method. Delegates ownership to another entity.
     public mutating func delegateOwnership ( to newOwner: String ) {
         self.owner = newOwner
     }

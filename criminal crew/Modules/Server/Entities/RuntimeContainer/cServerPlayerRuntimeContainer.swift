@@ -1,6 +1,8 @@
 import Combine
 import GamePantry
 
+public typealias PlayerName = String
+
 public class ServerPlayerRuntimeContainer : ObservableObject {
     
     @Published public var acquaintancedParties : [MCPeerID: MCSessionState] {
@@ -79,7 +81,7 @@ extension ServerPlayerRuntimeContainer {
         debug("\(consoleIdentifier) Did remove \(peerId.displayName) from acquaintancedParties and blacklistedParties")
     }
     
-    public func terminate ( _ playerName: String ) {
+    public func terminate ( _ playerName: PlayerName ) {
         guard let player = acquaintancedParties.first(where: { acquaintance, _ in
             acquaintance.displayName == playerName
         }) else {
@@ -109,7 +111,7 @@ extension ServerPlayerRuntimeContainer {
         public let isBlacklisted : Bool
     }
     
-    public func getReportOnPlayer ( named: String ) -> Report? {
+    public func getReportOnPlayer ( named: PlayerName ) -> Report? {
         let player = acquaintancedParties.first { acquaintance, _ in
             acquaintance.displayName == named
         }

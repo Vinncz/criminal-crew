@@ -114,7 +114,7 @@ extension LobbyViewController {
         }
         
         switch relay.assertPresent(\.selfSignalCommandCenter, \.playerRuntimeContainer) {
-            case .success():
+            case .success:
                 guard 
                     let selfCommandCenter = relay.selfSignalCommandCenter,
                     let playerRuntimeContainer = relay.playerRuntimeContainer

@@ -2,7 +2,10 @@ import GamePantry
 
 public class ServerSwitchesPanel : ServerGamePanel {
     
-    public let panelId : String = "SwitchesPanel"
+    public let id : String = "SwitchesPanel"
+    
+    public var criteriaLength      : Int = 4
+    public var instructionDuration : TimeInterval = 18
     
     public var firstArray  : [String] = ["Quantum", "Pseudo"]
     public var secondArray : [String] = ["Encryption", "AIIDS", "Cryptography", "Protocol"]
@@ -31,33 +34,26 @@ public class ServerSwitchesPanel : ServerGamePanel {
 
 extension ServerSwitchesPanel {
     
-    public func generateSingleTask () -> GameTask {
-        // a task will comprise of 3 levers and 2 switches
-        let levers = leverArray.shuffled().prefix(3)
-        let switches = validSwitches.shuffled().prefix(2)
+    public func generate ( taskConfiguredWith configuration: GameTaskModifier ) -> GameTask {
+        let secondHalfCritLen = 2
         
+        let levers = leverArray.shuffled().prefix(3)
+        let switches = validSwitches.shuffled().prefix(secondHalfCritLen)
+                
         return GameTask (
             instruction: GameTaskInstruction (
                 content: 
                     """
-                    Activate these levers: \(levers[0]), \(levers[1]), \(levers[2]), 
-                    and these switches: \(switches[0]), and \(switches[1])
+                    Activate these levers: \(levers.map { "\($0)" } ), 
+                    and these switches: \(switches.map { "\($0)" } )
                     """,
-                displayDuration: 18
+                displayDuration: self.instructionDuration * configuration.criteriaLengthScale
             ), 
             completionCriteria: GameTaskCriteria (
-                requirements: ["\(levers[0])", "\(levers[1])", "\(levers[2])", "\(switches[0])", "\(switches[1])"],
-                validityDuration: 18
+                requirements: levers.map{$0} + switches,
+                validityDuration: self.instructionDuration * configuration.instructionDurationScale
             )
         )
-    }
-
-    public func generateTasks ( limit: Int ) -> [GameTask] {
-        var tasks = [GameTask]()
-        for _ in 0..<limit {
-            tasks.append(generateSingleTask())
-        }
-        return tasks
     }
     
 }

@@ -29,11 +29,6 @@ extension PanelAssigner {
             return false
         }
         
-    //    guard panelRuntimeContainer.registeredPanels.count > 0 else {
-    //        debug("\(consoleIdentifier) Did fail to distribute panel: no panels are registered \(panelRuntimeContainer.registeredPanels)")
-    //        return false
-    //    }
-        
         guard let playerRuntimeContainer = relay.playerRuntimeContainer else {
             debug("\(consoleIdentifier) Did fail to distribute panel: playerRuntimeContainer is missing or not set")
             return false
@@ -57,7 +52,7 @@ extension PanelAssigner {
         for ( index, player ) in playerComposition.shuffled().enumerated() {
             let panelForThisPlayer = panelComposition[index].init()
             let distributePanelOrder = HasBeenAssignedPanel (
-                panelId : panelForThisPlayer.panelId
+                panelId : panelForThisPlayer.id
             )
             
             panelRuntimeContainer.registerPanel(panelForThisPlayer)
@@ -65,7 +60,7 @@ extension PanelAssigner {
             
             do {
                 try eventBroadcaster.broadcast(distributePanelOrder.representedAsData(), to: [player])
-                debug("\(consoleIdentifier) PanelAssigner assigned \(panelForThisPlayer.panelId) to \(player.displayName)")
+                debug("\(consoleIdentifier) PanelAssigner assigned \(panelForThisPlayer.id) to \(player.displayName)")
             } catch {
                 debug("\(consoleIdentifier) Did fail to distribute panel to \(player): \(error)")
                 isSuccessful = false
