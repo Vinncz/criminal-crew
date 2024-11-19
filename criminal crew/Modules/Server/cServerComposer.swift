@@ -10,6 +10,8 @@ final public class ServerComposer : Composer, UsesDependenciesInjector {
         timeout      : 10
     )
     
+    public let id : String = "ServerComposer"
+    
     public var relay          : Relay?
     public struct Relay : CommunicationPortal {
         // var cancelHostAdmissionJob: () -> Void
@@ -116,6 +118,12 @@ extension ServerComposer {
             playerRuntimeContainer : self.ent_playerRuntimeContainer
         )
         debug("[S] TaskAssigner relay has been set up")
+        
+        comUC_taskGenerator.relay = TaskGenerator.Relay (
+            gameRuntimeContainer  : self.ent_gameRuntimeContainer,
+            panelRuntimeContainer : self.ent_panelRuntimeContainer,
+            taskRuntimeContainer  : self.ent_taskRuntimeContainer
+        )
         
         comUC_panelAssigner.relay = PanelAssigner.Relay (
             eventBroadcaster       : self.networkManager.eventBroadcaster,

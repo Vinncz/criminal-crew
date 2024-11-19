@@ -2,7 +2,10 @@ import GamePantry
 
 public class ServerColorPanel : ServerGamePanel {
     
-    public let panelId : String = "ColorPanel"
+    public let id : String = "ColorPanel"
+    
+    public var criteriaLength      : Int = 6
+    public var instructionDuration : TimeInterval = 18
     
     private var colorArray  : [String] = ["Red", "Yellow", "Blue", "Green", "Cyan", "Purple", "Orange", "White"]
     private var colorLabelArray  : [String] = ["Red", "Yellow", "Blue", "Green", "Cyan", "Purple", "Orange", "White"]
@@ -19,14 +22,16 @@ public class ServerColorPanel : ServerGamePanel {
 
 extension ServerColorPanel {
     
-    public func generateSingleTask () -> GameTask {
-        let sequenceColor = colorArray.shuffled().prefix(4)
+    public func generate ( taskConfiguredWith configuration: GameTaskModifier ) -> GameTask {
+        let secondHalfCritLen = 2
+        
+        let sequenceColor = colorArray.shuffled().prefix(self.criteriaLength - secondHalfCritLen)
         let sequenceColorToString = sequenceColor.joined(separator: ";")
         
         let isCircleCriteria = Bool.random()
         
         if isCircleCriteria {
-            let circleButtonCriteria = colorArray.shuffled().prefix(2)
+            let circleButtonCriteria = colorArray.shuffled().prefix(secondHalfCritLen)
             let circleButtonCriteriaToString = circleButtonCriteria.joined(separator: ";")
             
             return GameTask (
@@ -35,15 +40,15 @@ extension ServerColorPanel {
                         """
                         Activate these in Sequence: \(sequenceColor[0]), \(sequenceColor[1]), \(sequenceColor[2]), \(sequenceColor[3]), and Button with color \(circleButtonCriteria[0]), \(circleButtonCriteria[1])
                         """,
-                    displayDuration: 18
+                    displayDuration: self.instructionDuration * configuration.instructionDurationScale
                 ),
                 completionCriteria: GameTaskCriteria (
                     requirements: ["\(sequenceColorToString)", "\(circleButtonCriteriaToString)", ""],
-                    validityDuration: 18
+                    validityDuration: self.instructionDuration * configuration.instructionDurationScale
                 )
             )
         } else {
-            let circleLabelCriteria = colorLabelArray.shuffled().prefix(2)
+            let circleLabelCriteria = colorLabelArray.shuffled().prefix(secondHalfCritLen)
             let circleLabelCriteriaToString = circleLabelCriteria.joined(separator: ";")
             
             return GameTask (
@@ -52,22 +57,14 @@ extension ServerColorPanel {
                         """
                         Activate these in Sequence: \(sequenceColor[0]), \(sequenceColor[1]), \(sequenceColor[2]), \(sequenceColor[3]), and Button with label \(circleLabelCriteria[0]), \(circleLabelCriteria[1])
                         """,
-                    displayDuration: 18
+                    displayDuration: self.instructionDuration * configuration.instructionDurationScale
                 ),
                 completionCriteria: GameTaskCriteria (
                     requirements: ["\(sequenceColorToString)", "", "\(circleLabelCriteriaToString)"],
-                    validityDuration: 18
+                    validityDuration: self.instructionDuration * configuration.instructionDurationScale
                 )
             )
         }
-    }
-
-    public func generateTasks ( limit: Int ) -> [GameTask] {
-        var tasks = [GameTask]()
-        for _ in 0..<limit {
-            tasks.append(generateSingleTask())
-        }
-        return tasks
     }
     
 }

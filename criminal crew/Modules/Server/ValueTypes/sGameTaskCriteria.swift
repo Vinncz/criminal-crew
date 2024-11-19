@@ -20,7 +20,7 @@ public struct GameTaskCriteria : Identifiable, Hashable, Sendable {
 
 extension GameTaskCriteria {
     
-    public mutating func associate ( with parentTaskId: String ) {
+    public mutating func associate ( withParent parentTaskId: String ) {
         self.parentTaskId = parentTaskId
     }
     

@@ -7,7 +7,7 @@ public class ServerPanelRuntimeContainer : ObservableObject {
             debug("\(consoleIdentifier) Did update registered panels to: \(registeredPanels)")
         }
     }
-    @Published public var playerMapping    : [String: ServerGamePanel] {
+    @Published public var playerMapping    : [PlayerName: ServerGamePanel] {
         didSet {
             debug("\(consoleIdentifier) Did update player mapping to: \(playerMapping)")
         }
@@ -50,8 +50,8 @@ extension ServerPanelRuntimeContainer {
         self.registeredPanels
     }
     
-    public func getPanel ( panelId: String ) -> ServerGamePanel? {
-        self.registeredPanels.first { $0.panelId == panelId }
+    public func getPanel ( fromId panelId: String ) -> ServerGamePanel? {
+        self.registeredPanels.first { $0.id == panelId }
     }
     
 }

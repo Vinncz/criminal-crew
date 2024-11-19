@@ -340,7 +340,7 @@ extension HostSignalResponder {
         // also assign each of the player: their own panel's task
         panels.forEach { panel in
             let task = taskGenerator.generate(for: panel)
-            let panelHolder = playersAndPanels.first { $0.value.panelId == panel.panelId }!.key
+            let panelHolder = playersAndPanels.first { $0.value.id == panel.id }!.key
             
             taskRuntimeContainer.registerTask(task)
             taskRuntimeContainer.registerTaskCriteria(task.criteria, to: panelHolder)
