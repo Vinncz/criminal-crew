@@ -220,6 +220,8 @@ extension ClockGameViewController : ButtonTappedDelegate {
             return
         }
         
+        AudioManager.shared.playSoundEffect(fileName: "turn_switch")
+        
         let tappedSymbol = sender.accessibilityLabel ?? ""
         let isOn         = panelEntity.flipSwitch(tappedSymbol)
 

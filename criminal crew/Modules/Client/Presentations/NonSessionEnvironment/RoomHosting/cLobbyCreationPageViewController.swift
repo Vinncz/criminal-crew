@@ -28,6 +28,7 @@ public class LobbyCreationPageViewController : UIViewController, UsesDependencie
         weak var panelRuntimeContainer   : ClientPanelRuntimeContainer?
              var publicizeRoom : ( _ advertContent: [String: String] ) -> Void
              var navigate      : ( _ to: UIViewController ) -> Void
+             var popViewController : () -> Void
     }
     
     override init ( nibName nibNameOrNil: String?, bundle nibBundleOrNil: Bundle? ) {

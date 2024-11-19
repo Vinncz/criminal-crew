@@ -7,12 +7,19 @@ public class GameLoseViewController : UIViewController, UsesDependenciesInjector
         weak var navController: UINavigationController?
     }
     
-    var label : UILabel
-    var button : UIButton
+    private let label : UILabel
+    private let bMainMenu : UIButton
+    private let bRestart : UIButton
+    private let loseDialogView: UIImageView
+    
+    private let mainMenuId: Int = 1
+    private let restartId: Int = 2
     
     override init ( nibName nibNameOrNil: String?, bundle nibBundleOrNil: Bundle? ) {
-        self.label = Self.makeLabel("You Lose!").aligned(.center).styled(.title)
-        self.button = UIButton().titled("Back to menu").styled(.borderedProminent)
+        self.label = EndDialogLabel(label: "Your crew failed too many tasks")
+        self.bMainMenu = ButtonWithImage(imageName: "main_menu_button", tag: mainMenuId)
+        self.bRestart = ButtonWithImage(imageName: "restart_button", tag: restartId)
+        self.loseDialogView = EndDialogView(label: "JOB FAILED !!")
         super.init(nibName: nil, bundle: nil)
     }
     
@@ -24,6 +31,10 @@ public class GameLoseViewController : UIViewController, UsesDependenciesInjector
         relay?.navController?.popToRootViewController(animated: true)
     }
     
+    @objc public func restartGame(_ sender: UIButton) {
+        /// restart the game logic here
+    }
+    
 }
 
 extension GameLoseViewController {
@@ -31,21 +42,49 @@ extension GameLoseViewController {
     public override func viewDidLoad () {
         super.viewDidLoad()
         
-        self.button = button.executes(self, action: #selector(backToMainMenu), for: .touchUpInside)
-        
-        view.backgroundColor = .white
+        view.backgroundColor = .darkGray
         navigationItem.hidesBackButton = true
         
-        let vStack = Self.makeStack(direction: .vertical).thatHolds(
-            label, 
-            button
-        )
+        let buttonStack = ViewFactory.createHorizontalStackView()
         
-        view.addSubview(vStack)
+        bMainMenu.addTarget(self, action: #selector(backToMainMenu), for: .touchUpInside)
+        bRestart.addTarget(self, action: #selector(restartGame), for: .touchUpInside)
+        buttonStack.addArrangedSubview(bMainMenu)
+        buttonStack.addArrangedSubview(bRestart)
+        
+        view.addSubview(loseDialogView)
+        view.addSubview(label)
+        
+        let spacer = UIView()
+        spacer.translatesAutoresizingMaskIntoConstraints = false
+        view.addSubview(spacer)
+        
+        view.addSubview(buttonStack)
+        
+        loseDialogView.translatesAutoresizingMaskIntoConstraints = false
+        label.translatesAutoresizingMaskIntoConstraints = false
+        buttonStack.translatesAutoresizingMaskIntoConstraints = false
         
         NSLayoutConstraint.activate([
-            vStack.centerXAnchor.constraint(equalTo: view.centerXAnchor),
-            vStack.centerYAnchor.constraint(equalTo: view.centerYAnchor)
+            loseDialogView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 64),
+            loseDialogView.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+            loseDialogView.widthAnchor.constraint(equalTo: view.widthAnchor, multiplier: 0.5),
+            loseDialogView.heightAnchor.constraint(equalTo: view.heightAnchor, multiplier: 0.3),
+            
+            label.topAnchor.constraint(equalTo: loseDialogView.bottomAnchor),
+            label.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+            label.widthAnchor.constraint(equalTo: view.widthAnchor, multiplier: 0.5),
+            label.heightAnchor.constraint(equalTo: view.heightAnchor, multiplier: 0.15),
+            
+            spacer.topAnchor.constraint(equalTo: label.bottomAnchor),
+            spacer.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+            spacer.widthAnchor.constraint(equalTo: view.widthAnchor, multiplier: 0.5),
+            spacer.heightAnchor.constraint(equalTo: view.heightAnchor, multiplier: 0.05),
+            
+            buttonStack.topAnchor.constraint(equalTo: spacer.bottomAnchor, constant: 16),
+            buttonStack.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+            buttonStack.widthAnchor.constraint(equalTo: view.widthAnchor, multiplier: 0.5),
+            buttonStack.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -16)
         ])
     }
     

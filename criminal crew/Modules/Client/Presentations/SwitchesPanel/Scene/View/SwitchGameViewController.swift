@@ -179,6 +179,7 @@ extension SwitchGameViewController: ButtonTappedDelegate {
         if let sender = sender as? LeverButton {
             if let label = sender.accessibilityLabel {
                 didPressedButton.send(label)
+                AudioManager.shared.playSoundEffect(fileName: "turn_lever")
             }
             
             if let indicator = leverView?.leverIndicatorView.first(where: { $0.bulbColor == sender.leverColor }) {
@@ -189,6 +190,7 @@ extension SwitchGameViewController: ButtonTappedDelegate {
         } else if let sender = sender as? SwitchButton {
             if let label = sender.accessibilityLabel {
                 didPressedButton.send(label)
+                AudioManager.shared.playSoundEffect(fileName: "turn_switch")
             }
             sender.toggleButtonState()
         }
