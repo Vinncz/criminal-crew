@@ -112,20 +112,17 @@ extension LandingPageViewController {
                 relay.navigate(serverBrowserPage)
                 
             case Self.hostRoomButtonId:
-                let lobbyCreationPage = LobbyCreationPageViewController()
-                    lobbyCreationPage.relay = LobbyCreationPageViewController.Relay (
-                        selfSignalCommandCenter : self.relay?.selfSignalCommandCenter,
-                        playerRuntimeContainer  : self.relay?.playerRuntimeContainer, 
-                        gameRuntimeContainer    : self.relay?.gameRuntimeContainer,
-                        panelRuntimeContainer   : self.relay?.panelRuntimeContainer,
+                let roomNamingPage = HostRoomNamingViewController()
+                    roomNamingPage.relay = HostRoomNamingViewController.Relay (
+                        selfSignalCommandCenter: self.relay?.selfSignalCommandCenter,
                         publicizeRoom: { [weak self] advertContent in
                             self?.relay?.publicizeRoom(advertContent)
-                        }, 
+                        },
                         navigate: { [weak self] to in 
                             self?.relay?.navigate(to)
                         }
                     )
-                relay.navigate(lobbyCreationPage)
+                relay.navigate(roomNamingPage)
                 
             default:
                 debug("\(consoleIdentifer) Unhandled button tag: \(sender.tag)")
