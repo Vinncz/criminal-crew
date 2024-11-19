@@ -27,7 +27,7 @@ public class CardSwipeViewController: BaseGameViewController {
     public var isPanelProcessing: Bool = false
     
     public var relay: Relay?
-    public struct Relay : CommunicationPortal {
+    public struct Relay: CommunicationPortal {
         weak var panelRuntimeContainer: ClientPanelRuntimeContainer?
         weak var selfSignalCommandCenter: SelfSignalCommandCenter?
     }
@@ -37,7 +37,6 @@ public class CardSwipeViewController: BaseGameViewController {
     private var consoleIdentifier: String = "[C-PCA-VC]"
     
     public override func createSecondPanelView() -> UIView {
-        
         landscapeContainerView = UIView()
         
         guard let landscapeContainerView else {
@@ -72,7 +71,6 @@ public class CardSwipeViewController: BaseGameViewController {
     }
 
     public override func createFirstPanelView() -> UIView {
-        
         containerView = UIView()
         
         guard let containerView else {
@@ -80,7 +78,6 @@ public class CardSwipeViewController: BaseGameViewController {
         }
         
         containerView.translatesAutoresizingMaskIntoConstraints = false
-        
         self.view.addSubview(containerView)
         
         let portraitBackgroundImage = ViewFactory.addBackgroundImageView("BG Swiper")
@@ -188,18 +185,20 @@ public class CardSwipeViewController: BaseGameViewController {
             cardOrginalPositonSpacing = 40
             indicatorStartX = 175
             indicatorYlevel = 140
+            
         } else if screenWidthInMm >= 291 {
             originalPositionx = 122
             originalPositiony = 250
             cardOrginalPositonSpacing = 63
             indicatorStartX = 160
             indicatorYlevel = 126
+            
         } else if screenWidthInMm >= 284 {
             originalPositionx = 115
             originalPositiony = 250
             cardOrginalPositonSpacing = 63
             indicatorStartX = 156
-            indicatorYlevel = 134
+            indicatorYlevel = 122
         }
         
         NSLayoutConstraint.activate([
@@ -240,7 +239,6 @@ public class CardSwipeViewController: BaseGameViewController {
             let xPosition = startX + CGFloat(index) * (rectangleWidth + rectangleSpacing)
             rectangleLayer.frame = CGRect(x: xPosition, y: cardSwiperPart.frame.maxY + indicatorYlevel, width: rectangleWidth, height: 20)
         }
-        
     }
 
     func setupViewsForSecondPanel(for target: UIView) {
@@ -270,7 +268,6 @@ public class CardSwipeViewController: BaseGameViewController {
     }
     
     func constraintForSecondPanel(for target: UIView) {
-        
         let screenWidth = UIScreen.main.bounds.width
         let screenWidthInMm = screenWidth / UIScreen.main.scale
         
@@ -317,7 +314,6 @@ public class CardSwipeViewController: BaseGameViewController {
             displayLabelLeadingAnchor = 40
             buttonBelowPanel = -24
             displayLabel.font = .monospacedSystemFont(ofSize: 70, weight: .bold)
-            
         }
 
         NSLayoutConstraint.activate([
@@ -349,28 +345,28 @@ public class CardSwipeViewController: BaseGameViewController {
         ])
 
         for i in 1...9 {
-            let button = UIImageView(image: UIImage(named: "Button Off"))
-            button.translatesAutoresizingMaskIntoConstraints = false
-            button.tag = i
-            target.addSubview(button)
+            numPadButton = UIImageView(image: UIImage(named: "buttonOff"))
+            numPadButton.translatesAutoresizingMaskIntoConstraints = false
+            numPadButton.tag = i
+            target.addSubview(numPadButton)
 
             let label = UILabel()
             label.text = "\(i)"
             label.font = UIFont.systemFont(ofSize: 40, weight: .bold)
             label.textAlignment = .center
             label.translatesAutoresizingMaskIntoConstraints = false
-            button.addSubview(label)
+            numPadButton.addSubview(label)
 
             let row = (i - 1) / 3
             let col = (i - 1) % 3
             NSLayoutConstraint.activate([
-                button.widthAnchor.constraint(equalToConstant: numPadButtonSize.width),
-                button.heightAnchor.constraint(equalToConstant: numPadButtonSize.height),
-                button.leadingAnchor.constraint(equalTo: target.leadingAnchor, constant: 30 + CGFloat(col) * (numPadButtonSize.width + buttonSpacing)),
-                button.topAnchor.constraint(equalTo: numPadPanel.bottomAnchor, constant: numPadLeadingAnchor  + CGFloat(row) * (numPadButtonSize.height + buttonSpacing)),
+                numPadButton.widthAnchor.constraint(equalToConstant: numPadButtonSize.width),
+                numPadButton.heightAnchor.constraint(equalToConstant: numPadButtonSize.height),
+                numPadButton.leadingAnchor.constraint(equalTo: target.leadingAnchor, constant: 30 + CGFloat(col) * (numPadButtonSize.width + buttonSpacing)),
+                numPadButton.topAnchor.constraint(equalTo: numPadPanel.bottomAnchor, constant: numPadLeadingAnchor  + CGFloat(row) * (numPadButtonSize.height + buttonSpacing)),
                     
-                label.centerXAnchor.constraint(equalTo: button.centerXAnchor, constant: 2),
-                label.topAnchor.constraint(equalTo: button.topAnchor, constant: 1)
+                label.centerXAnchor.constraint(equalTo: numPadButton.centerXAnchor, constant: 2),
+                label.topAnchor.constraint(equalTo: numPadButton.topAnchor)
             ])
         }
     }
@@ -392,160 +388,150 @@ public class CardSwipeViewController: BaseGameViewController {
 
 
         switch gesture.state {
-        case .began:
-            print("Card being dragged")
-            print("\(swipeGesture)")
+            case .began:
+                print("Card being dragged")
             
-        case .changed:
-            if let swiperFrame = cardSwiperPart.superview?.convert(cardSwiperPart.frame, to: containerView) {
-                let restrictedArea = swiperFrame.insetBy(dx: -100, dy: 0)
-                
-                if restrictedArea.contains(newCenter) {
-                    card.center.y += 0.3
-                }
-                
-                if !restrictedArea.contains(newCenter) {
-                    card.center = newCenter
-                }
-            }
-            
-            let swipeArea = cardSwiperBelowPart.frame.insetBy(dx: -100, dy: 100)
-            if swipeArea.contains(newCenter) && isPanelProcessing == false {
-                
-                guard
-                    let relay,
-                    let panelPlayed = relay.panelRuntimeContainer?.panelPlayed,
-                    let panelEntity = panelPlayed as? ClientCardPanel
-                else {
-                    debug("console Did fail to connect cables together: Either relay is missing or not set, panel played is empty, or wrong panel type is being supplied for this view controller")
-                    return
-                }
-                
-                let leftSwipeArea = CGRect(
-                    x: cardSwiperBelowPart.frame.minX,
-                    y: cardSwiperBelowPart.frame.minY,
-                    width: 60,
-                    height: cardSwiperBelowPart.frame.height
-                )
-                
-                let rightSwipeArea = CGRect(
-                    x: cardSwiperBelowPart.frame.maxX - 20,
-                    y: cardSwiperBelowPart.frame.minY,
-                    width: 60,
-                    height: cardSwiperBelowPart.frame.height
-                )
-                
-                if leftSwipeArea.contains(newCenter) && leftSideTouched == false {
-                    swipeGesture.append("left")
-                    leftSideTouched = true
-                }
-                
-                if rightSwipeArea.contains(newCenter) && rightSideTouched == false {
-                    swipeGesture.append("right")
-                    rightSideTouched = true
-                }
-                
-                if swipeGesture == ["left", "right"] {
+            case .changed:
+                if let swiperFrame = cardSwiperPart.superview?.convert(cardSwiperPart.frame, to: containerView) {
+                    let restrictedArea = swiperFrame.insetBy(dx: -100, dy: 0)
                     
-                    cardSwiperPart.image = UIImage(named: "cardSwiperTopPartSuccess")
-
-                    UIView.animate(withDuration: 2, delay: 2, options: [], animations: {
-                        
-                    }, completion: { _ in
-                        
-                        UIView.transition(with: self.cardSwiperPart,
-                                          duration: 2,
-                                          options: .transitionCrossDissolve,
-                                          animations: {
-                                              self.cardSwiperPart.image = UIImage(named: "cardSwiperTopPart")
-                                          },
-                                          completion: nil)
-                    })
-
-                    switch cardColorID {
-                        case CardColor.green.rawValue:
-                            panelEntity.swipeCard(colored: "green")
-                        case CardColor.blue.rawValue:
-                            panelEntity.swipeCard(colored: "blue")
-                        case CardColor.yellow.rawValue:
-                            panelEntity.swipeCard(colored: "yellow")
-                        case CardColor.red.rawValue:
-                            panelEntity.swipeCard(colored: "red")
-                        default:
-                            break;
+                    if restrictedArea.contains(newCenter) {
+                        card.center.y += 0.3
                     }
-   
-                    let colorMap: [String: UIColor] = [
-                        "green": UIColor.green,
-                        "red": UIColor.red,
-                        "blue": UIColor.blue,
-                        "yellow": UIColor.yellow
-                    ]
+                    
+                    if !restrictedArea.contains(newCenter) {
+                        card.center = newCenter
+                    }
+                }
+                
+                let swipeArea = cardSwiperBelowPart.frame.insetBy(dx: -100, dy: 100)
+                if swipeArea.contains(newCenter) && isPanelProcessing == false {
+                    guard
+                        let relay,
+                        let panelPlayed = relay.panelRuntimeContainer?.panelPlayed,
+                        let panelEntity = panelPlayed as? ClientCardPanel
+                    else {
+                        debug("console Did fail to connect cables together: Either relay is missing or not set, panel played is empty, or wrong panel type is being supplied for this view controller")
+                        return
+                    }
+                    
+                    let leftSwipeArea = CGRect(
+                        x: cardSwiperBelowPart.frame.minX,
+                        y: cardSwiperBelowPart.frame.minY,
+                        width: 60,
+                        height: cardSwiperBelowPart.frame.height
+                    )
+                    
+                    let rightSwipeArea = CGRect(
+                        x: cardSwiperBelowPart.frame.maxX - 20,
+                        y: cardSwiperBelowPart.frame.minY,
+                        width: 60,
+                        height: cardSwiperBelowPart.frame.height
+                    )
+                    
+                    if leftSwipeArea.contains(newCenter) && leftSideTouched == false {
+                        swipeGesture.append("left")
+                        leftSideTouched = true
+                    }
+                    
+                    if rightSwipeArea.contains(newCenter) && rightSideTouched == false {
+                        swipeGesture.append("right")
+                        rightSideTouched = true
+                    }
+                    
+                    if swipeGesture == ["left", "right"] {
+                        cardSwiperPart.image = UIImage(named: "cardSwiperTopPartSuccess")
 
-                    let displayCardColor = panelEntity.cardSequenceInput
-                    let count = min(cardColorIndicator.count, displayCardColor.count)
+                        UIView.animate(withDuration: 2, delay: 2, options: [], animations: {
+                            
+                        }, completion: { _ in
+                            
+                            UIView.transition(with: self.cardSwiperPart,
+                                              duration: 2,
+                                              options: .transitionCrossDissolve,
+                                              animations: {
+                                                  self.cardSwiperPart.image = UIImage(named: "cardSwiperTopPart")
+                                              },
+                                              completion: nil)
+                        })
 
-                    for i in 0..<count {
-                        let colorName = displayCardColor[i]
-                        
-                        if let color = colorMap[colorName] {
-                            cardColorIndicator[i].fillColor = color.cgColor
-                        } else {
-                            cardColorIndicator[i].fillColor = UIColor.gray.cgColor
+                        switch cardColorID {
+                            case CardColor.green.rawValue:
+                                _ = panelEntity.swipeCard(colored: "green")
+                            case CardColor.blue.rawValue:
+                                _ = panelEntity.swipeCard(colored: "blue")
+                            case CardColor.yellow.rawValue:
+                                _ = panelEntity.swipeCard(colored: "yellow")
+                            case CardColor.red.rawValue:
+                                _ = panelEntity.swipeCard(colored: "red")
+                            default:
+                                break;
                         }
+       
+                        let colorMap: [String: UIColor] = [
+                            "green": UIColor.green,
+                            "red": UIColor.red,
+                            "blue": UIColor.blue,
+                            "yellow": UIColor.yellow
+                        ]
+
+                        let displayCardColor = panelEntity.cardSequenceInput
+                        let count = min(cardColorIndicator.count, displayCardColor.count)
+
+                        for i in 0..<count {
+                            let colorName = displayCardColor[i]
+                            
+                            if let color = colorMap[colorName] {
+                                cardColorIndicator[i].fillColor = color.cgColor
+                            } else {
+                                cardColorIndicator[i].fillColor = UIColor.gray.cgColor
+                            }
+                        }
+
+                        leftSideTouched = false
+                        rightSideTouched = false
+                        swipeGesture.removeAll()
                     }
-
-                    leftSideTouched = false
-                    rightSideTouched = false
-                    swipeGesture.removeAll()
-
-                }
-                
-                if swipeGesture == ["right", "left"] {
                     
-                    cardSwiperPart.image = UIImage(named: "cardSwiperTopPartFail")
-
-                    UIView.animate(withDuration: 2, delay: 2, options: [], animations: {
+                    if swipeGesture == ["right", "left"] {
+                        cardSwiperPart.image = UIImage(named: "cardSwiperTopPartFail")
+                        UIView.animate(withDuration: 2, delay: 2, options: [], animations: {}, completion: { _ in
+                            UIView.transition(with: self.cardSwiperPart,
+                                              duration: 2,
+                                              options: .transitionCrossDissolve,
+                                              animations: {
+                                                  self.cardSwiperPart.image = UIImage(named: "cardSwiperTopPart")
+                                              },
+                                              completion: nil)
+                        })
                         
-                    }, completion: { _ in
-                        
-                        UIView.transition(with: self.cardSwiperPart,
-                                          duration: 2,
-                                          options: .transitionCrossDissolve,
-                                          animations: {
-                                              self.cardSwiperPart.image = UIImage(named: "cardSwiperTopPart")
-                                          },
-                                          completion: nil)
-                    })
+                        leftSideTouched = false
+                        rightSideTouched = false
+                        swipeGesture.removeAll()
+                    }
                     
+                } else {
                     leftSideTouched = false
                     rightSideTouched = false
                     swipeGesture.removeAll()
                 }
-                
-            } else {
-                leftSideTouched = false
-                rightSideTouched = false
-                swipeGesture.removeAll()
-            }
 
-            gesture.setTranslation(.zero, in: containerView)
+                gesture.setTranslation(.zero, in: containerView)
 
-        case .ended, .cancelled, .failed:
-            if let originalPosition = originalCardPositions[card] {
-                UIView.animate(withDuration: 0.3) {
-                    card.center = originalPosition
+            case .ended, .cancelled, .failed:
+                if let originalPosition = originalCardPositions[card] {
+                    UIView.animate(withDuration: 0.3) {
+                        card.center = originalPosition
+                    }
+                    
+                    leftSideTouched = false
+                    rightSideTouched = false
+                    swipeGesture.removeAll()
                 }
-                
-                leftSideTouched = false
-                rightSideTouched = false
-                swipeGesture.removeAll()
-            }
 
-        default:
-            break
-        }
-        
+            default:
+                break
+            }
     }
     
     func setupTapGestureForNumPad() {
@@ -565,7 +551,7 @@ public class CardSwipeViewController: BaseGameViewController {
         numPadEnterButton.isUserInteractionEnabled = true
         numPadEnterButton.addGestureRecognizer(enterTapGesture)
     }
-
+    
     @objc func handleNumPadTap(_ sender: UITapGestureRecognizer) {
         guard
             let relay,
@@ -576,11 +562,18 @@ public class CardSwipeViewController: BaseGameViewController {
             return
         }
         
-        guard let button = sender.view as? UIImageView else { return }
-        let tappedNumber = String(button.tag)
+        guard let tappedButton = sender.view as? UIImageView else { return }
+        guard let label = tappedButton.subviews.first(where: { $0 is UILabel }) as? UILabel else { return }
+        
+        let tappedNumber = label.text ?? ""
+        tappedButton.image = UIImage(named: "buttonOn")
         
         if isPanelProcessing == false {
             _ = panelEntity.tapNumber(on: tappedNumber)
+        }
+        
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+            tappedButton.image = UIImage(named: "buttonOff")
         }
     }
 
@@ -594,7 +587,12 @@ public class CardSwipeViewController: BaseGameViewController {
             return
         }
         
+        self.numPadDeleteButton.image = UIImage(named: "Delete Button On")
         panelEntity.backspaceNumberInput()
+        
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+            self.numPadDeleteButton.image = UIImage(named: "Delete Button Off")
+        }
     }
 
     @objc func handleEnterButtonTap() {
@@ -608,7 +606,6 @@ public class CardSwipeViewController: BaseGameViewController {
         }
         
         isPanelProcessing = true
-        
         let isSuccessful = checkSituationAndReportCompletionIfApplicable()
         
         if !isSuccessful {
@@ -617,12 +614,15 @@ public class CardSwipeViewController: BaseGameViewController {
             displayLabel.text = "Ok!"
         }
         
+        self.numPadEnterButton.image = UIImage(named: "Enter Button On")
+        
         let count = cardColorIndicator.count
         for i in 0..<count {
             cardColorIndicator[i].fillColor = UIColor.gray.cgColor
         }
         
-        DispatchQueue.main.asyncAfter(deadline: .now() + 1.5){
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5){
+            self.numPadEnterButton.image = UIImage(named: "Enter Button Off")
             self.displayLabel.text = ""
             panelEntity.clearAllInput()
             self.isPanelProcessing = false
