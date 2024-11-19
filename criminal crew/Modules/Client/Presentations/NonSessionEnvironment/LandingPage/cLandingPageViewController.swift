@@ -21,15 +21,16 @@ public class LandingPageViewController : UIViewController, UsesDependenciesInjec
              var resetServer             : () -> Void
              var publicizeRoom           : ( _ advertContent: [String: String] ) -> Void
              var navigate                : ( _ to: UIViewController ) -> Void
+             var popViewController       : () -> Void
     }
     
     override init ( nibName nibNameOrNil: String?, bundle nibBundleOrNil: Bundle? ) {
         self.lGameName    = LogoImageView()
         
-        self.bBrowseRooms = ButtonWithImage(imageName: "Join Game Button", tag: Self.browseRoomButtonId)
-        self.bHostRoom    = ButtonWithImage(imageName: "Host Game Button", tag: Self.hostRoomButtonId)
-        self.bSettings    = ButtonWithImage(imageName: "Setting Button", tag: Self.settingsButtonId)
-        self.bTutorial    = ButtonWithImage(imageName: "Tutorial Button", tag: Self.tutorialButtonId)
+        self.bBrowseRooms = ButtonWithImage(imageName: "join_game_button", tag: Self.browseRoomButtonId)
+        self.bHostRoom    = ButtonWithImage(imageName: "host_game_button", tag: Self.hostRoomButtonId)
+        self.bSettings    = ButtonWithImage(imageName: "setting_button_default", tag: Self.settingsButtonId)
+        self.bTutorial    = ButtonWithImage(imageName: "tutorial_button_default", tag: Self.tutorialButtonId)
         self.playerTextField = PlayerNameView()
         super.init(nibName: nibNameOrNil, bundle: nibBundleOrNil)
     }
@@ -71,7 +72,9 @@ extension LandingPageViewController {
         let topRightCornerStack = setupTopRightStack()
         let botRightCornerStack = setupBotRightStack()
         rightStack.addArrangedSubview(topRightCornerStack)
+        rightStack.addArrangedSubview(spacer)
         rightStack.addArrangedSubview(botRightCornerStack)
+        botRightCornerStack.heightAnchor.constraint(equalTo: rightStack.heightAnchor, multiplier: 0.5).isActive = true
         
         let mainStackView = ViewFactory.createHorizontalStackView()
         mainStackView.addArrangedSubview(leftStack)
@@ -114,6 +117,16 @@ extension LandingPageViewController {
         horizontalStackView.addArrangedSubview(spacerHorizontal)
         horizontalStackView.addArrangedSubview(bTutorial)
         horizontalStackView.addArrangedSubview(bSettings)
+        
+        bTutorial.translatesAutoresizingMaskIntoConstraints = false
+        bSettings.translatesAutoresizingMaskIntoConstraints = false
+        
+        NSLayoutConstraint.activate([
+            bTutorial.heightAnchor.constraint(equalToConstant: 45),
+            bTutorial.widthAnchor.constraint(equalToConstant: 45),
+            bSettings.heightAnchor.constraint(equalToConstant: 45),
+            bSettings.widthAnchor.constraint(equalToConstant: 45)
+        ])
         
         verticalStackView.addArrangedSubview(horizontalStackView)
         
@@ -175,6 +188,9 @@ extension LandingPageViewController {
                         gameRuntimeContainer    : self.relay?.gameRuntimeContainer,
                         navigate                : { [weak self] to in
                             self?.relay?.navigate(to)
+                        },
+                        popViewController: {
+                            self.relay?.popViewController()
                         }
                     )
                 relay.navigate(serverBrowserPage)
@@ -191,6 +207,9 @@ extension LandingPageViewController {
                         }, 
                         navigate: { [weak self] to in 
                             self?.relay?.navigate(to)
+                        },
+                        popViewController: {
+                            self.relay?.popViewController()
                         }
                     )
                 relay.navigate(lobbyCreationPage)

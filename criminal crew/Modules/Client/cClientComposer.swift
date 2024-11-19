@@ -193,6 +193,9 @@ extension ClientComposer {
                 }, 
                 navigate: { [weak self] to in 
                     self?.navigate(to: to)
+                },
+                popViewController: {
+                    self.popViewController()
                 }
             )
         
@@ -201,6 +204,10 @@ extension ClientComposer {
     
     public func navigate ( to destination: UIViewController ) {
         self.navigationController.pushViewController(destination, animated: false)
+    }
+    
+    public func popViewController () {
+        self.navigationController.popViewController(animated: false)
     }
     
 }

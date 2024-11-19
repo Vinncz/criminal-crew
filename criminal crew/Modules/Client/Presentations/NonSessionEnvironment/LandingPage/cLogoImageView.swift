@@ -12,7 +12,7 @@ internal class LogoImageView: UIImageView {
     }
     
     private func setupImageView() {
-        image = UIImage(named: "Criminal Crew Logo")
+        image = UIImage(named: "logo_criminal_crew")
         contentMode = .scaleAspectFit
     }
     

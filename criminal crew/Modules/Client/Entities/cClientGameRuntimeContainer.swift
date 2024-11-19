@@ -12,6 +12,11 @@ public class ClientGameRuntimeContainer : ObservableObject {
             debug("\(consoleIdentifier) Did update played server addr to \(playedServerAddr?.displayName ?? "nil")")
         }
     }
+    public var playedRoomName       : String? {
+        didSet {
+            debug("\(consoleIdentifier) Did update played room name to \(playedRoomName ?? "nil")")
+        }
+    }
     @Published public var connectionState      : MCSessionState {
         didSet {
             debug("\(consoleIdentifier) Did update connection status to played server \(connectionState.toString())")
@@ -33,7 +38,7 @@ public class ClientGameRuntimeContainer : ObservableObject {
         connectionState  = .notConnected
         playedServerAddr = nil
         isHost           = false
-        admissionPolicy  = .approvalRequired
+        admissionPolicy  = .open
     }
     
     public enum GameState : String {
@@ -72,7 +77,7 @@ extension ClientGameRuntimeContainer {
         playedServerAddr     = nil
         connectionState      = .notConnected
         isHost               = false
-        admissionPolicy      = .approvalRequired
+        admissionPolicy      = .open
     }
     
 }

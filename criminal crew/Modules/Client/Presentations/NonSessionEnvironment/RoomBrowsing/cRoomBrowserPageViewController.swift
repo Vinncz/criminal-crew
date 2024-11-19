@@ -17,6 +17,7 @@ public class RoomBrowserPageViewController : UIViewController {
         weak var panelRuntimeContainer   : ClientPanelRuntimeContainer?
         weak var gameRuntimeContainer    : ClientGameRuntimeContainer?
              var navigate                : ( _ to: UIViewController ) -> Void
+             var popViewController       : () -> Void
     }
     
     override init ( nibName nibNameOrNil: String?, bundle nibBundleOrNil: Bundle? ) {
@@ -198,6 +199,9 @@ extension RoomBrowserPageViewController : UITableViewDelegate, UITableViewDataSo
             navigate                : { [weak self] to in
                 debug("lobby view did navigate from room browser")
                 self?.relay?.navigate(to)
+            },
+            popViewController: {
+                self.relay?.popViewController()
             }
         )
         
