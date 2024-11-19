@@ -28,7 +28,7 @@ extension ServerPanelRuntimeContainer {
         static let cablesPanel   = ServerWiresPanel.self
         static let symbolsPanel  = ServerClockPanel.self
         static let switchesPanel = ServerSwitchesPanel.self
-        static let colorPanel = ServerColorPanel.self
+        static let colorPanel    = ServerColorPanel.self
         static let cardPanel     = ServerCardPanel.self
     }
     
@@ -36,8 +36,8 @@ extension ServerPanelRuntimeContainer {
         ServerWiresPanel.self,
         ServerClockPanel.self,
         ServerSwitchesPanel.self,
-        ServerColorPanel.self
-        ServerCardPanel.self,
+        ServerColorPanel.self,
+        ServerCardPanel.self
     ]
     
 }

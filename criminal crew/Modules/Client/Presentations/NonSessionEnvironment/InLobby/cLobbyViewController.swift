@@ -168,6 +168,8 @@ extension LobbyViewController {
         
         let buttonStackView = setupButtonStackView()
         
+        roomNameView = RoomNameView(roomName: relay?.gameRuntimeContainer?.playedRoomName ?? "Unnamed Room")
+        
         rightStackView.addArrangedSubview(buttonStackView)
         rightStackView.addArrangedSubview(roomNameView)
         rightStackView.addArrangedSubview(difficultyButton)
@@ -301,7 +303,8 @@ extension LobbyViewController {
                     .sink { [weak self] names in
                         self?.updateCards(with: names)
                         debug("Reloading joined players list with \(names)")
-                    }.store(in: &subscriptions)
+                    }
+                    .store(in: &subscriptions)
                 
             case .failure(let missingAttributes):
                 debug("\(consoleIdentifier) Did fail to set up actions for list of connected players. Attributes [\(missingAttributes)] is missing or not set")

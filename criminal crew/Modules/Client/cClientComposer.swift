@@ -180,23 +180,25 @@ extension ClientComposer {
                         return
                     }
                     
-                    cancellableForAutoJoinSelfCreatedServer = self.networkManager.browser.$discoveredServers.sink { servers in
-                        servers.forEach { serv in
-                            if ( serv.serverId == serverAddr ) {
-                                self.networkManager.eventBroadcaster.approve(
-                                    self.networkManager.browser.requestToJoin(serv.serverId)
-                                )
+                    cancellableForAutoJoinSelfCreatedServer = self.networkManager.browser.$discoveredServers
+                        .debounce(for: .milliseconds(100), scheduler: RunLoop.main)
+                        .sink { servers in
+                            servers.forEach { serv in
+                                if ( serv.serverId == serverAddr ) {
+                                    self.networkManager.eventBroadcaster.approve(
+                                        self.networkManager.browser.requestToJoin(serv.serverId)
+                                    )
+                                }
                             }
                         }
-                    }
                     
                     relay?.placeJobToAdmitHost(self.networkManager.myself)
                 }, 
                 navigate: { [weak self] to in 
                     self?.navigate(to: to)
                 },
-                popViewController: {
-                    self.popViewController()
+                popViewController: { [weak self] in
+                    self?.popViewController()
                 }
             )
         

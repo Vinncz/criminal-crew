@@ -196,23 +196,23 @@ extension LandingPageViewController {
                 relay.navigate(serverBrowserPage)
                 
             case Self.hostRoomButtonId:
-                let lobbyCreationPage = LobbyCreationPageViewController()
-                    lobbyCreationPage.relay = LobbyCreationPageViewController.Relay (
-                        selfSignalCommandCenter : self.relay?.selfSignalCommandCenter,
-                        playerRuntimeContainer  : self.relay?.playerRuntimeContainer, 
-                        gameRuntimeContainer    : self.relay?.gameRuntimeContainer,
-                        panelRuntimeContainer   : self.relay?.panelRuntimeContainer,
-                        publicizeRoom: { [weak self] advertContent in
-                            self?.relay?.publicizeRoom(advertContent)
-                        }, 
-                        navigate: { [weak self] to in 
-                            self?.relay?.navigate(to)
-                        },
-                        popViewController: {
-                            self.relay?.popViewController()
-                        }
-                    )
-                relay.navigate(lobbyCreationPage)
+                let roomNamingPage = HostRoomNamingViewController()
+                roomNamingPage.relay = HostRoomNamingViewController.Relay (
+                    selfSignalCommandCenter : self.relay?.selfSignalCommandCenter,
+                    playerRuntimeContainer  : self.relay?.playerRuntimeContainer, 
+                    gameRuntimeContainer    : self.relay?.gameRuntimeContainer,
+                    panelRuntimeContainer   : self.relay?.panelRuntimeContainer,
+                    publicizeRoom: { [weak self] advertContent in
+                        self?.relay?.publicizeRoom(advertContent)
+                    }, 
+                    navigate: { [weak self] to in 
+                        self?.relay?.navigate(to)
+                    },
+                    popViewController: {
+                        self.relay?.popViewController()
+                    }
+                )
+                relay.navigate(roomNamingPage)
             
             case Self.tutorialButtonId:
                 print("tutorial button pressed")

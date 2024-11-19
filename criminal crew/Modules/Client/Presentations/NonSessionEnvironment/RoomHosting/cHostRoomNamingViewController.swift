@@ -11,16 +11,20 @@ public class HostRoomNamingViewController : UIViewController, UsesDependenciesIn
     public var relay: Relay?
     public struct Relay : CommunicationPortal {
         weak var selfSignalCommandCenter : SelfSignalCommandCenter?
-             var publicizeRoom : (( _ advertContent: [String: String] ) -> Void)?
-             var navigate      : (( _ to: UIViewController ) -> Void)?
+        weak var playerRuntimeContainer  : ClientPlayerRuntimeContainer?
+        weak var gameRuntimeContainer    : ClientGameRuntimeContainer?
+        weak var panelRuntimeContainer   : ClientPanelRuntimeContainer?
+             var publicizeRoom           : ( ( _ advertContent: [String: String] ) -> Void )?
+             var navigate                : ( ( _ to: UIViewController ) -> Void )?
+             var popViewController       : ( () -> Void )?
     }
     
     public var subscriptions : Set<AnyCancellable> = []
     
     override init ( nibName nibNameOrNil: String?, bundle nibBundleOrNil: Bundle? ) {
-        self.lPageTitle = UILabel().labeled("Name Your Room").styled(.title).aligned(.center)
-        self.tRoomName = UITextField().placeholder("Unnamed Room").styled(.bordered).withDoneButtonEnabled()
-        self.bExposeRoom = UIButton().titled("Expose Room").styled(.borderedProminent).tagged(Self.openRoomButtonId)
+        self.lPageTitle  = UILabel().labeled("Name Your Room").styled(.title).aligned(.center)
+        self.tRoomName   = UITextField().placeholder("Unnamed Room").styled(.bordered).withDoneButtonEnabled()
+        self.bExposeRoom = UIButton().titled("I'm ready!").styled(.borderedProminent).tagged(Self.openRoomButtonId)
         
         super.init(nibName: nibNameOrNil, bundle: nibBundleOrNil)
     }
@@ -53,6 +57,9 @@ extension HostRoomNamingViewController {
             vstack.centerXAnchor.constraint(equalTo: view.safeAreaLayoutGuide.centerXAnchor),
             vstack.centerYAnchor.constraint(equalTo: view.safeAreaLayoutGuide.centerYAnchor)
         ])
+        
+        // YOU DIDN'T OPEN YOUR EARS. HOW CAN YOU REACT TO SOMETHING IF YOU'RE DEAF?!
+        _ = self.relay?.selfSignalCommandCenter?.startBrowsingForServers()
     }
     
 }
@@ -78,13 +85,27 @@ extension HostRoomNamingViewController {
                 
             case .success:
                 relay.publicizeRoom? ([
-                    "roomName": tRoomName.text ?? "Unnamed Room"
+                    "roomName": tRoomName.text!.isEmpty ? "Unnamed Room" : tRoomName.text!
                 ])
+                
+                relay.gameRuntimeContainer?.playedRoomName = tRoomName.text!.isEmpty ? "Unnamed Room" : tRoomName.text!
                 
                 relay.selfSignalCommandCenter?.makeSelfHost()
                 
-                // TODO: Navigate somewhere
-                // relay.navigate(???)
+                let lobby = LobbyViewController()
+                lobby.relay = LobbyViewController.Relay (
+                    selfSignalCommandCenter : self.relay?.selfSignalCommandCenter,
+                    playerRuntimeContainer  : self.relay?.playerRuntimeContainer, 
+                    panelRuntimeContainer   : self.relay?.panelRuntimeContainer, 
+                    gameRuntimeContainer    : self.relay?.gameRuntimeContainer,
+                    navigate: { [weak self] to in 
+                        self?.relay?.navigate?(to)
+                    },
+                    popViewController: {
+                        self.relay?.popViewController?()
+                    }
+                )
+                relay.navigate?(lobby)
         }
         
     }

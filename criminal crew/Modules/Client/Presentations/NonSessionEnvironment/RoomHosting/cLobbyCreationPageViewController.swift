@@ -182,7 +182,7 @@ extension LobbyCreationPageViewController {
                 self?.tPendingPlayers.reloadData()
                 debug("Reloading pending players list with \(names)")
             }.store(in: &subscriptions)
-            
+        
         playerRuntimeContainer.$connectedPlayersNames
             .debounce(for: .milliseconds(200), scheduler: RunLoop.main)
             .receive(on: DispatchQueue.main)
@@ -227,14 +227,14 @@ extension LobbyCreationPageViewController {
                     default:
                         debug("Did fail to set up game view controller")
                         break
-                    }
-                    
-                    if let vc {
-                        relay.navigate(vc)
-                    }
+                }
+                
+                if let vc {
+                    relay.navigate(vc)
                 }
             }
             .store(in: &subscriptions)
+        
     }
     
 }

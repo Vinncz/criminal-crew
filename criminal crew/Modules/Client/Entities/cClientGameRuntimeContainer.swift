@@ -12,7 +12,7 @@ public class ClientGameRuntimeContainer : ObservableObject {
             debug("\(consoleIdentifier) Did update played server addr to \(playedServerAddr?.displayName ?? "nil")")
         }
     }
-    public var playedRoomName       : String? {
+    @Published public var playedRoomName       : String? {
         didSet {
             debug("\(consoleIdentifier) Did update played room name to \(playedRoomName ?? "nil")")
         }
