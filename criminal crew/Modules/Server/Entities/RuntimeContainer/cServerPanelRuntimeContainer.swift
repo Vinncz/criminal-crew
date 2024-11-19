@@ -29,6 +29,7 @@ extension ServerPanelRuntimeContainer {
         static let symbolsPanel  = ServerClockPanel.self
         static let switchesPanel = ServerSwitchesPanel.self
         static let colorPanel = ServerColorPanel.self
+        static let cardPanel     = ServerCardPanel.self
     }
     
     public static let availablePanelTypes : [ServerGamePanel.Type] = [
@@ -36,6 +37,7 @@ extension ServerPanelRuntimeContainer {
         ServerClockPanel.self,
         ServerSwitchesPanel.self,
         ServerColorPanel.self
+        ServerCardPanel.self,
     ]
     
 }

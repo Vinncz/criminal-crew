@@ -130,6 +130,8 @@ open class BaseGameViewController: UIViewController, GameContentProvider {
             view.leadingAnchor.constraint(equalTo: firstPanelView.leadingAnchor),
             view.trailingAnchor.constraint(equalTo: firstPanelView.trailingAnchor),
         ])
+        
+        firstPanelView.bringSubviewToFront(view)
     }
     
     public func addContentToSecondPanelView(_ view: UIView) {
