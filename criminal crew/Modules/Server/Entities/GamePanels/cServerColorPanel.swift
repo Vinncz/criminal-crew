@@ -45,7 +45,8 @@ extension ServerColorPanel {
                 completionCriteria: GameTaskCriteria (
                     requirements: ["\(sequenceColorToString)", "\(circleButtonCriteriaToString)", ""],
                     validityDuration: self.instructionDuration * configuration.instructionDurationScale
-                )
+                ),
+                owner: id
             )
         } else {
             let circleLabelCriteria = colorLabelArray.shuffled().prefix(secondHalfCritLen)
@@ -62,7 +63,8 @@ extension ServerColorPanel {
                 completionCriteria: GameTaskCriteria (
                     requirements: ["\(sequenceColorToString)", "", "\(circleLabelCriteriaToString)"],
                     validityDuration: self.instructionDuration * configuration.instructionDurationScale
-                )
+                ),
+                owner: id
             )
         }
     }

@@ -39,7 +39,7 @@ extension ServerSwitchesPanel {
         
         let levers = leverArray.shuffled().prefix(3)
         let switches = validSwitches.shuffled().prefix(secondHalfCritLen)
-                
+        
         return GameTask (
             instruction: GameTaskInstruction (
                 content: 
@@ -52,7 +52,8 @@ extension ServerSwitchesPanel {
             completionCriteria: GameTaskCriteria (
                 requirements: levers.map{$0} + switches,
                 validityDuration: self.instructionDuration * configuration.instructionDurationScale
-            )
+            ),
+            owner: id
         )
     }
     

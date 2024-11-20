@@ -46,7 +46,8 @@ extension ServerCardPanel {
                     cardNumberTaskCombination
                 ], 
                 validityDuration: self.instructionDuration * configuration.instructionDurationScale
-            )
+            ),
+            owner: id
         )
     
     }

@@ -102,15 +102,15 @@ extension TaskGenerationStrategy {
         
         let selectedPanelToOrderFrom : ServerGamePanelId = pickPanelToOrderFrom(amongDistributionOf: taskDistributionAssessment.percentageOfTaskDistributionPerPanel)
         
-        let averagedGameTaskModifier = GameTaskModifier (
-            criteriaLengthScale: (gameProgressionAssessment.taskModifier.criteriaLengthScale + panelCompositionAssessment.taskModifier.criteriaLengthScale) / 2,
-            instructionDurationScale: (gameProgressionAssessment.taskModifier.instructionDurationScale + panelCompositionAssessment.taskModifier.instructionDurationScale) / 2
+        let summedGameTaskModifier = GameTaskModifier.construct (
+            gameProgressionAssessment.taskModifierComponent,
+            panelCompositionAssessment.taskModifierComponent
         )
         
         return .success (
             TaskGenerationAdvice (
-                panelIdToOrderFrom: selectedPanelToOrderFrom, 
-                taskModifier: averagedGameTaskModifier
+                panelIdToOrderFrom : selectedPanelToOrderFrom, 
+                taskModifier       : summedGameTaskModifier
             )
         )
     }
@@ -128,12 +128,12 @@ public struct TaskGenerationAssessmentUponTaskDistribution {
 
 public struct TaskGenerationAssessmentUponGameProgression {
     
-    public let taskModifier : GameTaskModifier
+    public let taskModifierComponent : GameTaskModifierComponent
     
 }
 
 public struct TaskGenerationAssessmentUponPanelComposition {
     
-    public let taskModifier : GameTaskModifier
+    public let taskModifierComponent : GameTaskModifierComponent
     
 }

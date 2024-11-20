@@ -129,12 +129,19 @@ extension PlayerTaskReportResponder {
                 taskRuntimeContainer.playerTaskCriteriaMapping[event.submitterName]?.removeAll { $0.id == event.criteriaId }
                 
                 // make new task to ensure the player that holds the instruction get new instruction replacing the old one
-                guard let randomPanel = panelRuntimeContainer.getRegisteredPanels().randomElement() else {
-                    debug("\(consoleIdentifier) Did fail to pluck a random panel. No panel is registered")
-                    return
-                }
+//                guard let randomPanel = panelRuntimeContainer.getRegisteredPanels().randomElement() else {
+//                    debug("\(consoleIdentifier) Did fail to pluck a random panel. No panel is registered")
+//                    return
+//                }
+//                
+//                let task = taskGenerator.generate(for: randomPanel)
                 
-                let task = taskGenerator.generate(for: randomPanel)
+                guard let task = taskGenerator.generate() else {
+                    fatalError("TaskGenerator did fail to generate a task")
+                }
+                guard let panelWhichGeneratedTheTask = panelRuntimeContainer.getPanel(fromId: task.owner ?? "") else {
+                    fatalError("Panel hasn't signed the task")
+                }
                 
                 taskRuntimeContainer.registerTask(task)
                 
@@ -145,8 +152,8 @@ extension PlayerTaskReportResponder {
                 taskRuntimeContainer.registerTaskInstruction(task.instruction, to: nameOfThePlayerHoldingTheInstruction)
                 
                 // find out who plays the random panel
-                guard let nameOfThePlayerWhoPlaysThePanelPickedForTaskGeneration = panelRuntimeContainer.playerMapping.first(where: { $0.value.id == randomPanel.id })?.key else {
-                    debug("\(consoleIdentifier) Did fail to reassign new criteria. \(randomPanel.id) is not registered to be played by anyone")
+                guard let nameOfThePlayerWhoPlaysThePanelPickedForTaskGeneration = panelRuntimeContainer.playerMapping.first(where: { $0.value.id == panelWhichGeneratedTheTask.id })?.key else {
+                    debug("\(consoleIdentifier) Did fail to reassign new criteria. \(panelWhichGeneratedTheTask.id) is not registered to be played by anyone")
                     return
                 }
                 
@@ -224,14 +231,20 @@ extension PlayerTaskReportResponder {
                 // remove the mappings: both the instruction and the criteria
                 taskRuntimeContainer.playerTaskInstructionMapping[event.submitterName]?.removeAll { $0.id == completeGameTaskObject.instruction.id }
                 taskRuntimeContainer.playerTaskCriteriaMapping[nameOfThePlayerHoldingCriteria]?.removeAll { $0.id == completeGameTaskObject.criteria.id }
-                
-                // make new task to ensure the player that holds the instruction get new instruction replacing the old one
-                guard let randomPanel = panelRuntimeContainer.getRegisteredPanels().randomElement() else {
-                    debug("\(consoleIdentifier) Did fail to pluck a random panel. No panel is registered")
-                    return
+//                
+//                // make new task to ensure the player that holds the instruction get new instruction replacing the old one
+//                guard let randomPanel = panelRuntimeContainer.getRegisteredPanels().randomElement() else {
+//                    debug("\(consoleIdentifier) Did fail to pluck a random panel. No panel is registered")
+//                    return
+//                }
+//                
+//                let task = taskGenerator.generate(for: randomPanel)
+                guard let task = taskGenerator.generate() else {
+                    fatalError("TaskGenerator did fail to generate a task")
                 }
-                
-                let task = taskGenerator.generate(for: randomPanel)
+                guard let panelWhichGeneratedTheTask = panelRuntimeContainer.getPanel(fromId: task.owner ?? "") else {
+                    fatalError("Panel hasn't signed the task")
+                }
                 
                 taskRuntimeContainer.registerTask(task)
                 
@@ -242,8 +255,8 @@ extension PlayerTaskReportResponder {
                 taskRuntimeContainer.registerTaskInstruction(task.instruction, to: event.submitterName)
                 
                 // find out who plays the random panel
-                guard let nameOfThePlayerWhoPlaysThePanelPickedForTaskGeneration = panelRuntimeContainer.playerMapping.first(where: { $0.value.id == randomPanel.id })?.key else {
-                    debug("\(consoleIdentifier)  Did fail to reassign new criteria. \(randomPanel.id) is not registered to be played by anyone")
+                guard let nameOfThePlayerWhoPlaysThePanelPickedForTaskGeneration = panelRuntimeContainer.playerMapping.first(where: { $0.value.id == panelWhichGeneratedTheTask.id })?.key else {
+                    debug("\(consoleIdentifier)  Did fail to reassign new criteria. \(panelWhichGeneratedTheTask.id) is not registered to be played by anyone")
                     return
                 }
                 

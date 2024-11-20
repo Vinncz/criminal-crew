@@ -15,9 +15,10 @@ public struct GameTask : Identifiable, Hashable, Sendable {
     /// The criteria that needs to be completed
     public var criteria    : GameTaskCriteria
     
-    public init ( instruction: GameTaskInstruction, completionCriteria: GameTaskCriteria ) {
+    public init ( instruction: GameTaskInstruction, completionCriteria: GameTaskCriteria, owner: String? = nil ) {
         self.instruction = instruction
         self.criteria    = completionCriteria
+        self.owner       = owner
         
         self.instruction.associate(withParent: self.id.uuidString)
         self.criteria.associate(withParent: self.id.uuidString)

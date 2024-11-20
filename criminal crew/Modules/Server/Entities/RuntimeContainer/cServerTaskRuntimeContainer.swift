@@ -38,7 +38,7 @@ public class ServerTaskRuntimeContainer : ObservableObject {
         self.playerTaskInstructionMapping = [:]
         self.playerTaskCriteriaMapping    = [:]
         
-        self.generationStrategy = nil
+        self.generationStrategy   = FairTaskGenerationStrategy()
         self.distributionStrategy = nil
     }
     
@@ -170,9 +170,9 @@ extension ServerTaskRuntimeContainer {
     /// Resets the container, clearing all tasks, mappings, and strategies.
     public func reset () {
         self.tasks = []
-        self.playerTaskCriteriaMapping = [:]
+        self.playerTaskCriteriaMapping    = [:]
         self.playerTaskInstructionMapping = [:]
-        self.generationStrategy = nil
+        self.generationStrategy   = FairTaskGenerationStrategy()
         self.distributionStrategy = nil
     }
     

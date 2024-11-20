@@ -76,7 +76,8 @@ extension ServerWiresPanel {
             completionCriteria : GameTaskCriteria(
                 requirements: [leftPanelConnection, rightPanelConnection],
                 validityDuration: self.instructionDuration * configuration.instructionDurationScale
-            )
+            ),
+            owner: id
         )
     }
     

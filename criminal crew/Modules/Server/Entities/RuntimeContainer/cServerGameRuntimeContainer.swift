@@ -26,7 +26,7 @@ public class ServerGameRuntimeContainer : ObservableObject {
     
     public init () {
         let gs : GameState      = .notStarted
-        let df : GameDifficulty = .pro
+        let df : GameDifficulty = .beginner
         
         state      = gs
         difficulty = df
@@ -52,7 +52,7 @@ extension ServerGameRuntimeContainer {
     
     public func reset () {
         self.state      = .notStarted
-        self.difficulty = .pro
+        self.difficulty = .beginner
         
         let oldPenaltyProgression = self.penaltiesProgression
         self.penaltiesProgression = PenaltiesProgression(limit: oldPenaltyProgression.limit)

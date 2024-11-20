@@ -44,7 +44,8 @@ extension ServerClockPanel {
             completionCriteria: GameTaskCriteria.init (
                 requirements: completionCriteria,
                 validityDuration: self.instructionDuration * configuration.instructionDurationScale
-            )
+            ),
+            owner: id
         )
     }
     
