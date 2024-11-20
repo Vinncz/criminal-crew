@@ -652,6 +652,7 @@ extension CardSwipeViewController {
             ) {
                 debug("\(consoleIdentifier) Did fail to tell server that self has completed a task")
             }
+            completeTaskIndicator()
         }
         
         return completedTaskIds.count > 0

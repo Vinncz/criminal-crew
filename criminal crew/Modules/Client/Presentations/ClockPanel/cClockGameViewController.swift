@@ -200,14 +200,12 @@ extension ClockGameViewController : ButtonTappedDelegate {
         if let shortHand = shortHand {
             handleHandDrag(gesture, hand: shortHand)
         }
-//        if gesture.state == .ended { checkIfMatched() }
     }
     
     @objc func dragLongHand ( _ gesture: UIPanGestureRecognizer ) {
         if let longHand = longHand {
             handleHandDrag(gesture, hand: longHand)
         }
-//        if gesture.state == .ended { checkIfMatched() }
     }
     
     @objc func switchTapped ( _ sender: UIButton ) {
@@ -224,8 +222,7 @@ extension ClockGameViewController : ButtonTappedDelegate {
         
         let tappedSymbol = sender.accessibilityLabel ?? ""
         let isOn         = panelEntity.flipSwitch(tappedSymbol)
-
-        print(" \(tappedSymbol) is on \(isOn)")
+        
         let imageName = isOn ? "Switch On" : "Switch Off"
         sender.setBackgroundImage(UIImage(named: imageName), for: .normal)
         
@@ -321,13 +318,6 @@ extension ClockGameViewController {
         let touchPoint         = gesture.location(in: clockFace)
         let dx                 = touchPoint.x - clockFace.center.x
         let dy                 = touchPoint.y - clockFace.center.y
-//        let distanceFromCenter = hypot(dx, dy)
-//        let clockRadius        = clockFace.frame.width / 2
-        
-//        guard distanceFromCenter <= clockRadius else {
-//            if gesture.state == .ended { checkIfMatched() }
-//            return
-//        }
         
         let angle = atan2(dy, dx)
         hand.transform = CGAffineTransform(rotationAngle: angle - .pi / 2 + .pi)
@@ -478,4 +468,17 @@ extension ClockGameViewController {
             .store(in: &cancellables)
     }
     
+}
+
+#Preview{
+    let cprc = ClientPanelRuntimeContainer()
+    cprc.panelPlayed = ClientClockPanel()
+    
+    let vc = ClockGameViewController()
+    vc.relay = ClockGameViewController.Relay (
+        panelRuntimeContainer: cprc,
+        selfSignalCommandCenter: SelfSignalCommandCenter()
+    )
+    
+    return vc
 }
