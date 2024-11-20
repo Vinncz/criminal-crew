@@ -3,12 +3,15 @@ import UIKit
 
 public class LandingPageViewController : UIViewController, UsesDependenciesInjector {
     
-    let lGameName    : UIImageView
+    let lGameName    : LogoImageView
     let bBrowseRooms : UIButton
     let bHostRoom    : UIButton
     let bSettings    : UIButton
     let bTutorial    : UIButton
     let playerTextField : PlayerNameView
+    
+    var textFieldCenterXConstraint: NSLayoutConstraint?
+    var textFieldCenterYConstraint: NSLayoutConstraint?
     
     public var relay    : Relay?
     public struct Relay : CommunicationPortal {
@@ -31,8 +34,24 @@ public class LandingPageViewController : UIViewController, UsesDependenciesInjec
         self.bHostRoom    = ButtonWithImage(imageName: "host_game_button", tag: Self.hostRoomButtonId)
         self.bSettings    = ButtonWithImage(imageName: "setting_button_default", tag: Self.settingsButtonId)
         self.bTutorial    = ButtonWithImage(imageName: "tutorial_button_default", tag: Self.tutorialButtonId)
-        self.playerTextField = PlayerNameView()
+        let username = UserDefaults.standard.string(forKey: "criminal_crew_username") ?? "Anonymous"
+        self.playerTextField = PlayerNameView(username: username)
         super.init(nibName: nibNameOrNil, bundle: nibBundleOrNil)
+        self.playerTextField.delegate = self
+        
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(keyboardWillShow(notification:)),
+            name: UIResponder.keyboardWillShowNotification,
+            object: nil
+        )
+
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(keyboardWillHide(notification:)),
+            name: UIResponder.keyboardWillHideNotification,
+            object: nil
+        )
     }
     
     required init? ( coder: NSCoder ) {
@@ -40,6 +59,33 @@ public class LandingPageViewController : UIViewController, UsesDependenciesInjec
     }
     
     private let consoleIdentifer = "[C-LAP]"
+    
+    deinit {
+        NotificationCenter.default.removeObserver(self, name: UIResponder.keyboardWillShowNotification, object: nil)
+        NotificationCenter.default.removeObserver(self, name: UIResponder.keyboardWillHideNotification, object: nil)
+
+    }
+    
+    @objc private func keyboardWillShow(notification: Notification) {
+        if !playerTextField.isFirstResponder {
+            playerTextField.becomeFirstResponder()
+        }
+        textFieldCenterXConstraint?.isActive = true
+        textFieldCenterYConstraint?.isActive = true
+
+        UIView.animate(withDuration: 0.3) {
+            self.view.layoutIfNeeded()
+        }
+    }
+
+    @objc private func keyboardWillHide(notification: Notification) {
+        textFieldCenterXConstraint?.isActive = false
+        textFieldCenterYConstraint?.isActive = false
+
+        UIView.animate(withDuration: 0.3) {
+            self.view.layoutIfNeeded()
+        }
+    }
     
 }
 
@@ -65,13 +111,20 @@ extension LandingPageViewController {
         
         let rightStack = ViewFactory.createVerticalStackView()
         let spacer = UIView()
+        spacer.isUserInteractionEnabled = false
         let spacerHeightConstraint = spacer.heightAnchor.constraint(equalToConstant: .greatestFiniteMagnitude)
         spacerHeightConstraint.priority = .defaultLow
         spacerHeightConstraint.isActive = true
         
         let topRightCornerStack = setupTopRightStack()
         let botRightCornerStack = setupBotRightStack()
-        rightStack.addArrangedSubview(topRightCornerStack)
+        view.addSubview(topRightCornerStack)
+        topRightCornerStack.translatesAutoresizingMaskIntoConstraints = false
+        NSLayoutConstraint.activate([
+            topRightCornerStack.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor),
+            topRightCornerStack.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor)
+        ])
+        
         rightStack.addArrangedSubview(spacer)
         rightStack.addArrangedSubview(botRightCornerStack)
         botRightCornerStack.heightAnchor.constraint(equalTo: rightStack.heightAnchor, multiplier: 0.5).isActive = true
@@ -85,9 +138,12 @@ extension LandingPageViewController {
         NSLayoutConstraint.activate([
             mainStackView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 16),
             mainStackView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -16),
-            mainStackView.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor, constant: -16),
+            mainStackView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: 0),
             mainStackView.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor, constant: 16)
         ])
+        
+        textFieldCenterXConstraint = playerTextField.centerXAnchor.constraint(equalTo: view.centerXAnchor)
+        textFieldCenterYConstraint = playerTextField.centerYAnchor.constraint(equalTo: view.centerYAnchor)
         
         setupBackground()
     }
@@ -133,28 +189,33 @@ extension LandingPageViewController {
         return horizontalStackView
     }
     
-    private func setupBotRightStack() -> UIStackView {
-        let horizontalStackView = UIStackView()
-        horizontalStackView.axis = .horizontal
-        horizontalStackView.spacing = 8
-        horizontalStackView.alignment = .center
+    private func setupBotRightStack() -> UIView {
+        let horizontalStackView = UIView()
         
-        horizontalStackView.addArrangedSubview(playerTextField)
+        horizontalStackView.addSubview(playerTextField)
+        playerTextField.translatesAutoresizingMaskIntoConstraints = false
+        NSLayoutConstraint.activate([
+            playerTextField.widthAnchor.constraint(equalTo: horizontalStackView.widthAnchor, multiplier: 0.5),
+            playerTextField.heightAnchor.constraint(equalTo: horizontalStackView.heightAnchor, multiplier: 0.2),
+            playerTextField.centerXAnchor.constraint(equalTo: horizontalStackView.centerXAnchor),
+            playerTextField.centerYAnchor.constraint(equalTo: horizontalStackView.centerYAnchor)
+        ])
+        
         return horizontalStackView
     }
     
     private func setupBackground() {
         // TODO: After inserting background assets change the name here
-        let backgroundImage = UIImageView(image: UIImage(named: ""))
+        let backgroundImage = UIImageView(image: UIImage(named: "background_main_menu"))
         backgroundImage.contentMode = .scaleToFill
         backgroundImage.translatesAutoresizingMaskIntoConstraints = false
         
         view.insertSubview(backgroundImage, at: 0)
         NSLayoutConstraint.activate([
-            backgroundImage.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
-            backgroundImage.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor),
-            backgroundImage.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor),
-            backgroundImage.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor)
+            backgroundImage.topAnchor.constraint(equalTo: view.topAnchor),
+            backgroundImage.bottomAnchor.constraint(equalTo: view.bottomAnchor),
+            backgroundImage.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+            backgroundImage.leadingAnchor.constraint(equalTo: view.leadingAnchor)
         ])
     }
     
@@ -236,6 +297,33 @@ extension LandingPageViewController {
     fileprivate static let hostRoomButtonId   : Int = 1
     fileprivate static let tutorialButtonId   : Int = 2
     fileprivate static let settingsButtonId   : Int = 3
+    
+}
+
+extension LandingPageViewController: UITextFieldDelegate {
+    
+    public func textFieldDidEndEditing(_ textField: UITextField) {
+        guard let text = textField.text, !text.isEmpty
+        else {
+            print("No text entered. Text back to default.")
+            textField.text = "Anonymous"
+            return
+        }
+        
+        UserDefaults.standard.set(text, forKey: "criminal_crew_username")
+    }
+    
+    public func textFieldShouldReturn(_ textField: UITextField) -> Bool {
+        textField.resignFirstResponder()
+        return true
+    }
+    
+    public func textField(_ textField: UITextField, shouldChangeCharactersIn range: NSRange, replacementString string: String) -> Bool {
+        let maxCharacter = 10
+        let currentCharacter = textField.text?.count ?? 0
+        let newCharacter = currentCharacter + string.count - range.length
+        return newCharacter <= maxCharacter
+    }
     
 }
 
