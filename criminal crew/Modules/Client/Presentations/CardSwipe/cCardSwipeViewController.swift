@@ -11,7 +11,7 @@ public class CardSwipeViewController: BaseGameViewController {
     public var numPadPanel = UIImageView()
     public var numPadDeleteButton = UIImageView()
     public var numPadEnterButton = UIImageView()
-    
+
     public var swipeGesture: [String] = []
     public var leftSideTouched: Bool = false
     public var rightSideTouched: Bool = false
@@ -33,7 +33,6 @@ public class CardSwipeViewController: BaseGameViewController {
     }
     
     private var subscriptions = Set<AnyCancellable>()
-    
     private var consoleIdentifier: String = "[C-PCA-VC]"
     
     public override func createSecondPanelView() -> UIView {
@@ -112,7 +111,6 @@ public class CardSwipeViewController: BaseGameViewController {
         
         setupTapGestureForNumPad()
         placeJobToUpdateNumberPadLabelTextFromEntity()
-        
         timerPublisher()
     }
     
@@ -279,6 +277,7 @@ public class CardSwipeViewController: BaseGameViewController {
         var numPadLeadingAnchor: CGFloat = 0
         var displayLabelLeadingAnchor: CGFloat = 0
         var buttonBelowPanel: CGFloat = 0
+        var labelXLevel: CGFloat = 0
         
         let buttonSpacing: CGFloat = 10
         
@@ -291,7 +290,8 @@ public class CardSwipeViewController: BaseGameViewController {
             numPadLeadingAnchor = -115
             displayLabelLeadingAnchor = 20
             buttonBelowPanel = -30
-            displayLabel.font = .monospacedSystemFont(ofSize: 80, weight: .bold)
+            labelXLevel = 2
+            displayLabel.font = UIFont(name: "digital-7", size: 110)
             
         } else if screenWidthInMm >= 291 {
             numPadButtonSize = CGSize(width: 45, height: 46)
@@ -302,7 +302,8 @@ public class CardSwipeViewController: BaseGameViewController {
             numPadLeadingAnchor = -100
             displayLabelLeadingAnchor = 40
             buttonBelowPanel = -24
-            displayLabel.font = .monospacedSystemFont(ofSize: 70, weight: .bold)
+            labelXLevel = 1
+            displayLabel.font = UIFont(name: "digital-7", size: 90)
             
         } else if screenWidthInMm >= 284 {
             numPadButtonSize = CGSize(width: 45, height: 46)
@@ -313,7 +314,8 @@ public class CardSwipeViewController: BaseGameViewController {
             numPadLeadingAnchor = -100
             displayLabelLeadingAnchor = 40
             buttonBelowPanel = -24
-            displayLabel.font = .monospacedSystemFont(ofSize: 70, weight: .bold)
+            labelXLevel = 1
+            displayLabel.font = UIFont(name: "digital-7", size: 90)
         }
 
         NSLayoutConstraint.activate([
@@ -349,7 +351,7 @@ public class CardSwipeViewController: BaseGameViewController {
             numPadButton.translatesAutoresizingMaskIntoConstraints = false
             numPadButton.tag = i
             target.addSubview(numPadButton)
-
+            
             let label = UILabel()
             label.text = "\(i)"
             label.font = UIFont.systemFont(ofSize: 40, weight: .bold)
@@ -365,8 +367,8 @@ public class CardSwipeViewController: BaseGameViewController {
                 numPadButton.leadingAnchor.constraint(equalTo: target.leadingAnchor, constant: 30 + CGFloat(col) * (numPadButtonSize.width + buttonSpacing)),
                 numPadButton.topAnchor.constraint(equalTo: numPadPanel.bottomAnchor, constant: numPadLeadingAnchor  + CGFloat(row) * (numPadButtonSize.height + buttonSpacing)),
                     
-                label.centerXAnchor.constraint(equalTo: numPadButton.centerXAnchor, constant: 2),
-                label.topAnchor.constraint(equalTo: numPadButton.topAnchor)
+                label.centerXAnchor.constraint(equalTo: numPadButton.centerXAnchor, constant: labelXLevel),
+                label.topAnchor.constraint(equalTo: numPadButton.topAnchor, constant: -2)
             ])
         }
     }
@@ -386,7 +388,6 @@ public class CardSwipeViewController: BaseGameViewController {
         let translation = gesture.translation(in: containerView)
         let newCenter = CGPoint(x: card.center.x + translation.x, y: card.center.y + translation.y)
 
-
         switch gesture.state {
             case .began:
                 print("Card being dragged")
@@ -396,7 +397,8 @@ public class CardSwipeViewController: BaseGameViewController {
                     let restrictedArea = swiperFrame.insetBy(dx: -100, dy: 0)
                     
                     if restrictedArea.contains(newCenter) {
-                        card.center.y += 0.3
+                        card.center.y += 0.1
+                        card.center.x += translation.x + 0.1
                     }
                     
                     if !restrictedArea.contains(newCenter) {
@@ -561,19 +563,38 @@ public class CardSwipeViewController: BaseGameViewController {
             debug("\(consoleIdentifier) Did fail to handle enter button tapped. Relay and/or some of its attribute is missing or not set")
             return
         }
-        
+
         guard let tappedButton = sender.view as? UIImageView else { return }
         guard let label = tappedButton.subviews.first(where: { $0 is UILabel }) as? UILabel else { return }
         
-        let tappedNumber = label.text ?? ""
-        tappedButton.image = UIImage(named: "buttonOn")
-        
         if isPanelProcessing == false {
+            let tappedNumber = label.text ?? ""
+            let screenWidth = UIScreen.main.bounds.width
+            let screenWidthInMm = screenWidth / UIScreen.main.scale
+            let shiftedXConstraint = label.centerXAnchor.constraint(equalTo: tappedButton.centerXAnchor, constant: -4)
+            let shiftedYConstraint = label.centerYAnchor.constraint(equalTo: tappedButton.centerYAnchor, constant: 2)
+            var labelXLevel: CGFloat = 0
+            
+            if screenWidthInMm >= 318 {
+                labelXLevel = 2
+            } else if screenWidthInMm >= 291 {
+                labelXLevel = 1
+            } else if screenWidthInMm >= 264 {
+                labelXLevel = 1
+            }
+            
+            tappedButton.image = UIImage(named: "buttonOn")
+            NSLayoutConstraint.activate([shiftedXConstraint, shiftedYConstraint])
             _ = panelEntity.tapNumber(on: tappedNumber)
-        }
-        
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-            tappedButton.image = UIImage(named: "buttonOff")
+            isPanelProcessing = true
+
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                tappedButton.image = UIImage(named: "buttonOff")
+                let defaultXConstraint = label.centerXAnchor.constraint(equalTo: tappedButton.centerXAnchor, constant: labelXLevel)
+                NSLayoutConstraint.deactivate([shiftedXConstraint, shiftedYConstraint])
+                NSLayoutConstraint.activate([defaultXConstraint])
+                self.isPanelProcessing = false
+            }
         }
     }
 
@@ -590,7 +611,7 @@ public class CardSwipeViewController: BaseGameViewController {
         self.numPadDeleteButton.image = UIImage(named: "Delete Button On")
         panelEntity.backspaceNumberInput()
         
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) { [self] in
             self.numPadDeleteButton.image = UIImage(named: "Delete Button Off")
         }
     }
@@ -621,7 +642,7 @@ public class CardSwipeViewController: BaseGameViewController {
             cardColorIndicator[i].fillColor = UIColor.gray.cgColor
         }
         
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5){
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3){
             self.numPadEnterButton.image = UIImage(named: "Enter Button Off")
             self.displayLabel.text = ""
             panelEntity.clearAllInput()

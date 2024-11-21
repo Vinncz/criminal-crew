@@ -20,6 +20,7 @@
 	</array>
 	<key>UIAppFonts</key>
 	<array>
+		<string>digital-7.ttf</string>
 		<string>RobotoMono-Medium.ttf</string>
 		<string>RobotoMono-Bold.ttf</string>
 	</array>
