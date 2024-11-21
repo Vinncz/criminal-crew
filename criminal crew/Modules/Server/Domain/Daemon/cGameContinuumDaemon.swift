@@ -10,7 +10,7 @@ public class GameContinuumDaemon : UseCase {
     public struct Relay : CommunicationPortal {
         weak var playerRuntimeContainer : ServerPlayerRuntimeContainer?
         weak var gameRuntimeContainer   : ServerGameRuntimeContainer?
-        weak var eventBroadcaster       : GPGameEventBroadcaster?
+        weak var eventBroadcaster       : GPNetworkBroadcaster?
     }
     
     public init () {

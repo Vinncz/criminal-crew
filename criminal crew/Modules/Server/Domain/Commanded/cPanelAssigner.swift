@@ -7,7 +7,7 @@ public class PanelAssigner : UseCase {
     public init () {}
     
     public struct Relay : CommunicationPortal {
-        weak var eventBroadcaster       : GPGameEventBroadcaster?
+        weak var eventBroadcaster       : GPNetworkBroadcaster?
         weak var playerRuntimeContainer : ServerPlayerRuntimeContainer?
         weak var panelRuntimeContainer  : ServerPanelRuntimeContainer?
     }

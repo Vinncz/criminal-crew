@@ -1,6 +1,6 @@
 import GamePantry
 
-public class ClientNetworkEventListener : GPGameEventListener {
+public class ClientNetworkEventListener : GPNetworkListener {
     
     public weak var eventRouter: GPEventRouter?
     
@@ -8,7 +8,7 @@ public class ClientNetworkEventListener : GPGameEventListener {
     public init ( router: GPEventRouter ) {
         self.eventRouter = router
         super.init()
-        startListening(self)
+        undeafen(self)
     }
     
     public func heardNews ( of: MCPeerID, to: MCSessionState ) {

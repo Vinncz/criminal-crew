@@ -1,3 +1,4 @@
+import Combine
 import GamePantry
 
 public class PlayerTaskReportResponder : UseCase {
@@ -11,7 +12,7 @@ public class PlayerTaskReportResponder : UseCase {
     
     public struct Relay : CommunicationPortal {
         weak var eventRouter            : GPEventRouter?
-        weak var eventBroadcaster       : GPGameEventBroadcaster?
+        weak var eventBroadcaster       : GPNetworkBroadcaster?
         weak var gameRuntimeContainer   : ServerGameRuntimeContainer?
         weak var panelRuntimeContainer  : ServerPanelRuntimeContainer?
         weak var playerRuntimeContainer : ServerPlayerRuntimeContainer?
@@ -305,7 +306,7 @@ extension PlayerTaskReportResponder {
         debug("\(consoleIdentifier) Did advance the penalty progression by \(penaltyPoints)")
     }
     
-    private func sendInstructionDismissal ( for instructionId: String, to playerName: String, using broadcaster: GPGameEventBroadcaster ) {
+    private func sendInstructionDismissal ( for instructionId: String, to playerName: String, using broadcaster: GPNetworkBroadcaster ) {
         guard let playerRecord = relay?.playerRuntimeContainer?.getReportOnPlayer(named: playerName) else {
             debug("\(consoleIdentifier) Did fail to signal instruction can safely be dismissed: player is not found in playerRuntimeContainer")
             return
@@ -323,7 +324,7 @@ extension PlayerTaskReportResponder {
         }
     }
     
-    private func sendCriteriaDismissal ( for criteriaId: String, to playerName: String, using broadcaster: GPGameEventBroadcaster ) {
+    private func sendCriteriaDismissal ( for criteriaId: String, to playerName: String, using broadcaster: GPNetworkBroadcaster ) {
         guard let playerRecord = relay?.playerRuntimeContainer?.getReportOnPlayer(named: playerName) else {
             debug("\(consoleIdentifier) Did fail to signal criteria can safely be dismissed: player is not found in playerRuntimeContainer")
             return

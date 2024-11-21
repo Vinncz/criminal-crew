@@ -1,3 +1,4 @@
+import Combine
 import GamePantry
 import UIKit
 
@@ -37,7 +38,7 @@ public class RootComposer : Composer, ObservableObject {
                 guard let self else { return }
                 self.serverComposer.networkManager.advertiserService.stopAdvertising(on: self.serverComposer.networkManager.advertiserService)
                 (self.serverComposer.networkManager.advertiserService as? GameServerAdvertiser)?.reset()
-                self.serverComposer.networkManager.eventBroadcaster.ceaseCommunication()
+                self.serverComposer.networkManager.eventBroadcaster.disconnect()
                 self.serverComposer.networkManager.eventBroadcaster.reset()
                 self.serverComposer.ent_playerRuntimeContainer.reset()
                 self.queuedJobToAdmitTheHost?.cancel()

@@ -12,7 +12,7 @@ public class LandingPageViewController : UIViewController, UsesDependenciesInjec
     
     public var relay    : Relay?
     public struct Relay : CommunicationPortal {
-        weak var eventBroadcaster        : GamePantry.GPGameEventBroadcaster?
+        weak var eventBroadcaster        : GPNetworkBroadcaster?
         weak var selfSignalCommandCenter : SelfSignalCommandCenter?
         weak var playerRuntimeContainer  : ClientPlayerRuntimeContainer?
         weak var gameRuntimeContainer    : ClientGameRuntimeContainer?

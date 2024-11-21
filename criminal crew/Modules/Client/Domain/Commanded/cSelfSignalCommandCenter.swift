@@ -1,3 +1,4 @@
+import Combine
 import GamePantry
 
 public class SelfSignalCommandCenter : UseCase {
@@ -6,7 +7,7 @@ public class SelfSignalCommandCenter : UseCase {
     
     public var relay    : Relay?
     public struct Relay : CommunicationPortal {
-        weak var eventBroadcaster : GPGameEventBroadcaster?
+        weak var eventBroadcaster : GPNetworkBroadcaster?
         weak var browser          : (any GPGameClientBrowser)?
         weak var gameRuntime      : ClientGameRuntimeContainer?
         weak var panelRuntime     : ClientPanelRuntimeContainer?
@@ -230,7 +231,7 @@ extension SelfSignalCommandCenter {
             debug("\(consoleIdentifier) Did fail to disconnect self: panelRuntime is missing or not set"); return
         }
         
-        eventBroadcaster.ceaseCommunication()
+        eventBroadcaster.disconnect()
         eventBroadcaster.reset()
         playerRuntime.reset()
         gameRuntime.reset()

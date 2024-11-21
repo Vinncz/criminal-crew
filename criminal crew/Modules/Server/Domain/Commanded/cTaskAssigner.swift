@@ -6,7 +6,7 @@ public class TaskAssigner : UseCase {
     
     public var relay : Relay?
     public struct Relay : CommunicationPortal {
-        weak var eventBroadcaster       : GPGameEventBroadcaster?
+        weak var eventBroadcaster       : GPNetworkBroadcaster?
         weak var playerRuntimeContainer : ServerPlayerRuntimeContainer?
     }
     

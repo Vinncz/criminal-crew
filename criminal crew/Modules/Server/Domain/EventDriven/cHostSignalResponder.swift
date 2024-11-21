@@ -1,3 +1,4 @@
+import Combine
 import GamePantry
 
 public class HostSignalResponder : UseCase {
@@ -13,7 +14,7 @@ public class HostSignalResponder : UseCase {
         var gameProcessConfig           : GPGameProcessConfiguration?
         
         weak var eventRouter            : GPEventRouter?
-        weak var eventBroadcaster       : GPGameEventBroadcaster?
+        weak var eventBroadcaster       : GPNetworkBroadcaster?
         weak var advertiserService      : GPGameServerAdvertiser?
         
         weak var taskAssigner           : TaskAssigner?

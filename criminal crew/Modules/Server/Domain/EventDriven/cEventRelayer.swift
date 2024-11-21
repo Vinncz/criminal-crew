@@ -1,3 +1,4 @@
+import Combine
 import GamePantry
 
 public class EventRelayer : UseCase {
@@ -12,7 +13,7 @@ public class EventRelayer : UseCase {
     public struct Relay : CommunicationPortal {
         weak var eventRouter    : GPEventRouter?
         weak var playerRegistry : ServerPlayerRuntimeContainer?
-        weak var eventBroadcaster : GPGameEventBroadcaster?
+        weak var eventBroadcaster : GPNetworkBroadcaster?
     }
     
     deinit {
