@@ -181,13 +181,19 @@ extension ClientComposer {
                         return
                     }
                     
+                    let playerName = UserDefaults.standard.string(forKey: "criminal_crew_username") ?? "Anonymous"
+                    
                     cancellableForAutoJoinSelfCreatedServer = self.networkManager.browser.$discoveredServers
                         .debounce(for: .milliseconds(100), scheduler: RunLoop.main)
                         .sink { servers in
                             servers.forEach { serv in
                                 if ( serv.serverId == serverAddr ) {
                                     self.networkManager.eventBroadcaster.approve(
-                                        self.networkManager.browser.requestToJoin(serv.serverId)
+                                        self.networkManager.browser.requestToJoin (
+                                            serv.serverId,
+                                            payload  : GameJoinRequestPayload(playerName: playerName).representedAsData(),
+                                            validFor : self.networkManager.gameProcessConfig.timeout
+                                        )
                                     )
                                 }
                             }

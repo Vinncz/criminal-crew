@@ -71,8 +71,11 @@ extension TaskGenerator {
                         }
                         
                         let panelToOrderFrom = panelRuntimeContainer.getPanel(fromId: adviceComponent_panelsToOrderFrom.recommendedPanelId)
+                        let finalModifier    = adviceComponent_generationModifier.taskGenerationModifier.consume(gameRuntimeContainer.difficulty.taskModifierComponent)
                         
-                        return panelToOrderFrom?.generate(taskConfiguredWith: adviceComponent_generationModifier.taskGenerationModifier.consume(gameRuntimeContainer.difficulty.taskModifierComponent))
+                        Logger.server.warning("\(self.consoleIdentifier) Attempting to generate task with \(String(describing: finalModifier))")
+                        
+                        return panelToOrderFrom?.generate(taskConfiguredWith: finalModifier)
                 }
         }
     }

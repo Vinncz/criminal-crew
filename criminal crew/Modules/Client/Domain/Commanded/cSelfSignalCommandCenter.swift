@@ -270,8 +270,11 @@ extension SelfSignalCommandCenter {
             return flowIsComplete
         }
         
-        eventBroadcaster.approve(
-            browser.requestToJoin(serverOfInterest.serverId)
+        eventBroadcaster.approve (
+            browser.requestToJoin (
+                serverOfInterest.serverId,
+                payload: GameJoinRequestPayload(playerName: UserDefaults.standard.string(forKey: "criminal_crew_username") ?? "Anonymous").representedAsData()
+            )
         )
         debug("\(consoleIdentifier) Did send join request to \(serverAddr)")
         
@@ -372,6 +375,50 @@ extension SelfSignalCommandCenter {
             
         } catch {
             debug("\(consoleIdentifier) Did fail to send criteria report to server: \(error)")
+            
+        }
+        
+        return flowIsComplete
+    }
+    
+    public func sendDifficultyUpdate ( diffAsInt: Int ) -> Bool {
+        var flowIsComplete = false
+        
+        guard let relay else {
+            debug("\(consoleIdentifier) Did fail to send criteria report: relay is missing or not set")
+            return flowIsComplete
+        }
+        
+        guard let gameRuntime = relay.gameRuntime else {
+            debug("\(consoleIdentifier) Did fail to send criteria report: gameRuntime is missing or not set")
+            return flowIsComplete
+        }
+        
+        guard 
+            let serverAddr = gameRuntime.playedServerAddr,
+            gameRuntime.connectionState == .connected
+        else {
+            debug("\(consoleIdentifier) Did fail to send criteria report: self is not connected to a server")
+            return flowIsComplete
+        }
+        
+        guard let eventBroadcaster = relay.eventBroadcaster else {
+            debug("\(consoleIdentifier) Did fail to send criteria report: eventBroadcaster is missing or not set")
+            return flowIsComplete
+        }
+        
+        do {
+            try eventBroadcaster.broadcast (
+                GameDifficultyUpdateEvent (
+                    submittedBy: whoAmI(), 
+                    difficultyAsInt: diffAsInt
+                ).representedAsData(), 
+                to: [serverAddr]
+            )                
+            flowIsComplete = true
+            
+        } catch {
+            debug("\(consoleIdentifier) Did fail to send game diff update to server: \(error)")
             
         }
         

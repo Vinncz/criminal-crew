@@ -1,4 +1,5 @@
 import Combine
+import os
 import UIKit
 
 public class LobbyViewController : UIViewController {
@@ -26,6 +27,7 @@ public class LobbyViewController : UIViewController {
     
     public var relay    : Relay?
     public struct Relay : CommunicationPortal {
+        weak var networkBroadcaster      : ClientNetworkEventBroadcaster?
         weak var selfSignalCommandCenter : SelfSignalCommandCenter?
         weak var playerRuntimeContainer  : ClientPlayerRuntimeContainer?
         weak var panelRuntimeContainer   : ClientPanelRuntimeContainer?
@@ -183,7 +185,7 @@ extension LobbyViewController {
             let relay = relay,
             let gameRuntimeContainer = relay.gameRuntimeContainer
         else {
-            debug("\(consoleIdentifier) game run time container not found")
+            Logger.client.error("\(self.consoleIdentifier) game run time container not found")
             return rightStackView
         }
         
@@ -248,7 +250,7 @@ extension LobbyViewController {
             let relay = relay,
             let gameRuntimeContainer = relay.gameRuntimeContainer
         else {
-            debug("\(consoleIdentifier) game Run time container is not available")
+            Logger.client.error("\(self.consoleIdentifier) game Run time container is not available")
             return
         }
         
@@ -282,7 +284,7 @@ extension LobbyViewController {
     
     private func enableUpdateJobForConnectedNames () {
         guard let relay else {
-            debug("\(consoleIdentifier) Did fail to set up actions for list of connected players. Relay is missing or not set")
+            Logger.client.error("\(self.consoleIdentifier) Did fail to set up actions for list of connected players. Relay is missing or not set")
             return
         }
         
@@ -307,7 +309,7 @@ extension LobbyViewController {
                     .store(in: &subscriptions)
                 
             case .failure(let missingAttributes):
-                debug("\(consoleIdentifier) Did fail to set up actions for list of connected players. Attributes [\(missingAttributes)] is missing or not set")
+                Logger.client.error("\(self.consoleIdentifier) Did fail to set up actions for list of connected players. Attributes [\(missingAttributes)] is missing or not set")
                 return
         }
         
@@ -315,12 +317,12 @@ extension LobbyViewController {
     
     private func enablePushToGameViewJob () {
         guard let relay else {
-            debug("\(consoleIdentifier) Did fail to set up actions for list of connected players. Relay is missing or not set")
+            Logger.client.error("\(self.consoleIdentifier) Did fail to set up actions for list of connected players. Relay is missing or not set")
             return
         }
         
         guard let panelRuntimeContainer = relay.panelRuntimeContainer else {
-            debug("\(consoleIdentifier) Did fail to set up actions for enablePushToGameViewJob. PanelRuntimeContainer is missing or not set")
+            Logger.client.error("\(self.consoleIdentifier) Did fail to set up actions for enablePushToGameViewJob. PanelRuntimeContainer is missing or not set")
             return
         }
         
@@ -363,12 +365,12 @@ extension LobbyViewController {
     
     private func enableUpdateJobForConnection () {
         guard let relay else {
-            debug("\(consoleIdentifier) Did fail to set up actions for list of connected players. Relay is missing or not set")
+            Logger.client.error("\(self.consoleIdentifier) Did fail to set up actions for list of connected players. Relay is missing or not set")
             return
         }
         
         guard let gameRuntimeContainer = relay.gameRuntimeContainer else {
-            debug("\(consoleIdentifier) Did fail to enable connection status update job. Game Runtime Container is missing or not set")
+            Logger.client.error("\(self.consoleIdentifier) Did fail to enable connection status update job. Game Runtime Container is missing or not set")
             return
         }
         
@@ -392,7 +394,7 @@ extension LobbyViewController {
     
     @objc func cueToNavigate ( sender: UIButton ) {
         guard let relay else {
-            debug("\(consoleIdentifier) Unable to cue navigation. Relay is missing or not set")
+            Logger.client.error("\(self.consoleIdentifier) Unable to cue navigation. Relay is missing or not set")
             return
         }
         
@@ -409,7 +411,7 @@ extension LobbyViewController {
                 relay.popViewController()
             
             default:
-                debug("\(consoleIdentifier) Unhandled button tag: \(sender.tag)")
+                Logger.client.error("\(self.consoleIdentifier) Unhandled button tag: \(sender.tag)")
                 break
         }
     }
@@ -421,29 +423,30 @@ extension LobbyViewController {
     
     @objc private func startGameButtonPressed(_ sender: UIButton) {
         guard let relay else {
-            debug("\(consoleIdentifier) Did fail to refresh connected players. Relay is missing or not set")
+            Logger.client.error("\(self.consoleIdentifier) Did fail to refresh connected players. Relay is missing or not set")
             return
         }
         
         guard let selfSignalCommandCenter = relay.selfSignalCommandCenter else {
-            debug("\(consoleIdentifier) Did fail to update the join permission. SelfSignalCommandCenter is missing or not set")
+            Logger.client.error("\(self.consoleIdentifier) Did fail to update the join permission. SelfSignalCommandCenter is missing or not set")
             return
         }
         
         if !selfSignalCommandCenter.startGame() {
-            debug("\(consoleIdentifier) Did fail to start the game")
+            Logger.client.error("\(self.consoleIdentifier) Did fail to start the game")
         }
     }
     
     @objc private func difficultyButtonPressed (_ sender: UIButton ) {
-//        guard let relay else {
-//            debug("\(consoleIdentifier) Unable to update difficulty. Relay is missing or not set")
-//            return
-//        }
+        guard let relay else {
+            Logger.client.error("\(self.consoleIdentifier) Unable to update difficulty. Relay is missing or not set")
+            return
+        }
+        
         guard
             let sender = sender as? DifficultyButton
         else {
-            debug("\(consoleIdentifier) Unable to update difficulty. Sender is not a DifficultyButton")
+            Logger.client.error("\(self.consoleIdentifier) Unable to update difficulty. Sender is not a DifficultyButton")
             return
         }
         
@@ -452,21 +455,23 @@ extension LobbyViewController {
         } else {
             sender.updateDifficultyIndex(to: sender.difficultyIndex + 1)
         }
+        
+        _ = relay.selfSignalCommandCenter?.sendDifficultyUpdate(diffAsInt: sender.difficultyIndex)
     }
     
     @objc private func refreshConnectedPlayersFromServer () {
         guard let relay else {
-            debug("\(consoleIdentifier) Did fail to refresh connected players. Relay is missing or not set")
+            Logger.client.error("\(self.consoleIdentifier) Did fail to refresh connected players. Relay is missing or not set")
             return
         }
         
         guard let selfSignalCommandCenter = relay.selfSignalCommandCenter else {
-            debug("\(consoleIdentifier) Did fail to update the join permission. SelfSignalCommandCenter is missing or not set")
+            Logger.client.error("\(self.consoleIdentifier) Did fail to update the join permission. SelfSignalCommandCenter is missing or not set")
             return
         }
         
         if !selfSignalCommandCenter.orderConnectedPlayerNames () {
-            debug("\(consoleIdentifier) Did fail to refresh connected players.")
+            Logger.client.error("\(self.consoleIdentifier) Did fail to refresh connected players.")
         }
         /// TODO: reload data here
         

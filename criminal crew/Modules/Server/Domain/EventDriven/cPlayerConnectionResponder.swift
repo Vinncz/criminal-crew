@@ -1,5 +1,6 @@
 import Combine
 import GamePantry
+import os
 
 public class ServerPlayerConnectionResponder : UseCase {
     
@@ -74,27 +75,45 @@ extension ServerPlayerConnectionResponder {
             debug("\(consoleIdentifier) Did fail to handle events: relay is missing or not set"); return
         }
         
-        guard let playerRuntimeContainer = relay.playerRuntimeContainer else {
-            debug("\(consoleIdentifier) Did fail to handle events: playerRuntimeContainer is missing or not set"); return
+        switch (
+            relay.assertPresent (
+                \.eventRouter,
+                \.playerRuntimeContainer
+            )
+        ) {
+            case .failure(let missingRequirements):
+                Logger.server.error("\(self.consoleIdentifier) Did fail to handle acquaintance events: \(missingRequirements)")
+                return
+                
+            case .success:
+                /* Typecast for better readibility */
+                guard let playerRuntimeContainer = relay.playerRuntimeContainer
+                else { return }
+                
+                if let player = playerRuntimeContainer.players.first(where: { $0.playerAddress == event.subject }) {
+                    player.playerConnectionState = event.status
+                    updateHostConnectionState(runtime: playerRuntimeContainer, from: event)
+                    
+                } else {
+                    Logger.server.error("\(self.consoleIdentifier) There is no player with address \(event.subject.displayName)")
+                }
         }
-        
-        playerRuntimeContainer.update(event.subject, state: event.status)
-        debug("\(consoleIdentifier) Did update a player's state: \(event.subject.displayName) to \(event.status.toString())")
-        
-        guard let host = playerRuntimeContainer.hostAddr else {
-            debug("\(consoleIdentifier) Host is missing or not set, skipping host update");
+    }
+    
+    private func updateHostConnectionState ( runtime playerRuntimeContainer: ServerPlayerRuntimeContainer, from event: GPAcquaintanceStatusUpdateEvent ) {
+        guard let host = playerRuntimeContainer.host?.playerAddress else {
+            Logger.server.error("\(self.consoleIdentifier) Host is missing or not set, skipping host update");
             return
         }
         
         if ( event.status == .notConnected && event.subject == host ) {
-            playerRuntimeContainer.hostAddr = nil
-            debug("\(consoleIdentifier) Host \(event.subject.displayName) left the room")
+            playerRuntimeContainer.host = nil
+            Logger.server.warning("\(self.consoleIdentifier) Host \(event.subject.displayName) left the room")
             
         } else if ( event.status == .connected && event.subject.displayName == host.displayName ) {
-            playerRuntimeContainer.hostAddr = event.subject
-            debug("\(consoleIdentifier) Host \(event.subject.displayName) joined the room")
+            playerRuntimeContainer.host = playerRuntimeContainer.players.first { $0.playerAddress == event.subject }
+            Logger.server.warning("\(self.consoleIdentifier) Host \(event.subject.displayName) joined the room")
         }
-        
     }
     
 }

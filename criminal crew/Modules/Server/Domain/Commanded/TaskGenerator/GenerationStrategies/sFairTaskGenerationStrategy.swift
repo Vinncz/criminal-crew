@@ -26,16 +26,16 @@ public struct FairTaskGenerationStrategy : TaskGenerationStrategy {
         return TaskGenerationAssessmentUponPanelComposition (
             taskModifierComponent: GameTaskModifierComponent (
                 criteriaLength      : 0, 
-                instructionDuration : Double(countOfPanelsConsideredHard) * 0.1 // add 10% leniency for every hard panels
+                instructionDuration : Double(countOfPanelsConsideredHard) * 0.05 // add 5% leniency for every hard panels
             )
         )
     }
     
     public func assess ( successCount: Double, winningLimit: Double, failCount: Double, losingLimit: Double ) -> TaskGenerationAssessmentUponGameProgression {
-        let introductoryPhase : ClosedRange<Double> = 0...0.35
-        let midGamePhase      : ClosedRange<Double> = 0.36...0.8
-            let upperMidPhase : ClosedRange<Double> = 0.65...0.8
-        let closingPhase      : ClosedRange<Double> = 0.81...1
+        let introductoryPhase : ClosedRange<Double> = 0...0.2
+        let midGamePhase      : ClosedRange<Double> = 0.2...0.75
+            let upperMidPhase : ClosedRange<Double> = 0.55...075
+        let closingPhase      : ClosedRange<Double> = 0.75...1
         
         var instructionLeniency : Double = 0
         if ( introductoryPhase.contains(successCount / winningLimit) ) {

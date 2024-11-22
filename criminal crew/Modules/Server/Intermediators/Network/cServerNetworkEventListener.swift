@@ -53,6 +53,10 @@ public class ServerNetworkEventListener : GPNetworkListener {
             if !emit(parsedData) {
                 debug("\(consoleIdentifier) Did receive a game start request event but not shared via the event router")
             }
+        } else if let parsedData = GameDifficultyUpdateEvent.construct(from: fromData(data: data)!) {
+            if !emit(parsedData) {
+                debug("\(consoleIdentifier) Did receive a game difficulty change event but not shared via the event router")
+            }
         } else {
             debug("\(consoleIdentifier) Did receive data, but could not parse it")
         }

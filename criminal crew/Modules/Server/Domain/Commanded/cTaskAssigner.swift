@@ -32,7 +32,7 @@ extension TaskAssigner {
                       let eventBroadcaster = relay.eventBroadcaster 
                 else { return }
                 
-                guard let playerReport = playerRuntimeContainer.getReportOnPlayer(named: player) else {
+                guard let player = playerRuntimeContainer.players.first(where: { $0.playerAddress.displayName == player }) else {
                     debug("\(consoleIdentifier) Did fail to assign task to \(player): player is not found")
                     return
                 }
@@ -44,7 +44,7 @@ extension TaskAssigner {
                             instruction: instruction.content,
                             displayDuration: instruction.displayDuration
                         ).representedAsData(),
-                        to: [playerReport.address]
+                        to: [player.playerAddress]
                     )
                     debug("\(consoleIdentifier) Did assign instriction \(instruction.id) to \(player)")
                 } catch {
@@ -69,7 +69,7 @@ extension TaskAssigner {
                       let eventBroadcaster = relay.eventBroadcaster 
                 else { return }
                 
-                guard let playerReport = playerRuntimeContainer.getReportOnPlayer(named: player) else {
+                guard let player = playerRuntimeContainer.players.first(where: { $0.playerAddress.displayName == player }) else {
                     debug("\(consoleIdentifier) Did fail to assign task to \(player): player is not found")
                     return
                 }
@@ -80,7 +80,7 @@ extension TaskAssigner {
                             criteriaId: criteria.id,
                             requirements: criteria.requirements
                         ).representedAsData(),
-                        to: [playerReport.address]
+                        to: [player.playerAddress]
                     )
                     debug("\(consoleIdentifier) Did assign \(criteria.id) to \(player)")
                 } catch {

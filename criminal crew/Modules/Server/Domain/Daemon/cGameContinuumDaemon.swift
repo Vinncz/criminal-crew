@@ -72,7 +72,7 @@ extension GameContinuumDaemon {
                                     currentProgression: progression, 
                                     limit: gameRuntimeContainer.penaltiesProgression.limit
                                 ).representedAsData(),
-                                to: playerRuntimeContainer.acquaintancedParties.map { $0.key }
+                                to: playerRuntimeContainer.players.map { $0.playerAddress }
                             )
                         } catch {
                             debug("\(self.consoleIdentifier) Did fail to broadcast game penalty progression update: \(error)")
@@ -116,7 +116,7 @@ extension GameContinuumDaemon {
                         state == .playing
                     }
                     .sink { state in
-                        playerRuntimeContainer.$acquaintancedParties
+                        playerRuntimeContainer.$players
                             .debounce(for: .milliseconds(500), scheduler: RunLoop.main)
                             .sink { acquaintancedParties in
                             if acquaintancedParties.count < 2 {
@@ -125,7 +125,7 @@ extension GameContinuumDaemon {
                                         GPGameEndedEvent (
                                             effectiveOn: Date.now
                                         ).representedAsData(),
-                                        to: playerRuntimeContainer.acquaintancedParties.map { $0.key }
+                                        to: playerRuntimeContainer.players.map { $0.playerAddress }
                                     )
                                 } catch {
                                     debug("\(self.consoleIdentifier) Did fail to broadcast game ended event: \(error)")
@@ -174,7 +174,7 @@ extension GameContinuumDaemon {
                                         currentProgression: progression,
                                         limit: gameRuntimeContainer.tasksProgression.limit
                                     ).representedAsData(),
-                                    to: playerRuntimeContainer.acquaintancedParties.map { $0.key }
+                                    to: playerRuntimeContainer.players.map { $0.playerAddress }
                                 )
                             } catch {
                                 debug("\(self.consoleIdentifier) Did fail to broadcast game ended event: \(error)")
@@ -221,7 +221,7 @@ extension GameContinuumDaemon {
                                         currentProgression: progression,
                                         limit: gameRuntimeContainer.penaltiesProgression.limit
                                     ).representedAsData(),
-                                    to: playerRuntimeContainer.acquaintancedParties.map { $0.key }
+                                    to: playerRuntimeContainer.players.map { $0.playerAddress }
                                 )
                             } catch {
                                 debug("\(self.consoleIdentifier) Did fail to broadcast game ended event: \(error)")
