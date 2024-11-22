@@ -186,7 +186,7 @@ extension HostSignalResponder {
         }
         
         // - Check if the player had already joined or did have joined
-        if let requestor = playerRuntimeContainer.players.first(where: { $0.playerAddress.displayName == event.signingKey }) {
+        if let requestor = playerRuntimeContainer.players.first(where: { $0.playerAddress.displayName == event.subjectName }) {
             Logger.server.error("\(self.consoleIdentifier) Player is in the game, ignoring their request..")
             return
         }

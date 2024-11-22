@@ -217,6 +217,29 @@ extension SwitchGameViewController {
         if let panelRuntimeContainer = relay.panelRuntimeContainer {
             bindInstruction(to: panelRuntimeContainer)
             bindPenaltyProgression(panelRuntimeContainer)
+            let panelPlayed = panelRuntimeContainer.panelPlayed
+            switch panelPlayed {
+                case is ClientSwitchesPanel:
+                    updateBackgroundImage("background_module_switches")
+                    break
+                case is ClientCardPanel:
+                    updateBackgroundImage("background_module_card")
+                    break
+                case is ClientKnobPanel:
+                    updateBackgroundImage("background_module_slider")
+                    break
+                case is ClientClockPanel:
+                    updateBackgroundImage("background_module_clock")
+                    break
+                case is ClientWiresPanel:
+                    updateBackgroundImage("background_module_cable")
+                    break
+                case is ClientColorPanel:
+                    updateBackgroundImage("background_module_color")
+                    break
+                default:
+                    print("\(consoleIdentifier) Did fail to update background image. Unsupported panel type: \(String(describing: panelPlayed))")
+            }
         }
         return self
     }

@@ -50,6 +50,8 @@ extension GameLoseViewController {
         
         bMainMenu.addTarget(self, action: #selector(backToMainMenu), for: .touchUpInside)
         bRestart.addTarget(self, action: #selector(restartGame), for: .touchUpInside)
+        // TODO: unHidden when the logic for restart game complete
+        bRestart.isHidden = true
         buttonStack.addArrangedSubview(bMainMenu)
         buttonStack.addArrangedSubview(bRestart)
         

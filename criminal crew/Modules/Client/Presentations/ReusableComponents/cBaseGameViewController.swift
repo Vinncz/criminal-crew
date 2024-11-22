@@ -25,6 +25,7 @@ open class BaseGameViewController: UIViewController, GameContentProvider {
     private let firstPanelView = UIView()
     private let secondPanelView = UIView()
     private let promptView = UIView()
+    private let backgroundView = UIImageView()
     private let loseIndicatorView: LoseIndicatorView = LoseIndicatorView()
     
     public let mainStackView: UIStackView = UIStackView()
@@ -60,7 +61,19 @@ open class BaseGameViewController: UIViewController, GameContentProvider {
     }
     
     private func setupView() {
-        view.backgroundColor = .systemBackground
+        view.backgroundColor = .clear
+        
+        backgroundView.contentMode = .scaleToFill
+        backgroundView.translatesAutoresizingMaskIntoConstraints = false
+        view.addSubview(backgroundView)
+        
+        NSLayoutConstraint.activate([
+            backgroundView.topAnchor.constraint(equalTo: view.topAnchor),
+            backgroundView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            backgroundView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+            backgroundView.bottomAnchor.constraint(equalTo: view.bottomAnchor)
+        ])
+        
         loseIndicatorView.translatesAutoresizingMaskIntoConstraints = false
         loseIndicatorView.isUserInteractionEnabled = false
         
@@ -180,6 +193,11 @@ open class BaseGameViewController: UIViewController, GameContentProvider {
     
     public func completeTaskIndicator() {
         loseIndicatorView.flashTaskCompletion()
+    }
+    
+    public func updateBackgroundImage(_ imageName: String) {
+        let image = UIImage(named: imageName)
+        backgroundView.image = image
     }
     
 }

@@ -131,7 +131,8 @@ extension ClientComposer {
             router.openChannel(for:HasBeenAssignedCriteria.self),
             
             router.openChannel(for:InstructionDidGetDismissed.self),
-            router.openChannel(for:CriteriaDidGetDismissed.self)
+            router.openChannel(for:CriteriaDidGetDismissed.self),
+            router.openChannel(for:GameDifficultyUpdateEvent.self)
         else {
             debug("[C] Did fail to open all required channels for EventRouter")
             return
@@ -159,6 +160,7 @@ extension ClientComposer {
         evtUC_serverSignalResponder.placeSubscription(on: TaskProgressionDidReachLimitEvent.self)
         
         evtUC_serverSignalResponder.placeSubscription(on: ConnectedPlayersNamesResponse.self)
+        evtUC_serverSignalResponder.placeSubscription(on: GameDifficultyUpdateEvent.self)
         
         debug("[C] Placed subscription of ServerSignalResponder to GPAcquaintanceStatusUpdateEvent, HasBeenAssignedHost, HasBeenAssignedPanel, HasBeenAssignedTask, PenaltyDidReachLimitEvent, TaskDidReachLimitEvent, ConnectedPlayerNamesResponse")
     }

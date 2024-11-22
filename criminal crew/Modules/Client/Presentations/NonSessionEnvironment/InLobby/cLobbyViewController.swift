@@ -13,6 +13,7 @@ public class LobbyViewController : UIViewController {
     
     private let refreshNames : Int = 0
     private let settingsButtonId : Int = 1
+    private let kickButtonId : Int = 2
     private let backButtonId : Int = 3
     private let startGameButtonId: Int = 4
     
@@ -106,16 +107,18 @@ extension LobbyViewController {
             leftStackView.widthAnchor.constraint(equalTo: subMainStackView.widthAnchor, multiplier: 0.6),
             leftStackView.heightAnchor.constraint(equalTo: subMainStackView.heightAnchor),
             rightStackView.widthAnchor.constraint(equalTo: subMainStackView.widthAnchor, multiplier: 0.4),
-            rightStackView.heightAnchor.constraint(equalTo: subMainStackView.heightAnchor, multiplier: 0.85)
+            rightStackView.heightAnchor.constraint(equalTo: subMainStackView.heightAnchor, multiplier: 0.92)
         ])
         
         enableUpdateJobForConnectedNames()
         enablePushToGameViewJob()
         enableUpdateJobForConnection()
+        subscribeToDifficultyForNonHost()
         
         lMyName.text = (lMyName.text ?? "") + "\(relay?.selfSignalCommandCenter?.whoAmI() ?? "Unknown")"
         
         setupStartGameButton()
+        setupButtonStackView()
         
         let lightEffect = LightEffectRadialCenter(frame: view.bounds)
         lightEffect.center = view.center
@@ -143,12 +146,24 @@ extension LobbyViewController {
     }
     
     private func setupPlayerCardStack(_ leftStackView: UIStackView) {
+        guard
+            let relay = relay,
+            let gameRuntimeContainer = relay.gameRuntimeContainer
+        else {
+            Logger.client.error("\(self.consoleIdentifier) game Run time container is not available")
+            return
+        }
         let angles: [CGFloat] = [9.14, -34.31, 11.02, -2.28, 8.04, 23.15]
         for rowIndex in 0..<2 {
             let rowStackView = UIStackView()
             rowStackView.axis = .horizontal
             for columnIndex in 0..<maxPlayers / 2 {
-                let card = PLayerCardView(angle: angles[rowIndex * 2 + columnIndex])
+                let card = PLayerCardView(angle: angles[rowIndex * 2 + columnIndex], kickButtonId: kickButtonId)
+                if gameRuntimeContainer.isHost {
+                    card.kickButton.addTarget(self, action: #selector(kickButtonTapped), for: .touchUpInside)
+                } else {
+                    card.kickButton.isHidden = true
+                }
                 card.translatesAutoresizingMaskIntoConstraints = false
                 playerCards.append(card)
                 rowStackView.addArrangedSubview(card)
@@ -166,19 +181,25 @@ extension LobbyViewController {
         let rightStackView = UIStackView()
         rightStackView.axis = .vertical
         rightStackView.spacing = 8
-        rightStackView.alignment = .trailing
-        
-        let buttonStackView = setupButtonStackView()
+        rightStackView.alignment = .fill
         
         roomNameView = RoomNameView(roomName: relay?.gameRuntimeContainer?.playedRoomName ?? "Unnamed Room")
         
-        rightStackView.addArrangedSubview(buttonStackView)
+        let spacer = UIView()
+        spacer.translatesAutoresizingMaskIntoConstraints = false
+        let biggerspacer = UIView()
+        biggerspacer.translatesAutoresizingMaskIntoConstraints = false
+        
+        rightStackView.addArrangedSubview(biggerspacer)
         rightStackView.addArrangedSubview(roomNameView)
+        rightStackView.addArrangedSubview(spacer)
         rightStackView.addArrangedSubview(difficultyButton)
         
         roomNameView.translatesAutoresizingMaskIntoConstraints = false
         NSLayoutConstraint.activate([
-            roomNameView.heightAnchor.constraint(equalTo: rightStackView.heightAnchor, multiplier: 0.25)
+            roomNameView.heightAnchor.constraint(equalTo: rightStackView.heightAnchor, multiplier: 0.25),
+            spacer.heightAnchor.constraint(equalToConstant: 16),
+            biggerspacer.heightAnchor.constraint(equalToConstant: 32),
         ])
         
         guard
@@ -219,10 +240,11 @@ extension LobbyViewController {
         return backButtonStackView
     }
     
-    private func setupButtonStackView() -> UIStackView {
+    private func setupButtonStackView() {
         let buttonStackView = UIStackView()
         buttonStackView.axis = .horizontal
         buttonStackView.spacing = 8
+        buttonStackView.translatesAutoresizingMaskIntoConstraints = false
         
         bRefreshPlayerNames.addTarget(self, action: #selector(refreshConnectedPlayersFromServer), for: .touchUpInside)
         bSettings.addTarget(self, action: #selector(cueToNavigate(sender:)), for: .touchUpInside)
@@ -237,7 +259,11 @@ extension LobbyViewController {
         buttonStackView.addArrangedSubview(bRefreshPlayerNames)
         buttonStackView.addArrangedSubview(bSettings)
         
-        return buttonStackView
+        view.addSubview(buttonStackView)
+        NSLayoutConstraint.activate([
+            buttonStackView.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor),
+            buttonStackView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor)
+        ])
     }
     
     private func setupStartGameButton() {
@@ -383,6 +409,29 @@ extension LobbyViewController {
             }.store(in: &subscriptions)
     }
     
+    private func subscribeToDifficultyForNonHost() {
+        guard let relay else {
+            Logger.client.error("\(self.consoleIdentifier) Did fail to set up actions for list of connected players. Relay is missing or not set")
+            return
+        }
+        
+        guard let gameRuntimeContainer = relay.gameRuntimeContainer else {
+            Logger.client.error("\(self.consoleIdentifier) Did fail to enable connection status update job. Game Runtime Container is missing or not set")
+            return
+        }
+        
+        if !gameRuntimeContainer.isHost {
+            gameRuntimeContainer.$difficulty
+                .debounce(for: .milliseconds(200), scheduler: RunLoop.main)
+                .receive(on: DispatchQueue.main)
+                .sink { [weak self] difficulty in
+                    print("update difficulty broh: \(difficulty)")
+                    self?.difficultyButton.updateDifficultyIndex(to: difficulty ?? 0)
+                }.store(in: &subscriptions)
+            
+        }
+    }
+    
 }
 
 extension LobbyViewController {
@@ -396,7 +445,13 @@ extension LobbyViewController {
         
         switch ( sender.tag ) {
             case settingsButtonId:
-                print("setting button pressed")
+                let settingPage = SettingGameViewController()
+                settingPage.relay = SettingGameViewController.Relay (
+                    dismiss: {
+                        self.relay?.dismiss()
+                    }
+                )
+                relay.navigate(settingPage)
                 break
             
             case backButtonId:
@@ -412,6 +467,22 @@ extension LobbyViewController {
 
 
 extension LobbyViewController {
+    
+    @objc private func kickButtonTapped(_ sender: UIButton) {
+        AudioManager.shared.playSoundEffect(fileName: "big_button_on_off")
+        let playerName = sender.accessibilityLabel
+        guard
+            let relay = relay,
+            let selfSignalCommandCenter = relay.selfSignalCommandCenter
+        else {
+            debug("\(consoleIdentifier) filed to kick player. Relay is missing or not set")
+            return
+        }
+        let isSuccess = selfSignalCommandCenter.kickPlayer(named: playerName ?? "")
+        if isSuccess {
+            HapticManager.shared.triggerNotificationFeedback(type: .success)
+        }
+    }
     
     @objc private func startGameButtonPressed(_ sender: UIButton) {
         AudioManager.shared.playSoundEffect(fileName: "big_button_on_off")

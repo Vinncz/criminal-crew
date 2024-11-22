@@ -1,5 +1,6 @@
 import Combine
 import UIKit
+import os
 
 public class RoomBrowserPageViewController : UIViewController {
     
@@ -270,6 +271,17 @@ extension RoomBrowserPageViewController : UITableViewDelegate, UITableViewDataSo
         
         let selectedServer = serverBrowser.discoveredServers[indexPath.row]
         _ = selfSignalCommandCenter.sendJoinRequest(to: selectedServer.serverId)
+        guard let cell = tableView.cellForRow(at: indexPath) as? RoomCell else {
+            debug("\(consoleIdentifier) Could not retrieve RoomCell for indexPath: \(indexPath)")
+            return
+        }
+        let roomName = cell.roomName
+        guard let gameRuntimeContainer = relay.gameRuntimeContainer
+        else {
+            Logger.client.error("\(self.consoleIdentifier) failed to handle didSelectRowAt: gameRuntimeContainer is missing")
+            return
+        }
+        gameRuntimeContainer.playedRoomName = roomName
         _ = selfSignalCommandCenter.stopBrowsingForServers()
         
         let lobbyViewController = LobbyViewController()

@@ -70,11 +70,13 @@ public class LandingPageViewController : UIViewController, UsesDependenciesInjec
     }
     
     @objc private func keyboardWillShow(notification: Notification) {
-        if !playerTextField.isFirstResponder {
-            playerTextField.becomeFirstResponder()
-        }
-        textFieldCenterXConstraint?.isActive = true
+        guard let keyboardFrame = notification.userInfo?[UIResponder.keyboardFrameEndUserInfoKey] as? CGRect
+        else { return }
+
+        let keyboardHeight = keyboardFrame.height
+        textFieldCenterYConstraint = playerTextField.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: -keyboardHeight - 10)
         textFieldCenterYConstraint?.isActive = true
+        textFieldCenterXConstraint?.isActive = true
 
         UIView.animate(withDuration: 0.3) {
             self.view.layoutIfNeeded()
@@ -140,7 +142,6 @@ extension LandingPageViewController {
         ])
         
         textFieldCenterXConstraint = playerTextField.centerXAnchor.constraint(equalTo: view.centerXAnchor)
-        textFieldCenterYConstraint = playerTextField.centerYAnchor.constraint(equalTo: view.centerYAnchor)
         
         view.addSubview(topRightCornerStack)
         topRightCornerStack.translatesAutoresizingMaskIntoConstraints = false

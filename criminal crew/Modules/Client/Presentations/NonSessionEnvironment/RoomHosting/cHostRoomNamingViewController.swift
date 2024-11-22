@@ -13,6 +13,9 @@ public class HostRoomNamingViewController : UIViewController, UsesDependenciesIn
     private let backButtonId = 1
     private let settingsButtonId = 2
     
+    var textFieldCenterXConstraint: NSLayoutConstraint?
+    var textFieldCenterYConstraint: NSLayoutConstraint?
+    
     public var relay: Relay?
     public struct Relay : CommunicationPortal {
         weak var selfSignalCommandCenter : SelfSignalCommandCenter?
@@ -34,6 +37,20 @@ public class HostRoomNamingViewController : UIViewController, UsesDependenciesIn
         self.bBackButton = ButtonWithImage(imageName: "back_button_default", tag: backButtonId)
         self.bSettings    = ButtonWithImage(imageName: "setting_button_default", tag: settingsButtonId)
         super.init(nibName: nibNameOrNil, bundle: nibBundleOrNil)
+        
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(keyboardWillShow(notification:)),
+            name: UIResponder.keyboardWillShowNotification,
+            object: nil
+        )
+
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(keyboardWillHide(notification:)),
+            name: UIResponder.keyboardWillHideNotification,
+            object: nil
+        )
     }
     
     required init? ( coder: NSCoder ) {
@@ -41,6 +58,12 @@ public class HostRoomNamingViewController : UIViewController, UsesDependenciesIn
     }
     
     private let consoleIdentifier : String = "[C-HRN-VC]"
+    
+    deinit {
+        NotificationCenter.default.removeObserver(self, name: UIResponder.keyboardWillShowNotification, object: nil)
+        NotificationCenter.default.removeObserver(self, name: UIResponder.keyboardWillHideNotification, object: nil)
+
+    }
     
 }
 
@@ -217,6 +240,30 @@ extension HostRoomNamingViewController {
                 relay.navigate?(lobby)
         }
         
+    }
+    
+    @objc private func keyboardWillShow(notification: Notification) {
+        guard let keyboardFrame = notification.userInfo?[UIResponder.keyboardFrameEndUserInfoKey] as? CGRect
+        else { return }
+        
+        textFieldCenterXConstraint = tRoomName.centerXAnchor.constraint(equalTo: view.centerXAnchor)
+        let keyboardHeight = keyboardFrame.height
+        textFieldCenterYConstraint = tRoomName.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: -keyboardHeight - 10)
+        textFieldCenterYConstraint?.isActive = true
+        textFieldCenterXConstraint?.isActive = true
+
+        UIView.animate(withDuration: 0.3) {
+            self.view.layoutIfNeeded()
+        }
+    }
+
+    @objc private func keyboardWillHide(notification: Notification) {
+        textFieldCenterXConstraint?.isActive = false
+        textFieldCenterYConstraint?.isActive = false
+
+        UIView.animate(withDuration: 0.3) {
+            self.view.layoutIfNeeded()
+        }
     }
     
 }
