@@ -4,13 +4,20 @@ internal class HapticManager {
     
     internal static let shared = HapticManager()
     
-    private let notificationGenerator = UINotificationFeedbackGenerator()
-    private let impactGenerator = UIImpactFeedbackGenerator(style: .medium)
-    private let selectionGenerator = UISelectionFeedbackGenerator()
+    private var notificationGenerator = UINotificationFeedbackGenerator()
+    private var impactGenerator = UIImpactFeedbackGenerator(style: .medium)
+    private var selectionGenerator = UISelectionFeedbackGenerator()
     private var isHapticEnabled = true
+    
+    internal var hapticIsOn: Bool
     
     private init() {
         /// Prevent external instantiation
+        if UserDefaults.standard.object(forKey: "criminal_crew_Haptic") != nil {
+            hapticIsOn = UserDefaults.standard.bool(forKey: "criminal_crew_Haptic")
+        } else {
+            hapticIsOn = true
+        }
         notificationGenerator.prepare()
         impactGenerator.prepare()
         selectionGenerator.prepare()
@@ -35,18 +42,19 @@ internal class HapticManager {
     }
     
     internal func triggerNotificationFeedback(type: UINotificationFeedbackGenerator.FeedbackType) {
-        guard isHapticEnabled else { return }
+        guard isHapticEnabled, hapticIsOn else { return }
         notificationGenerator.notificationOccurred(type)
     }
     
     internal func triggerImpactFeedback(style: UIImpactFeedbackGenerator.FeedbackStyle = .medium) {
-        guard isHapticEnabled else { return }
-        let generator = UIImpactFeedbackGenerator(style: style)
-        generator.impactOccurred()
+        guard isHapticEnabled, hapticIsOn else { return }
+        impactGenerator = UIImpactFeedbackGenerator(style: style)
+        impactGenerator.impactOccurred()
+        print("haptic geter")
     }
     
     internal func triggerSelectionFeedback() {
-        guard isHapticEnabled else { return }
+        guard isHapticEnabled, hapticIsOn else { return }
         selectionGenerator.selectionChanged()
     }
     

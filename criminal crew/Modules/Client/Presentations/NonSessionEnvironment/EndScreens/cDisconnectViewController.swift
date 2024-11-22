@@ -26,6 +26,7 @@ public class DisconnectViewController : UIViewController, UsesDependenciesInject
     }
     
     @objc public func backToMainMenu ( _ sender: UIButton ) {
+        AudioManager.shared.playSoundEffect(fileName: "big_button_on_off")
         relay?.navController?.popToRootViewController(animated: true)
     }
     

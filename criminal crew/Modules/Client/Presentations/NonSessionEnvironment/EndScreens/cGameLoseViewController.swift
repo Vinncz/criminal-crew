@@ -28,6 +28,7 @@ public class GameLoseViewController : UIViewController, UsesDependenciesInjector
     }
     
     @objc public func backToMainMenu ( _ sender: UIButton ) {
+        AudioManager.shared.playSoundEffect(fileName: "big_button_on_off")
         relay?.navController?.popToRootViewController(animated: true)
     }
     
@@ -86,6 +87,8 @@ extension GameLoseViewController {
             buttonStack.widthAnchor.constraint(equalTo: view.widthAnchor, multiplier: 0.5),
             buttonStack.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -16)
         ])
+        
+        HapticManager.shared.triggerImpactFeedback(style: .heavy)
     }
     
 }

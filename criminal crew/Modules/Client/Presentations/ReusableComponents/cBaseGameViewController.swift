@@ -50,13 +50,12 @@ open class BaseGameViewController: UIViewController, GameContentProvider {
         super.viewDidLoad()
         setupView()
         setupGameContent()
-        AudioManager.shared.playBackgroundMusic(fileName: "background_music1")
     }
     
     override open func viewDidDisappear(_ animated: Bool) {
         super.viewDidDisappear(animated)
         AudioManager.shared.stopBackgroundMusic()
-        AudioManager.shared.stopSoundEffects()
+        AudioManager.shared.stopAllSoundEffects()
     }
     
     private func setupView() {

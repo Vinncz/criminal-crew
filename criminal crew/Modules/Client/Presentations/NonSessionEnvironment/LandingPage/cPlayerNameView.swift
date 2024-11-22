@@ -15,7 +15,7 @@ internal class PlayerNameView: UITextField {
     }
     
     private func setupTextField() {
-        placeholder = "your username here"
+        placeholder = "enter name here"
         text = username
         textAlignment = .left
         font = UIFont(name: "RobotoMono-Medium", size: 14)
@@ -38,7 +38,7 @@ internal class PlayerNameView: UITextField {
             backgroundTextField.bottomAnchor.constraint(equalTo: bottomAnchor)
         ])
         
-        let paddingView = UIView(frame: CGRect(x: 0, y: 0, width: 10, height: 40))
+        let paddingView = UIView(frame: CGRect(x: 0, y: 0, width: 16, height: 40))
         leftView = paddingView
         leftViewMode = .always
         rightView = paddingView

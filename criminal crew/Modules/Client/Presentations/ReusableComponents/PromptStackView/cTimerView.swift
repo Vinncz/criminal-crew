@@ -70,11 +70,20 @@ internal class TimerView: UIView {
         animation.delegate = self
 
         timerLayer.add(animation, forKey: "timerAnimation")
+        
+        if duration > 10 {
+            DispatchQueue.main.asyncAfter(deadline: .now() + (duration - 10)) {
+                AudioManager.shared.playTimerMusic()
+            }
+        } else if duration <= 10 {
+            AudioManager.shared.playTimerMusic()
+        }
     }
     
     internal func resetTimerAndAnimation() {
         timerLayer.removeAnimation(forKey: "timerAnimation")
         timerLayer.strokeEnd = 1
+        AudioManager.shared.stopTimerMusic()
     }
     
     internal func restartTimer(duration: TimeInterval) {

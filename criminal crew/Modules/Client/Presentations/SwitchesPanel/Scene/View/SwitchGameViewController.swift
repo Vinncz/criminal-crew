@@ -176,10 +176,10 @@ internal class SwitchGameViewController: BaseGameViewController {
 extension SwitchGameViewController: ButtonTappedDelegate {
     
     internal func buttonTapped(sender: UIButton) {
+        HapticManager.shared.triggerImpactFeedback(style: .medium)
         if let sender = sender as? LeverButton {
             if let label = sender.accessibilityLabel {
                 didPressedButton.send(label)
-                AudioManager.shared.playSoundEffect(fileName: "turn_lever")
             }
             
             if let indicator = leverView?.leverIndicatorView.first(where: { $0.bulbColor == sender.leverColor }) {
@@ -187,12 +187,23 @@ extension SwitchGameViewController: ButtonTappedDelegate {
             }
             
             sender.toggleButtonState()
+            if sender.buttonState == .on {
+                AudioManager.shared.playSoundEffect(fileName: "lever_down")
+                AudioManager.shared.playIndicatorMusic(fileName: "light_bulb_on")
+            } else {
+                AudioManager.shared.playSoundEffect(fileName: "lever_up")
+                AudioManager.shared.playIndicatorMusic(fileName: "light_bulb_off")
+            }
         } else if let sender = sender as? SwitchButton {
             if let label = sender.accessibilityLabel {
                 didPressedButton.send(label)
-                AudioManager.shared.playSoundEffect(fileName: "turn_switch")
             }
             sender.toggleButtonState()
+            if sender.buttonState == .on {
+                AudioManager.shared.playSoundEffect(fileName: "switch_down")
+            } else {
+                AudioManager.shared.playSoundEffect(fileName: "switch_up")
+            }
         }
         
     }
