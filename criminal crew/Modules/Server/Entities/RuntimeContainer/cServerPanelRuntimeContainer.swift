@@ -33,9 +33,9 @@ extension ServerPanelRuntimeContainer {
     
     public static let availablePanelTypes : [ServerGamePanel.Type] = [
         ServerWiresPanel.self,
-        ServerClockPanel.self,
-        ServerSwitchesPanel.self,
-        ServerCardPanel.self,
+//        ServerClockPanel.self,
+//        ServerSwitchesPanel.self,
+//        ServerCardPanel.self,
     ]
     
 }
