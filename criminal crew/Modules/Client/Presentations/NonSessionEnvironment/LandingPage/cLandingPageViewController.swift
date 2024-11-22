@@ -150,6 +150,7 @@ extension LandingPageViewController {
         ])
         
         setupBackground()
+        AudioManager.shared.playBackgroundMusic(fileName: "bgm_lobby")
     }
     
     private func addTargetButton() {
@@ -230,6 +231,10 @@ extension LandingPageViewController {
         self.relay?.eventBroadcaster?.reset()
         self.relay?.serverBrowser?.reset()
         self.relay?.resetServer()
+    }
+    
+    override public func viewDidDisappear(_ animated: Bool) {
+        AudioManager.shared.stopBackgroundMusic()
     }
     
 }

@@ -101,10 +101,12 @@ extension RoomBrowserPageViewController {
         
         _ = self.relay?.selfSignalCommandCenter?.startBrowsingForServers()
         enableUpdateJobForDiscoveredServers()
+        AudioManager.shared.playBackgroundMusic(fileName: "bgm_lobby")
     }
     
     override public func viewDidDisappear ( _ animated: Bool ) {
         super.viewDidDisappear(animated)
+        AudioManager.shared.stopBackgroundMusic()
         subscriptions.forEach { $0.cancel() }
     }
     

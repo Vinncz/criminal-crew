@@ -118,10 +118,12 @@ extension LobbyViewController {
         let lightEffect = LightEffectRadialCenter(frame: view.bounds)
         lightEffect.center = view.center
         view.addSubview(lightEffect)
+        AudioManager.shared.playBackgroundMusic(fileName: "bgm_lobby")
     }
     
     override public func viewDidDisappear ( _ animated: Bool ) {
         super.viewDidDisappear(animated)
+        AudioManager.shared.stopBackgroundMusic()
         subscriptions.forEach { $0.cancel() }
     }
     

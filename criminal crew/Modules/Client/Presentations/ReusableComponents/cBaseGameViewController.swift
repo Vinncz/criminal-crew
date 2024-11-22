@@ -50,6 +50,7 @@ open class BaseGameViewController: UIViewController, GameContentProvider {
         super.viewDidLoad()
         setupView()
         setupGameContent()
+        AudioManager.shared.playBackgroundMusic(fileName: "bgm")
     }
     
     override open func viewDidDisappear(_ animated: Bool) {

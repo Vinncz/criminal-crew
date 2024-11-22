@@ -108,6 +108,7 @@ extension HostRoomNamingViewController {
         
         // YOU DIDN'T OPEN YOUR EARS. HOW CAN YOU REACT TO SOMETHING IF YOU'RE DEAF?!
         _ = self.relay?.selfSignalCommandCenter?.startBrowsingForServers()
+        AudioManager.shared.playBackgroundMusic(fileName: "bgm_lobby")
     }
     
     private func setupBackButton() {
@@ -134,6 +135,10 @@ extension HostRoomNamingViewController {
             bSettings.widthAnchor.constraint(equalToConstant: 45.0),
             bSettings.heightAnchor.constraint(equalToConstant: 45.0)
         ])
+    }
+    
+    public override func viewDidDisappear(_ animated: Bool) {
+        AudioManager.shared.stopBackgroundMusic()
     }
     
 }
