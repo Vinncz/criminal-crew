@@ -143,10 +143,10 @@ extension CableGameViewController {
         CableManager.shared.cableYellowStart.image = UIImage(named: "client.panels.cables-panel.yellow-cable-vertical")
         CableManager.shared.cableGreenStart.image = UIImage(named: "client.panels.cables-panel.green-cable-vertical")
         
-        CableManager.shared.cableRedEnd.image = UIImage(named: "client.panels.cables-panel.red-cable-vertical")
-        CableManager.shared.cableBlueEnd.image = UIImage(named: "client.panels.cables-panel.blue-cable-vertical")
-        CableManager.shared.cableYellowEnd.image = UIImage(named: "client.panels.cables-panel.yellow-cable-vertical")
-        CableManager.shared.cableGreenEnd.image = UIImage(named: "client.panels.cables-panel.green-cable-vertical")
+        CableManager.shared.cableRedEnd.image = UIImage(named: "client.panels.cables-panel.red-cable-port")
+        CableManager.shared.cableBlueEnd.image = UIImage(named: "client.panels.cables-panel.blue-cable-port")
+        CableManager.shared.cableYellowEnd.image = UIImage(named: "client.panels.cables-panel.yellow-cable-port")
+        CableManager.shared.cableGreenEnd.image = UIImage(named: "client.panels.cables-panel.green-cable-port")
         
         CableManager.shared.cableRedHead.image = UIImage(named: "client.panels.cables-panel.cable-head.vertical")
         CableManager.shared.cableBlueHead.image = UIImage(named: "client.panels.cables-panel.cable-head.vertical")
@@ -290,8 +290,6 @@ extension CableGameViewController {
                 cableHead.widthAnchor.constraint(equalToConstant: 40),
                 cableHead.heightAnchor.constraint(equalToConstant: 40),
             ])
-            
-            endPoint.transform = CGAffineTransform(rotationAngle: .pi)
         }
     }
     
@@ -717,17 +715,13 @@ extension CableGameViewController {
         if let nearestEndPoint = findNearestEndPoint(to: tappedCableHeadView){
             switch nearestEndPoint {
             case CableManager.shared.cableGreenEnd:
-                nearestEndPoint.image = UIImage(named: "client.panels.cables-panel.green-cable-vertical")
-                nearestEndPoint.transform = CGAffineTransform(rotationAngle: .pi)
+                nearestEndPoint.image = UIImage(named: "client.panels.cables-panel.green-cable-port")
             case CableManager.shared.cableRedEnd:
-                nearestEndPoint.image = UIImage(named: "client.panels.cables-panel.red-cable-vertical")
-                nearestEndPoint.transform = CGAffineTransform(rotationAngle: .pi)
+                nearestEndPoint.image = UIImage(named: "client.panels.cables-panel.red-cable-port")
             case CableManager.shared.cableBlueEnd:
-                nearestEndPoint.image = UIImage(named: "client.panels.cables-panel.blue-cable-vertical")
-                nearestEndPoint.transform = CGAffineTransform(rotationAngle: .pi)
+                nearestEndPoint.image = UIImage(named: "client.panels.cables-panel.blue-cable-port")
             case CableManager.shared.cableYellowEnd:
-                nearestEndPoint.image = UIImage(named: "client.panels.cables-panel.yellow-cable-vertical")
-                nearestEndPoint.transform = CGAffineTransform(rotationAngle: .pi)
+                nearestEndPoint.image = UIImage(named: "client.panels.cables-panel.yellow-cable-port")
             case CableManager.shared.starEnd:
                 nearestEndPoint.image = UIImage(named: "client.panels.cables-panel.star-peg")
             case CableManager.shared.squareEnd:

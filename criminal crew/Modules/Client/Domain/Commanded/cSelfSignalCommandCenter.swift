@@ -204,7 +204,6 @@ extension SelfSignalCommandCenter {
         return flowIsComplete
     }
     
-    
     /// Leaves the current session, then resets broadcacster, player runtime, game runtime, browser, and panel runtime respectively
     public func disconnectSelf () {
         guard let relay else {
