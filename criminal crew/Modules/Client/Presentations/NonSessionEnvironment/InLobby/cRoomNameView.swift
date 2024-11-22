@@ -28,7 +28,7 @@ internal class RoomNameView: UIStackView {
         roomNameLabel.adjustsFontSizeToFitWidth = true
         roomNameLabel.translatesAutoresizingMaskIntoConstraints = false
         NSLayoutConstraint.activate([
-            roomNameLabel.bottomAnchor.constraint(equalTo: backgroundRoomName.bottomAnchor, constant: -32),
+            roomNameLabel.bottomAnchor.constraint(equalTo: backgroundRoomName.bottomAnchor, constant: -16),
             roomNameLabel.trailingAnchor.constraint(equalTo: backgroundRoomName.trailingAnchor, constant: -64),
             roomNameLabel.leadingAnchor.constraint(equalTo: backgroundRoomName.leadingAnchor, constant: 8),
         ])

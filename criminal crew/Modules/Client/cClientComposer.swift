@@ -206,6 +206,12 @@ extension ClientComposer {
                 },
                 popViewController: { [weak self] in
                     self?.popViewController()
+                },
+                dismiss: { [weak self] in
+                    self?.dismiss()
+                },
+                navigateSwiftUI: { [weak self] to in
+                    self?.navigateSwiftUI(to: to)
                 }
             )
         
@@ -213,11 +219,29 @@ extension ClientComposer {
     }
     
     public func navigate ( to destination: UIViewController ) {
-        self.navigationController.pushViewController(destination, animated: false)
+        if let destination = destination as? SettingGameViewController {
+            destination.modalPresentationStyle = .popover
+            destination.modalTransitionStyle = .crossDissolve
+            self.navigationController.present(destination, animated: true)
+        } else {
+            self.navigationController.pushViewController(destination, animated: false)
+        }
+    }
+    
+    public func navigateSwiftUI<Content: View> ( to destination: Content ) {
+        let hostingController = UIHostingController(rootView: destination)
+            
+        hostingController.modalTransitionStyle = .crossDissolve
+        hostingController.modalPresentationStyle = .popover
+        
+        navigationController.present(hostingController, animated: true, completion: nil)
     }
     
     public func popViewController () {
-        self.navigationController.popViewController(animated: false)
+        navigationController.popViewController(animated: true)
     }
     
+    public func dismiss() {
+        navigationController.dismiss(animated: true)
+    }
 }

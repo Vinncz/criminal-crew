@@ -219,7 +219,9 @@ extension CableGameViewController {
     @objc func handleCableLeverTap(_ sender: UITapGestureRecognizer) {
         let leverImagePulled = UIImage(named: "client.panels.cables-panel.cable-lever-pulled")
         let leverImageDefault = UIImage(named: "client.panels.cables-panel.cable-lever")
-
+        
+        HapticManager.shared.triggerNotificationFeedback(type: .success)
+        
         UIView.transition(with: CableManager.shared.cableLever, duration: 0.2, options: .transitionCrossDissolve, animations: {
             CableManager.shared.cableLever.image = leverImagePulled
         }) { _ in
@@ -633,6 +635,7 @@ extension CableGameViewController {
                 let startPoint = findStartPoint(for: cableHead) {
                 if !isEndPointAlreadyConnected(endPoint: nearestEndPoint) {
                     connectCable(startHead: startPoint, endPoint: nearestEndPoint)
+                    checkConditionAndSendReportIfApplicable()
                 } else {
                     resetCablePosition(cableHead)
                 }
@@ -702,7 +705,9 @@ extension CableGameViewController {
 
         panelEntity.connections.removeAll { $0 == connectedPairing }
         connectedCableHeads.remove(tappedCableHeadView)
-
+        
+        HapticManager.shared.triggerImpactFeedback(style: .light)
+        
         if let startPoint = findStartPoint(for: tappedCableHeadView) {
             resetCableLayer(startPoint)
         }
@@ -955,6 +960,7 @@ extension CableGameViewController {
             cableHead.isUserInteractionEnabled = true
             
             AudioManager.shared.playSoundEffect(fileName: "plugging_cable")
+            HapticManager.shared.triggerImpactFeedback(style: .medium)
 
             switch endPoint {
             case CableManager.shared.cableGreenEnd:

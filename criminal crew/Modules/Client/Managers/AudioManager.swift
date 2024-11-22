@@ -10,9 +10,22 @@ internal class AudioManager {
     private var audioPlayerForIndicator: AVAudioPlayer?
     private var audioPlayerForCorrectWrongIndicator: AVAudioPlayer?
     private var audioPlayerForTimer: AVAudioPlayer?
+    
+    internal var backgroundVolume: Float
+    internal var soundEffectVolume: Float
 
     private init() {
         /// Prevent external instantiation
+        if UserDefaults.standard.object(forKey: "criminal_crew_BG_Music") != nil {
+            backgroundVolume = UserDefaults.standard.float(forKey: "criminal_crew_BG_Music")
+        } else {
+            backgroundVolume = 100.0
+        }
+        if UserDefaults.standard.object(forKey: "criminal_crew_Sound_Effects") != nil {
+            soundEffectVolume = UserDefaults.standard.float(forKey: "criminal_crew_Sound_Effects")
+        } else {
+            soundEffectVolume = 100.0
+        }
         NotificationCenter.default.addObserver(
             self,
             selector: #selector(handleAppDidEnterBackground),
@@ -32,6 +45,7 @@ internal class AudioManager {
         guard let url = Bundle.main.url(forResource: fileName, withExtension: "mp3") else { return }
         do {
             audioPlayerForBackgroundMusic = try AVAudioPlayer(contentsOf: url)
+            audioPlayerForBackgroundMusic?.volume = backgroundVolume / 100
             audioPlayerForBackgroundMusic?.numberOfLoops = -1
             audioPlayerForBackgroundMusic?.play()
         } catch {
@@ -48,6 +62,7 @@ internal class AudioManager {
         guard let url = Bundle.main.url(forResource: fileName, withExtension: "mp3") else { return }
         do {
             audioPlayerForIndicator = try AVAudioPlayer(contentsOf: url)
+            audioPlayerForIndicator?.volume = soundEffectVolume / 100
             audioPlayerForIndicator?.numberOfLoops = 0
             audioPlayerForIndicator?.play()
         } catch {
@@ -59,6 +74,7 @@ internal class AudioManager {
         guard let url = Bundle.main.url(forResource: fileName, withExtension: "mp3") else { return }
         do {
             audioPlayerForSoundEffects = try AVAudioPlayer(contentsOf: url)
+            audioPlayerForIndicator?.volume = soundEffectVolume / 100
             audioPlayerForSoundEffects?.numberOfLoops = 0
             audioPlayerForSoundEffects?.play()
         } catch {
@@ -70,6 +86,7 @@ internal class AudioManager {
         guard let url = Bundle.main.url(forResource: fileName, withExtension: "mp3") else { return }
         do {
             audioPlayerForCorrectWrongIndicator = try AVAudioPlayer(contentsOf: url)
+            audioPlayerForIndicator?.volume = soundEffectVolume / 100
             audioPlayerForCorrectWrongIndicator?.numberOfLoops = 0
             audioPlayerForCorrectWrongIndicator?.play()
         } catch {
@@ -81,6 +98,7 @@ internal class AudioManager {
         guard let url = Bundle.main.url(forResource: "timer", withExtension: "mp3") else { return }
         do {
             audioPlayerForTimer = try AVAudioPlayer(contentsOf: url)
+            audioPlayerForIndicator?.volume = soundEffectVolume / 100
             audioPlayerForTimer?.numberOfLoops = 0
             audioPlayerForTimer?.play()
         } catch {
@@ -91,12 +109,28 @@ internal class AudioManager {
     internal func stopSoundEffects() {
         audioPlayerForSoundEffects?.stop()
         audioPlayerForSoundEffects = nil
+    }
+    
+    internal func stopIndicatorMusic() {
         audioPlayerForIndicator?.stop()
         audioPlayerForIndicator = nil
+    }
+    
+    internal func stopCorrectWrongIndicatorMusic() {
         audioPlayerForCorrectWrongIndicator?.stop()
         audioPlayerForCorrectWrongIndicator = nil
+    }
+    
+    internal func stopTimerMusic() {
         audioPlayerForTimer?.stop()
         audioPlayerForTimer = nil
+    }
+    
+    internal func stopAllSoundEffects() {
+        stopSoundEffects()
+        stopIndicatorMusic()
+        stopCorrectWrongIndicatorMusic()
+        stopTimerMusic()
     }
     
     @objc private func handleAppDidEnterBackground() {
@@ -113,7 +147,7 @@ internal class AudioManager {
 
     deinit {
         stopBackgroundMusic()
-        stopSoundEffects()
+        stopAllSoundEffects()
         NotificationCenter.default.removeObserver(self)
     }
     

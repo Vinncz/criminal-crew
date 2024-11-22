@@ -41,6 +41,8 @@ internal class PLayerCardView: UIView {
             cardView.trailingAnchor.constraint(equalTo: trailingAnchor, constant: 0)
         ])
         
+        cardView.isHidden = true
+        
         cardView.addSubview(playerNameLabel)
         
         playerNameLabel.translatesAutoresizingMaskIntoConstraints = false

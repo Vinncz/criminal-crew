@@ -185,10 +185,17 @@ extension ColorGameViewController: ButtonTappedDelegate {
     
     internal func buttonTapped(sender: UIButton) {
         didPressedButton.send(sender)
-        AudioManager.shared.playSoundEffect(fileName: "pressed_button")
+        HapticManager.shared.triggerImpactFeedback(style: .medium)
         if let sender = sender as? ColorSquareButton {
+            AudioManager.shared.playSoundEffect(fileName: "big_button_on_off")
             sender.toggleButtonState()
+            if sender.buttonState == .on {
+                AudioManager.shared.playSoundEffect(fileName: "light_bulb_on")
+            } else {
+                AudioManager.shared.playSoundEffect(fileName: "light_bulb_off")
+            }
         } else if let sender = sender as? ColorCircleButton {
+            AudioManager.shared.playSoundEffect(fileName: "button_on_off")
             sender.toggleButtonState()
         }
     }

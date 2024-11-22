@@ -1,4 +1,5 @@
 import GamePantry
+import SwiftUI
 import UIKit
 
 public class LandingPageViewController : UIViewController, UsesDependenciesInjector {
@@ -25,6 +26,8 @@ public class LandingPageViewController : UIViewController, UsesDependenciesInjec
              var publicizeRoom           : ( _ advertContent: [String: String] ) -> Void
              var navigate                : ( _ to: UIViewController ) -> Void
              var popViewController       : () -> Void
+             var dismiss                 : () -> Void
+             var navigateSwiftUI          : ( _ to: any View ) -> Void
     }
     
     override init ( nibName nibNameOrNil: String?, bundle nibBundleOrNil: Bundle? ) {
@@ -118,12 +121,6 @@ extension LandingPageViewController {
         
         let topRightCornerStack = setupTopRightStack()
         let botRightCornerStack = setupBotRightStack()
-        view.addSubview(topRightCornerStack)
-        topRightCornerStack.translatesAutoresizingMaskIntoConstraints = false
-        NSLayoutConstraint.activate([
-            topRightCornerStack.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor),
-            topRightCornerStack.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor)
-        ])
         
         rightStack.addArrangedSubview(spacer)
         rightStack.addArrangedSubview(botRightCornerStack)
@@ -145,7 +142,15 @@ extension LandingPageViewController {
         textFieldCenterXConstraint = playerTextField.centerXAnchor.constraint(equalTo: view.centerXAnchor)
         textFieldCenterYConstraint = playerTextField.centerYAnchor.constraint(equalTo: view.centerYAnchor)
         
+        view.addSubview(topRightCornerStack)
+        topRightCornerStack.translatesAutoresizingMaskIntoConstraints = false
+        NSLayoutConstraint.activate([
+            topRightCornerStack.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor),
+            topRightCornerStack.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor)
+        ])
+        
         setupBackground()
+        AudioManager.shared.playBackgroundMusic(fileName: "bgm_lobby")
     }
     
     private func addTargetButton() {
@@ -228,6 +233,10 @@ extension LandingPageViewController {
         self.relay?.resetServer()
     }
     
+    override public func viewDidDisappear(_ animated: Bool) {
+        AudioManager.shared.stopBackgroundMusic()
+    }
+    
 }
 
 extension LandingPageViewController {
@@ -237,6 +246,9 @@ extension LandingPageViewController {
             debug("\(consoleIdentifer) Unable to cue navigation. Relay is missing or not set")
             return
         }
+        
+        AudioManager.shared.playSoundEffect(fileName: "big_button_on_off")
+        HapticManager.shared.triggerImpactFeedback(style: .heavy)
         
         switch ( sender.tag ) {
             case Self.browseRoomButtonId:
@@ -252,6 +264,9 @@ extension LandingPageViewController {
                         },
                         popViewController: {
                             self.relay?.popViewController()
+                        },
+                        dismiss: {
+                            self.relay?.dismiss()
                         }
                     )
                 relay.navigate(serverBrowserPage)
@@ -271,16 +286,31 @@ extension LandingPageViewController {
                     },
                     popViewController: {
                         self.relay?.popViewController()
+                    },
+                    dismiss: {
+                        self.relay?.dismiss()
                     }
                 )
                 relay.navigate(roomNamingPage)
             
             case Self.tutorialButtonId:
-                print("tutorial button pressed")
+                var tutorialPage = TutorialView()
+                tutorialPage.relay = TutorialView.Relay (
+                    dismiss: {
+                        self.relay?.dismiss()
+                    }
+                )
+                relay.navigateSwiftUI(tutorialPage)
                 break
             
             case Self.settingsButtonId:
-                print("setting button pressed")
+                let settingPage = SettingGameViewController()
+                settingPage.relay = SettingGameViewController.Relay (
+                    dismiss: {
+                        self.relay?.dismiss()
+                    }
+                )
+                relay.navigate(settingPage)
                 break
             
             default:
@@ -319,7 +349,7 @@ extension LandingPageViewController: UITextFieldDelegate {
     }
     
     public func textField(_ textField: UITextField, shouldChangeCharactersIn range: NSRange, replacementString string: String) -> Bool {
-        let maxCharacter = 10
+        let maxCharacter = 16
         let currentCharacter = textField.text?.count ?? 0
         let newCharacter = currentCharacter + string.count - range.length
         return newCharacter <= maxCharacter

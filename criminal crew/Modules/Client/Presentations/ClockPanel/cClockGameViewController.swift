@@ -218,13 +218,19 @@ extension ClockGameViewController : ButtonTappedDelegate {
             return
         }
         
-        AudioManager.shared.playSoundEffect(fileName: "turn_switch")
         
         let tappedSymbol = sender.accessibilityLabel ?? ""
         let isOn         = panelEntity.flipSwitch(tappedSymbol)
         
-        let imageName = isOn ? "Switch On" : "Switch Off"
-        sender.setBackgroundImage(UIImage(named: imageName), for: .normal)
+        HapticManager.shared.triggerImpactFeedback(style: .medium)
+        
+        if isOn {
+            AudioManager.shared.playSoundEffect(fileName: "switch_down")
+            sender.setBackgroundImage(UIImage(named: "Switch On"), for: .normal)
+        } else {
+            AudioManager.shared.playSoundEffect(fileName: "switch_up")
+            sender.setBackgroundImage(UIImage(named: "Switch Off"), for: .normal)
+        }
         
         checkSituationAndReportCompletionIfApplicable()
     }
@@ -325,18 +331,21 @@ extension ClockGameViewController {
         if gesture.state == .changed {
             let snappedAngle  = snapToNearestSymbol(angle: angle)
             let nearestSymbol = getNearestSymbolForAngle(angle: snappedAngle)
-
+            
+            HapticManager.shared.triggerImpactFeedback(style: .light)
             setCurrentSymbol(nearestSymbol, for: hand)
         }
 
         if gesture.state == .ended {
             let snappedAngle = snapToNearestSymbol(angle: angle)
+            AudioManager.shared.playSoundEffect(fileName: "clock")
             UIView.animate(withDuration: 0.3) {
                 hand.transform = CGAffineTransform(rotationAngle: snappedAngle - .pi / 2 + .pi)
             }
             let nearestSymbol = getNearestSymbolForAngle(angle: snappedAngle)
 
             setCurrentSymbol(nearestSymbol, for: hand)
+            AudioManager.shared.playSoundEffect(fileName: "clock")
             checkSituationAndReportCompletionIfApplicable()
         }
     }

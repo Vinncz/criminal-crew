@@ -26,6 +26,8 @@ public class CardSwipeViewController: BaseGameViewController {
     
     public var isPanelProcessing: Bool = false
     
+    public var numpadSoundEffect: [String] = ["numpad_1", "numpad_2", "numpad_3"]
+    
     public var relay: Relay?
     public struct Relay: CommunicationPortal {
         weak var panelRuntimeContainer: ClientPanelRuntimeContainer?
@@ -442,8 +444,11 @@ public class CardSwipeViewController: BaseGameViewController {
                     }
                     
                     if swipeGesture == ["left", "right"] {
+                        AudioManager.shared.playSoundEffect(fileName: "card_swipe")
                         cardSwiperPart.image = UIImage(named: "cardSwiperTopPartSuccess")
-
+                        
+                        HapticManager.shared.triggerImpactFeedback(style: .medium)
+                        AudioManager.shared.playCorrectOrWrongMusic(fileName: "card_success")
                         UIView.animate(withDuration: 2, delay: 2, options: [], animations: {
                             
                         }, completion: { _ in
@@ -496,7 +501,10 @@ public class CardSwipeViewController: BaseGameViewController {
                     }
                     
                     if swipeGesture == ["right", "left"] {
+                        AudioManager.shared.playSoundEffect(fileName: "card_swipe")
                         cardSwiperPart.image = UIImage(named: "cardSwiperTopPartFail")
+                        AudioManager.shared.playCorrectOrWrongMusic(fileName: "card_error")
+                        HapticManager.shared.triggerImpactFeedback(style: .heavy)
                         UIView.animate(withDuration: 2, delay: 2, options: [], animations: {}, completion: { _ in
                             UIView.transition(with: self.cardSwiperPart,
                                               duration: 2,
@@ -567,6 +575,14 @@ public class CardSwipeViewController: BaseGameViewController {
         guard let tappedButton = sender.view as? UIImageView else { return }
         guard let label = tappedButton.subviews.first(where: { $0 is UILabel }) as? UILabel else { return }
         
+        HapticManager.shared.triggerImpactFeedback(style: .light)
+        let tappedNumber = label.text ?? ""
+        tappedButton.image = UIImage(named: "buttonOn")
+        
+        let soundEffect = numpadSoundEffect.shuffled().first
+        
+        AudioManager.shared.playSoundEffect(fileName: soundEffect ?? "numpad_1")
+        
         if isPanelProcessing == false {
             let tappedNumber = label.text ?? ""
             let screenWidth = UIScreen.main.bounds.width
@@ -608,6 +624,8 @@ public class CardSwipeViewController: BaseGameViewController {
             return
         }
         
+        AudioManager.shared.playSoundEffect(fileName: "numpad_delete")
+        HapticManager.shared.triggerImpactFeedback(style: .light)
         self.numPadDeleteButton.image = UIImage(named: "Delete Button On")
         panelEntity.backspaceNumberInput()
         
@@ -626,11 +644,14 @@ public class CardSwipeViewController: BaseGameViewController {
             return
         }
         
+        HapticManager.shared.triggerImpactFeedback(style: .light)
         isPanelProcessing = true
         let isSuccessful = checkSituationAndReportCompletionIfApplicable()
         
         if !isSuccessful {
             displayLabel.text = "Err"
+            AudioManager.shared.playIndicatorMusic(fileName: "numpad_error")
+            HapticManager.shared.triggerImpactFeedback(style: .medium)
         } else {
             displayLabel.text = "Ok!"
         }

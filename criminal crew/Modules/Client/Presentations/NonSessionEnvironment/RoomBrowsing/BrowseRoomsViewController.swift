@@ -132,7 +132,7 @@ extension BrowseRoomsViewController: UITableViewDataSource {
         }
         let roomName = roomList[indexPath.row]
         
-        cell.configure(roomName: roomName)
+        cell.configure(roomName: roomName, roomIndex: indexPath.row + 1, roomId: roomName)
         return cell
     }
     

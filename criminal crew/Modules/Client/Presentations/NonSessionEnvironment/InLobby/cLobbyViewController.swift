@@ -9,12 +9,10 @@ public class LobbyViewController : UIViewController {
     let lMyName             : UILabel
     let bRefreshPlayerNames : UIButton
     let bSettings           : UIButton
-    let bTutorial           : UIButton
     let bBackButton         : UIButton
     
     private let refreshNames : Int = 0
     private let settingsButtonId : Int = 1
-    private let tutorialButtonId : Int = 2
     private let backButtonId : Int = 3
     private let startGameButtonId: Int = 4
     
@@ -35,11 +33,11 @@ public class LobbyViewController : UIViewController {
         weak var serverBrowser           : ClientGameBrowser?
              var navigate                : ( _ to: UIViewController ) -> Void
              var popViewController       : () -> Void
+             var dismiss                : () -> Void
     }
     
     override init ( nibName nibNameOrNil: String?, bundle nibBundleOrNil: Bundle? ) {
         self.bSettings    = ButtonWithImage(imageName: "setting_button_default", tag: settingsButtonId)
-        self.bTutorial    = ButtonWithImage(imageName: "tutorial_button_default", tag: tutorialButtonId)
         self.bBackButton = ButtonWithImage(imageName: "back_button_default", tag: backButtonId)
         bBackButton.imageView?.contentMode = .scaleAspectFit
         
@@ -108,7 +106,7 @@ extension LobbyViewController {
             leftStackView.widthAnchor.constraint(equalTo: subMainStackView.widthAnchor, multiplier: 0.6),
             leftStackView.heightAnchor.constraint(equalTo: subMainStackView.heightAnchor),
             rightStackView.widthAnchor.constraint(equalTo: subMainStackView.widthAnchor, multiplier: 0.4),
-            rightStackView.heightAnchor.constraint(equalTo: subMainStackView.heightAnchor)
+            rightStackView.heightAnchor.constraint(equalTo: subMainStackView.heightAnchor, multiplier: 0.85)
         ])
         
         enableUpdateJobForConnectedNames()
@@ -122,10 +120,12 @@ extension LobbyViewController {
         let lightEffect = LightEffectRadialCenter(frame: view.bounds)
         lightEffect.center = view.center
         view.addSubview(lightEffect)
+        AudioManager.shared.playBackgroundMusic(fileName: "bgm_lobby")
     }
     
     override public func viewDidDisappear ( _ animated: Bool ) {
         super.viewDidDisappear(animated)
+        AudioManager.shared.stopBackgroundMusic()
         subscriptions.forEach { $0.cancel() }
     }
     
@@ -178,7 +178,7 @@ extension LobbyViewController {
         
         roomNameView.translatesAutoresizingMaskIntoConstraints = false
         NSLayoutConstraint.activate([
-            roomNameView.heightAnchor.constraint(equalTo: rightStackView.heightAnchor, multiplier: 0.3)
+            roomNameView.heightAnchor.constraint(equalTo: rightStackView.heightAnchor, multiplier: 0.25)
         ])
         
         guard
@@ -225,21 +225,16 @@ extension LobbyViewController {
         buttonStackView.spacing = 8
         
         bRefreshPlayerNames.addTarget(self, action: #selector(refreshConnectedPlayersFromServer), for: .touchUpInside)
-        bTutorial.addTarget(self, action: #selector(cueToNavigate(sender:)), for: .touchUpInside)
         bSettings.addTarget(self, action: #selector(cueToNavigate(sender:)), for: .touchUpInside)
-        bTutorial.translatesAutoresizingMaskIntoConstraints = false
         bSettings.translatesAutoresizingMaskIntoConstraints = false
         NSLayoutConstraint.activate([
             bRefreshPlayerNames.widthAnchor.constraint(equalToConstant: 45),
             bRefreshPlayerNames.heightAnchor.constraint(equalToConstant: 45),
-            bTutorial.widthAnchor.constraint(equalToConstant: 45),
-            bTutorial.heightAnchor.constraint(equalToConstant: 45),
             bSettings.widthAnchor.constraint(equalToConstant: 45),
             bSettings.heightAnchor.constraint(equalToConstant: 45)
         ])
         
         buttonStackView.addArrangedSubview(bRefreshPlayerNames)
-        buttonStackView.addArrangedSubview(bTutorial)
         buttonStackView.addArrangedSubview(bSettings)
         
         return buttonStackView
@@ -260,8 +255,8 @@ extension LobbyViewController {
             startGameButton.addTarget(self, action: #selector(startGameButtonPressed), for: .touchUpInside)
             view.addSubview(startGameButton)
             NSLayoutConstraint.activate([
-                startGameButton.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16),
-                startGameButton.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: -16),
+                startGameButton.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor, constant: -16),
+                startGameButton.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -16),
                 startGameButton.widthAnchor.constraint(equalToConstant: 126.0),
                 startGameButton.heightAnchor.constraint(equalToConstant: 37.0)
             ])
@@ -393,16 +388,13 @@ extension LobbyViewController {
 extension LobbyViewController {
     
     @objc func cueToNavigate ( sender: UIButton ) {
+        AudioManager.shared.playSoundEffect(fileName: "button_on_off")
         guard let relay else {
             Logger.client.error("\(self.consoleIdentifier) Unable to cue navigation. Relay is missing or not set")
             return
         }
         
         switch ( sender.tag ) {
-            case tutorialButtonId:
-                print("tutorial button pressed")
-                break
-            
             case settingsButtonId:
                 print("setting button pressed")
                 break
@@ -422,6 +414,8 @@ extension LobbyViewController {
 extension LobbyViewController {
     
     @objc private func startGameButtonPressed(_ sender: UIButton) {
+        AudioManager.shared.playSoundEffect(fileName: "big_button_on_off")
+        HapticManager.shared.triggerSelectionFeedback()
         guard let relay else {
             Logger.client.error("\(self.consoleIdentifier) Did fail to refresh connected players. Relay is missing or not set")
             return
@@ -443,6 +437,7 @@ extension LobbyViewController {
             return
         }
         
+        AudioManager.shared.playSoundEffect(fileName: "button_on_off")
         guard
             let sender = sender as? DifficultyButton
         else {
@@ -473,8 +468,14 @@ extension LobbyViewController {
         if !selfSignalCommandCenter.orderConnectedPlayerNames () {
             Logger.client.error("\(self.consoleIdentifier) Did fail to refresh connected players.")
         }
-        /// TODO: reload data here
         
+        guard let connectedPlayersNames = relay.playerRuntimeContainer?.connectedPlayersNames
+        else {
+            debug("\(consoleIdentifier) failed to update palyers. ConnectedPlayersNames is missing")
+            return
+        }
+        
+        updateCards(with: connectedPlayersNames)
     }
     
 }
