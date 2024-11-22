@@ -2,6 +2,7 @@ import SwiftUI
 
 struct TutorialView: View {
     @State private var currentIndex = 0
+    @State private var isAnimating = false
     private let tutorialItems = ["tutorial_page1", "tutorial_page2", "tutorial_page3", "tutorial_page4", "tutorial_page5"]
     
     public var relay    : Relay?
@@ -43,13 +44,18 @@ struct TutorialView: View {
                                 defaultImage: "prev_button_default",
                                 pressedImage: "prev_button_pressed",
                                 action: {
+                                    guard !isAnimating else { return }
+                                    isAnimating = true
                                     withAnimation(.easeInOut) {
                                         currentIndex -= 1
+                                    }
+                                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.3){
+                                        isAnimating = false
                                     }
                                 },
                                 isDisabled: false
                             )
-                            .frame(minWidth: 90, minHeight: 90)
+                            .frame(minWidth: 40, minHeight: 40)
                         }
 
                         Spacer()
@@ -59,10 +65,16 @@ struct TutorialView: View {
                                 defaultImage: "next_button_default",
                                 pressedImage: "next_button_pressed",
                                 action: {
+                                    guard !isAnimating else { return }
+                                    isAnimating = true
                                     withAnimation(.easeInOut) {
-                                        currentIndex += 1
+                                        if currentIndex < tutorialItems.count - 1 {
+                                            currentIndex += 1
+                                        } 
+                                }
+                                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                                        isAnimating = false
                                     }
-                                    
                                 },
                                 isDisabled: false
                             )
@@ -159,4 +171,8 @@ struct TutorialCardView: View {
             .scaledToFit()
             .padding()
     }
+}
+
+#Preview{
+    TutorialView()
 }

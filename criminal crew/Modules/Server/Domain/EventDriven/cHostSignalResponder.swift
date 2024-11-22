@@ -50,9 +50,11 @@ extension HostSignalResponder : GPHandlesEvents {
             Logger.server.error("\(self.consoleIdentifier) Did fail to place subscription: eventRouter is missing or not set"); return
         }
         
-        eventRouter.subscribe(to: eventType)?.sink { event in
-            self.handle(event)
-        }.store(in: &subscriptions)
+        eventRouter.subscribe(to: eventType)?
+            .sink { event in
+                self.handle(event)
+            }
+            .store(in: &subscriptions)
     }
     
     private func handle ( _ event: GPEvent ) {
@@ -75,7 +77,7 @@ extension HostSignalResponder : GPHandlesEvents {
                 respondToGameDiffUpdate(event)
                 
             default:
-                Logger.server.error("\(self.consoleIdentifier) Unhandled event: \(String(describing: event))")
+                Logger.server.warning("\(self.consoleIdentifier) Unhandled event: \(String(describing: event))")
                 break
         }
     }
@@ -107,7 +109,7 @@ extension HostSignalResponder {
         
         do {
             try relay.eventBroadcaster?.broadcast(ConnectedPlayersNamesResponse(names: playerNames).representedAsData(), to: [requestor.playerAddress])
-            Logger.server.error("\(self.consoleIdentifier) Responded with names of connected players")
+            Logger.server.info("\(self.consoleIdentifier) Responded with names of connected players")
         } catch {
             Logger.server.error("\(self.consoleIdentifier) Did fail to respond with names of connected players: \(error)")
         }
@@ -142,6 +144,7 @@ extension HostSignalResponder {
                 guard initialTasksHasBeenAssigned() else { return }
                 
                 relay.gameRuntimeContainer?.state = .playing
+                Logger.server.info("\(self.consoleIdentifier) Did start the game")
         }
     }
     
@@ -186,7 +189,7 @@ extension HostSignalResponder {
         }
         
         // - Check if the player had already joined or did have joined
-        if let requestor = playerRuntimeContainer.players.first(where: { $0.playerAddress.displayName == event.signingKey }) {
+        if let requestor = playerRuntimeContainer.players.first(where: { $0.playerAddress.displayName == event.subjectName }) {
             Logger.server.error("\(self.consoleIdentifier) Player is in the game, ignoring their request..")
             return
         }
@@ -228,7 +231,7 @@ extension HostSignalResponder {
                     Logger.server.error("\(self.consoleIdentifier) Did fail to terminate \(event.subject). Host is missing")
                     return
                 }
-                guard let player = playerRuntimeContainer.players.first(where: { $0.playerAddress.displayName == event.signingKey }) else {
+                guard let player = playerRuntimeContainer.players.first(where: { $0.playerAddress.displayName == event.subject }) else {
                     Logger.server.error("\(self.consoleIdentifier) Did fail to terminate \(event.subject). Player is not in the game")
                     return
                 }

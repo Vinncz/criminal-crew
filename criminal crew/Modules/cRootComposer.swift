@@ -59,7 +59,7 @@ public class RootComposer : Composer, ObservableObject {
                                 self.serverComposer.networkManager.eventBroadcaster.approve(req.resolve(to: .admit))
                                 _ = self.serverComposer.ent_playerRuntimeContainer.acquaint(req.requesteeAddress, req.requestContext)
                                 self.serverComposer.ent_playerRuntimeContainer.$players
-                                    .debounce(for: .milliseconds(100), scheduler: RunLoop.main)
+                                    .debounce(for: .milliseconds(100), scheduler: RunLoop.current)
                                     .sink { players in
                                         let host = players.first { $0.playerAddress == hostID }
                                         self.serverComposer.ent_playerRuntimeContainer.host = host
