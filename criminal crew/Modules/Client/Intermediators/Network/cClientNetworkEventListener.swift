@@ -1,6 +1,6 @@
 import GamePantry
 
-public class ClientNetworkEventListener : GPGameEventListener {
+public class ClientNetworkEventListener : GPNetworkListener {
     
     public weak var eventRouter: GPEventRouter?
     
@@ -8,7 +8,7 @@ public class ClientNetworkEventListener : GPGameEventListener {
     public init ( router: GPEventRouter ) {
         self.eventRouter = router
         super.init()
-        startListening(self)
+        undeafen(self)
     }
     
     public func heardNews ( of: MCPeerID, to: MCSessionState ) {
@@ -86,6 +86,12 @@ public class ClientNetworkEventListener : GPGameEventListener {
         } else if let parsedData = TaskProgressionDidReachLimitEvent.construct(from: fromData(data: data)!) {
             if !emit(parsedData) {
                 debug("\(consoleIdentifier) Did receive TaskDidReachLimitEvent, but not shared via event router")
+            }
+        }
+        
+        else if let parsedData = GameDifficultyUpdateEvent.construct(from: fromData(data: data)!) {
+            if !emit(parsedData) {
+                debug("\(consoleIdentifier) Did receive GameDifficultyUpdateEvent, but not shared via event router")
             }
         }
         

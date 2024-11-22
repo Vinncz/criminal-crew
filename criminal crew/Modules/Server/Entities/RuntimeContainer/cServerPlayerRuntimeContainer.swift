@@ -1,29 +1,25 @@
 import Combine
 import GamePantry
+import os
 
 public typealias PlayerName = String
 
 public class ServerPlayerRuntimeContainer : ObservableObject {
     
-    @Published public var acquaintancedParties : [MCPeerID: MCSessionState] {
+    @Published public var players : Set<CriminalCrewPlayer> {
         didSet {
-            debug("\(consoleIdentifier) Did update acquaintancedParties to \(acquaintancedParties.map{$0.key.displayName})")
+            Logger.server.error("\(self.consoleIdentifier) Did update acquaintanced players to \(self.players.map{$0.playerDisplayName + $0.playerAddress.displayName})")
         }
     }
-    @Published public var blacklistedParties   : [MCPeerID: MCSessionState] {
+    @Published public var host    : CriminalCrewPlayer? {
         didSet {
-            debug("\(consoleIdentifier) Did update blacklistedParties to \(blacklistedParties.map{$0.key.displayName})")
-        }
-    }
-    @Published public var hostAddr : MCPeerID? {
-        didSet {
-            debug("\(consoleIdentifier) Did update hostAddr to \(hostAddr?.displayName ?? "none")")
+            Logger.server.error("\(self.consoleIdentifier) Did update host to \(String(describing: self.host))")
         }
     }
     
     public init () {
-        acquaintancedParties = [:]
-        blacklistedParties   = [:]
+        players = []
+        host    = nil
     }
     
     private let consoleIdentifier : String = "[S-PLR]"
@@ -32,129 +28,87 @@ public class ServerPlayerRuntimeContainer : ObservableObject {
 
 extension ServerPlayerRuntimeContainer {
     
-    public func getBlacklistedPartiesAndTheirState () -> [MCPeerID: MCSessionState] {
-        blacklistedParties
-    }
-    
-    public func getAcquaintancedPartiesAndTheirState () -> [MCPeerID: MCSessionState] {
-        acquaintancedParties
-    }
-    
-    public func getWhitelistedPartiesAndTheirState () -> [MCPeerID: MCSessionState] {
-        acquaintancedParties.filter { acquaintance, _ in
-            !blacklistedParties.contains { blacklisted, _ in
-                acquaintance == blacklisted
-            }
-        }
-    }
-    
     public func getPlayerCount () -> Int {
-        getWhitelistedPartiesAndTheirState().keys.count
+        players.count
     }
     
 }
 
 extension ServerPlayerRuntimeContainer {
     
-    public func update ( _ peerId: MCPeerID, state: MCSessionState ) {
-        if ( blacklistedParties.contains { blacklisted, _ in blacklisted == peerId } ) {
-            blacklistedParties[peerId]   = state
+    /// Renews a player's connection state.
+    public func updateConnection ( of peerId: MCPeerID, to newState: MCSessionState ) -> Bool {
+        var flowIsComplete: Bool = false
+        
+        if let player = players.first(where: { $0.playerAddress == peerId }) {
+            defer { flowIsComplete = true }
+            
+            player.playerConnectionState = newState
         }
         
-        acquaintancedParties[peerId] = state
-        debug("\(consoleIdentifier) Did update \(peerId.displayName)'s state (\(state.toString())) to both acquaintancedParties and blacklistedParties")
+        return flowIsComplete
     }
     
-    public func acquaint ( _ peerId: MCPeerID, state: MCSessionState ) {
-        acquaintancedParties[peerId] = state
-        debug("\(consoleIdentifier) Did add \(peerId.displayName) to acquaintancedParties")
-    }
-    
-    public func blacklist ( _ peerId: MCPeerID ) {
-        blacklistedParties[peerId] = acquaintancedParties[peerId]
-        debug("\(consoleIdentifier) Did add \(peerId.displayName) to blacklistedParties")
-    }
-    
-    public func terminate ( _ peerId: MCPeerID ) {
-        blacklistedParties.removeValue(forKey: peerId)
-        acquaintancedParties.removeValue(forKey: peerId)
-        debug("\(consoleIdentifier) Did remove \(peerId.displayName) from acquaintancedParties and blacklistedParties")
-    }
-    
-    public func terminate ( _ playerName: PlayerName ) {
-        guard let player = acquaintancedParties.first(where: { acquaintance, _ in
-            acquaintance.displayName == playerName
-        }) else {
-            debug("\(consoleIdentifier) Did fail to terminate player: \(playerName) is not found in acquaintancedParties")
-            return
+    /// Adds new player object to pool of players
+    public func acquaint ( _ peerId: MCPeerID, _ metadata: Data? = nil ) -> Bool {
+        var flowIsComplete: Bool = false
+        
+        if nil != players.first(where: { $0.playerAddress == peerId }) {
+            Logger.server.error("\(self.consoleIdentifier) Player \(peerId) is already in the pool of players")
+            return flowIsComplete
         }
         
-        blacklistedParties.removeValue(forKey: player.key)
-        acquaintancedParties.removeValue(forKey: player.key)
-        debug("\(consoleIdentifier) Did remove \(playerName) from acquaintancedParties and blacklistedParties")
+        guard let coherentMetadata : GameJoinRequestPayload = GameJoinRequestPayload.construct(from: fromData(data: metadata ?? Data()) ?? [:]) else {
+            Logger.server.error("\(self.consoleIdentifier) Did fail to acquaint player \(peerId)")
+            return flowIsComplete
+        }
+        
+        let newPlayer                      = CriminalCrewPlayer(addressed: peerId)
+            newPlayer.playerConnectionState = .notConnected
+            newPlayer.playerDisplayName     = coherentMetadata.playerName
+            newPlayer.playerMetadata        = coherentMetadata.payload.reduce(into: [String:String]()) { newPlayerMetadata, coherentMetadataElement in
+                newPlayerMetadata[coherentMetadataElement.key] = String(describing: coherentMetadataElement.value)
+            }
+        
+        if true == self.players.insert(newPlayer).inserted {
+            flowIsComplete = true
+        }
+        
+        return flowIsComplete
+    }
+    
+    public func terminate ( _ peerId: MCPeerID ) -> Bool {
+        var flowIsComplete: Bool = false
+        
+        if let player = players.first(where: { $0.playerAddress == peerId }) {
+            defer { flowIsComplete = true }
+            players.remove(player)
+            
+        } else {
+            Logger.server.error("\(self.consoleIdentifier) Did fail to terminate player: \(peerId) is not found in players")
+        }
+        
+        return flowIsComplete
+    }
+    
+    public func terminate ( _ playerName: PlayerName ) -> Bool {
+        var flowIsComplete: Bool = false
+        
+        if let player = players.first(where: { $0.playerAddress.displayName == playerName }) {
+            defer { flowIsComplete = true }
+            players.remove(player)
+            
+        } else {
+            Logger.server.error("\(self.consoleIdentifier) Did fail to terminate player: \(playerName) is not found in players")
+        }
+        
+        return flowIsComplete
     }
     
     public func reset () {
-        blacklistedParties.removeAll()
-        acquaintancedParties.removeAll()
-        hostAddr = nil
+        players = []
+        host    = nil
         debug("\(consoleIdentifier) Did reset PlayerRuntimeContainer")
-    }
-    
-}
-
-extension ServerPlayerRuntimeContainer {
-    
-    public struct Report {
-        public let address : MCPeerID
-        public let state   : MCSessionState
-        public let isBlacklisted : Bool
-    }
-    
-    public func getReportOnPlayer ( named: PlayerName ) -> Report? {
-        let player = acquaintancedParties.first { acquaintance, _ in
-            acquaintance.displayName == named
-        }
-        
-        guard let player = player else {
-            return nil
-        }
-        
-        return Report (
-            address: player.key,
-            state: player.value,
-            isBlacklisted: blacklistedParties.contains { blacklisted, _ in
-                blacklisted == player.key
-            }
-        )
-    }
-    
-    public func getReportOnPlayers ( thatAre state: MCSessionState ) -> [Report] {
-        acquaintancedParties.filter { _, state in
-            state == state
-        }.map { acquaintance, state in
-            Report (
-                address: acquaintance,
-                state: state,
-                isBlacklisted: blacklistedParties.contains { blacklisted, _ in
-                    blacklisted == acquaintance
-                }
-            )
-        }
-    }
-    
-    public func getReportOnSafePlayers ( thatAre state: MCSessionState ) -> [Report] {
-        getWhitelistedPartiesAndTheirState().filter { _, state in
-            state == state
-        }.map { acquaintance, state in
-            Report (
-                address: acquaintance,
-                state: state,
-                isBlacklisted: blacklistedParties.contains { blacklisted, _ in
-                    blacklisted == acquaintance
-                }
-            )
-        }
     }
     
 }

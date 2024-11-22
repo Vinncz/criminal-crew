@@ -7,6 +7,9 @@ internal class AudioManager {
 
     private var audioPlayerForBackgroundMusic: AVAudioPlayer?
     private var audioPlayerForSoundEffects: AVAudioPlayer?
+    private var audioPlayerForIndicator: AVAudioPlayer?
+    private var audioPlayerForCorrectWrongIndicator: AVAudioPlayer?
+    private var audioPlayerForTimer: AVAudioPlayer?
 
     private init() {
         /// Prevent external instantiation
@@ -35,10 +38,21 @@ internal class AudioManager {
             print("Error initializing audio player: \(error)")
         }
     }
-
+    
     internal func stopBackgroundMusic() {
         audioPlayerForBackgroundMusic?.stop()
         audioPlayerForBackgroundMusic = nil
+    }
+    
+    internal func playIndicatorMusic(fileName: String) {
+        guard let url = Bundle.main.url(forResource: fileName, withExtension: "mp3") else { return }
+        do {
+            audioPlayerForIndicator = try AVAudioPlayer(contentsOf: url)
+            audioPlayerForIndicator?.numberOfLoops = 0
+            audioPlayerForIndicator?.play()
+        } catch {
+            print("Error initializing audio player: \(error)")
+        }
     }
 
     internal func playSoundEffect(fileName: String) {
@@ -52,14 +66,45 @@ internal class AudioManager {
         }
     }
     
+    internal func playCorrectOrWrongMusic(fileName: String) {
+        guard let url = Bundle.main.url(forResource: fileName, withExtension: "mp3") else { return }
+        do {
+            audioPlayerForCorrectWrongIndicator = try AVAudioPlayer(contentsOf: url)
+            audioPlayerForCorrectWrongIndicator?.numberOfLoops = 0
+            audioPlayerForCorrectWrongIndicator?.play()
+        } catch {
+            print("Error initializing audio player: \(error)")
+        }
+    }
+    
+    internal func playTimerMusic() {
+        guard let url = Bundle.main.url(forResource: "timer", withExtension: "mp3") else { return }
+        do {
+            audioPlayerForTimer = try AVAudioPlayer(contentsOf: url)
+            audioPlayerForTimer?.numberOfLoops = 0
+            audioPlayerForTimer?.play()
+        } catch {
+            print("Error initializing audio player: \(error)")
+        }
+    }
+    
     internal func stopSoundEffects() {
         audioPlayerForSoundEffects?.stop()
         audioPlayerForSoundEffects = nil
+        audioPlayerForIndicator?.stop()
+        audioPlayerForIndicator = nil
+        audioPlayerForCorrectWrongIndicator?.stop()
+        audioPlayerForCorrectWrongIndicator = nil
+        audioPlayerForTimer?.stop()
+        audioPlayerForTimer = nil
     }
     
     @objc private func handleAppDidEnterBackground() {
         audioPlayerForBackgroundMusic?.pause()
         audioPlayerForSoundEffects?.stop()
+        audioPlayerForIndicator?.stop()
+        audioPlayerForCorrectWrongIndicator?.stop()
+        audioPlayerForTimer?.stop()
     }
 
     @objc private func handleAppDidBecomeActive() {
@@ -70,7 +115,6 @@ internal class AudioManager {
         stopBackgroundMusic()
         stopSoundEffects()
         NotificationCenter.default.removeObserver(self)
-        print("AudioManager deinitialized.")
     }
     
 }

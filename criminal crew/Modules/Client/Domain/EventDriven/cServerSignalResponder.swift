@@ -1,3 +1,4 @@
+import Combine
 import GamePantry
 
 public class ServerSignalResponder : UseCase {
@@ -7,7 +8,7 @@ public class ServerSignalResponder : UseCase {
     public var relay    : Relay?
     public struct Relay : CommunicationPortal {
         weak var eventRouter      : GPEventRouter?
-        weak var eventBroadcaster : GPGameEventBroadcaster?
+        weak var eventBroadcaster : GPNetworkBroadcaster?
         weak var browser          : ClientGameBrowser?
         weak var gameRuntime      : ClientGameRuntimeContainer?
         weak var panelRuntime     : ClientPanelRuntimeContainer?
@@ -173,7 +174,7 @@ extension ServerSignalResponder {
             return
         }
         
-        eventBroadcaster.ceaseCommunication()
+        eventBroadcaster.disconnect()
         eventBroadcaster.reset()
         gameRuntime.reset()
         panelRuntime.reset()

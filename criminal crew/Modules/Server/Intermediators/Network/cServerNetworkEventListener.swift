@@ -1,6 +1,6 @@
 import GamePantry
 
-public class ServerNetworkEventListener : GPGameEventListener {
+public class ServerNetworkEventListener : GPNetworkListener {
     
     public weak var eventRouter: GPEventRouter?
     
@@ -8,7 +8,7 @@ public class ServerNetworkEventListener : GPGameEventListener {
     public init ( router: GPEventRouter ) {
         self.eventRouter = router
         super.init()
-        startListening(self)
+        undeafen(self)
     }
     
     public func heardNews ( of: MCPeerID, to: MCSessionState ) {
@@ -52,6 +52,10 @@ public class ServerNetworkEventListener : GPGameEventListener {
         } else if let parsedData = GPGameStartRequestedEvent.construct(from: fromData(data: data)!) {
             if !emit(parsedData) {
                 debug("\(consoleIdentifier) Did receive a game start request event but not shared via the event router")
+            }
+        } else if let parsedData = GameDifficultyUpdateEvent.construct(from: fromData(data: data)!) {
+            if !emit(parsedData) {
+                debug("\(consoleIdentifier) Did receive a game difficulty change event but not shared via the event router")
             }
         } else {
             debug("\(consoleIdentifier) Did receive data, but could not parse it")

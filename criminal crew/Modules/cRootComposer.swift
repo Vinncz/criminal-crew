@@ -1,3 +1,4 @@
+import Combine
 import GamePantry
 import UIKit
 
@@ -37,7 +38,7 @@ public class RootComposer : Composer, ObservableObject {
                 guard let self else { return }
                 self.serverComposer.networkManager.advertiserService.stopAdvertising(on: self.serverComposer.networkManager.advertiserService)
                 (self.serverComposer.networkManager.advertiserService as? GameServerAdvertiser)?.reset()
-                self.serverComposer.networkManager.eventBroadcaster.ceaseCommunication()
+                self.serverComposer.networkManager.eventBroadcaster.disconnect()
                 self.serverComposer.networkManager.eventBroadcaster.reset()
                 self.serverComposer.ent_playerRuntimeContainer.reset()
                 self.queuedJobToAdmitTheHost?.cancel()
@@ -49,18 +50,27 @@ public class RootComposer : Composer, ObservableObject {
             placeJobToAdmitHost: { [weak self] hostID in
                 guard let self else { return }
                 debug("[S-ADV] Placed a job to admit the host")
+                                
                 self.queuedJobToAdmitTheHost = self.serverComposer.networkManager.advertiserService.$pendingRequests
                     .debounce(for: .milliseconds(100), scheduler: RunLoop.main)
                     .sink { reqs in
                         reqs.forEach { req in
-                            if ( req.requestee == hostID ) {
+                            if ( req.requesteeAddress == hostID ) {
                                 self.serverComposer.networkManager.eventBroadcaster.approve(req.resolve(to: .admit))
-                                self.serverComposer.ent_playerRuntimeContainer.hostAddr = hostID
-                                debug("[S-ADV] Admitted the host: \(req.requestee.displayName)")
+                                _ = self.serverComposer.ent_playerRuntimeContainer.acquaint(req.requesteeAddress, req.requestContext)
+                                self.serverComposer.ent_playerRuntimeContainer.$players
+                                    .debounce(for: .milliseconds(100), scheduler: RunLoop.main)
+                                    .sink { players in
+                                        let host = players.first { $0.playerAddress == hostID }
+                                        self.serverComposer.ent_playerRuntimeContainer.host = host
+                                    }
+                                    .store(in: &self.subscriptions)
+                                debug("[S-ADV] Admitted the host: \(req.requesteeAddress.displayName)")
                             }
                         }
                     }
-                self.serverComposer.ent_playerRuntimeContainer.$hostAddr
+                
+                self.serverComposer.ent_playerRuntimeContainer.$host
                     .debounce(for: .milliseconds(100), scheduler: RunLoop.main)
                     .sink { host in
                         if host != nil {

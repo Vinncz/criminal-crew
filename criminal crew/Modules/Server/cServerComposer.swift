@@ -1,3 +1,4 @@
+import Combine
 import GamePantry
 
 final public class ServerComposer : Composer, UsesDependenciesInjector {
@@ -100,7 +101,9 @@ extension ServerComposer {
             router.openChannel(for:InstructionReportEvent.self),
             router.openChannel(for:GPAcquaintanceStatusUpdateEvent.self),
             
-            router.openChannel(for:InquiryAboutConnectedPlayersRequestedEvent.self)
+            router.openChannel(for:InquiryAboutConnectedPlayersRequestedEvent.self),
+                
+            router.openChannel(for:GameDifficultyUpdateEvent.self)
         else {
             debug("[S] Did fail to open all required channels for EventRouter")
             return
@@ -152,22 +155,24 @@ extension ServerComposer {
             gameRuntimeContainer   : self.ent_gameRuntimeContainer,
             taskRuntimeContainer   : self.ent_taskRuntimeContainer,
             admitPlayer            : { playerName, decideToAdmit in
-                guard let playerRequest = self.networkManager.advertiserService.pendingRequests.first(where: { $0.requestee.displayName == playerName }) else {
+                guard let playerRequest = self.networkManager.advertiserService.pendingRequests.first(where: { $0.requesteeAddress.displayName == playerName }) else {
                     debug("[S] HostSignalResponder is unable to admit the player: the request record is missing or not found")
                     return
                 }
                 
                 if decideToAdmit {
                     self.networkManager.eventBroadcaster.approve(playerRequest.resolve(to: .admit))
+                    _ = self.ent_playerRuntimeContainer.acquaint(playerRequest.requesteeAddress, playerRequest.requestContext)
                     debug("[S] HostSignalResponder admitted the player named: \(playerName)")
+                    
                 } else {
                     self.networkManager.eventBroadcaster.approve(playerRequest.resolve(to: .reject))
-                    self.networkManager.advertiserService.pendingRequests.removeAll { $0.requestee.displayName == playerName }
+                    self.networkManager.advertiserService.pendingRequests.removeAll { $0.requesteeAddress.displayName == playerName }
                     debug("[S] HostSignalResponder rejected the player named: \(playerName), and removed their request")
                 }
             },
             terminatePlayer        : { terminationEvent in
-                guard let playerToBeTerminated = self.ent_playerRuntimeContainer.getAcquaintancedPartiesAndTheirState().first(where: { $0.key.displayName == terminationEvent.subject })?.key else {
+                guard let playerToBeTerminated = self.ent_playerRuntimeContainer.players.first(where: { $0.playerAddress.displayName == terminationEvent.subject })?.playerAddress else {
                     debug("[S] HostSignalResponder is unable to admit the player: the request record is missing or not found")
                     return
                 }
@@ -211,6 +216,7 @@ extension ServerComposer {
     private final func subscribeUCsToEvents () {
         evtUC_eventRelayer.placeSubscription(on: GPGameJoinRequestedEvent.self)
         evtUC_eventRelayer.placeSubscription(on: GPUnableToBrowseEvent.self)
+        evtUC_eventRelayer.placeSubscription(on: GPAcquaintanceStatusUpdateEvent.self)
         debug("[S] Placed subscription of EventRelayer to GPGameJoinRequestedEvent & GPUnableToBrowseEvent")
         
         evtUC_hostSignalResponder.placeSubscription(on: GPGameStartRequestedEvent.self)
@@ -219,6 +225,7 @@ extension ServerComposer {
         evtUC_hostSignalResponder.placeSubscription(on: GPBlacklistedEvent.self)
         evtUC_hostSignalResponder.placeSubscription(on: GPTerminatedEvent.self)
         evtUC_hostSignalResponder.placeSubscription(on: InquiryAboutConnectedPlayersRequestedEvent.self)
+        evtUC_hostSignalResponder.placeSubscription(on: GameDifficultyUpdateEvent.self)
         debug("[S] Placed subscription of HostSignalResponder to GPGameStartRequestedEvent, GPGameEndRequestedEvent, GPGameJoinVerdictDeliveredEvent, GPBlacklistedEvent, and GPTerminatedEvent")
         
         evtUC_taskReportResponder.placeSubscription(on: CriteriaReportEvent.self)

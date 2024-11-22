@@ -7,7 +7,7 @@ public class PanelAssigner : UseCase {
     public init () {}
     
     public struct Relay : CommunicationPortal {
-        weak var eventBroadcaster       : GPGameEventBroadcaster?
+        weak var eventBroadcaster       : GPNetworkBroadcaster?
         weak var playerRuntimeContainer : ServerPlayerRuntimeContainer?
         weak var panelRuntimeContainer  : ServerPanelRuntimeContainer?
     }
@@ -34,14 +34,14 @@ extension PanelAssigner {
             return false
         }
         
-        guard playerRuntimeContainer.getWhitelistedPartiesAndTheirState().count > 0 else {
+        guard playerRuntimeContainer.getPlayerCount() > 0 else {
             debug("\(consoleIdentifier) Did fail to distribute panel: no players are whitelisted")
             return false
         }
         
         var isSuccessful = true
         
-        let playerComposition : [MCPeerID]             = Array(playerRuntimeContainer.getWhitelistedPartiesAndTheirState().keys).shuffled()
+        let playerComposition : [MCPeerID]             = Array(playerRuntimeContainer.players.map{ $0.playerAddress }).shuffled()
         let panelComposition  : [ServerGamePanel.Type] = Array(ServerPanelRuntimeContainer.availablePanelTypes.shuffled().prefix(playerComposition.count)).shuffled()
         
         guard let eventBroadcaster = relay.eventBroadcaster else {

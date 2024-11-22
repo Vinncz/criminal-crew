@@ -52,7 +52,6 @@ extension ServerGameRuntimeContainer {
     
     public func reset () {
         self.state      = .notStarted
-        self.difficulty = .beginner
         
         let oldPenaltyProgression = self.penaltiesProgression
         self.penaltiesProgression = PenaltiesProgression(limit: oldPenaltyProgression.limit)

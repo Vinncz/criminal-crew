@@ -30,7 +30,7 @@ extension TasksProgression {
     func advance ( by: Int ) {
         progress += by
         if progress >= limit {
-            guard let relay, let hostAddr = relay.playerRuntimeContainer?.hostAddr else { return }
+            guard let relay, let hostAddr = relay.playerRuntimeContainer?.host?.playerAddress else { return }
             
             do {
                 try relay.eventBroadcaster?.broadcast(

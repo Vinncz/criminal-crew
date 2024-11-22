@@ -15,7 +15,7 @@ internal class RoomNameView: UIStackView {
         axis = .horizontal
         
         let backgroundRoomName = UIImageView(image: UIImage(named: "room_name"))
-        backgroundRoomName.contentMode = .scaleAspectFit
+        backgroundRoomName.contentMode = .scaleToFill
         addArrangedSubview(backgroundRoomName)
         
         let roomNameLabel = ViewFactory.createLabel(text: """
@@ -25,11 +25,12 @@ internal class RoomNameView: UIStackView {
         
         backgroundRoomName.addSubview(roomNameLabel)
         roomNameLabel.textAlignment = .center
+        roomNameLabel.adjustsFontSizeToFitWidth = true
         roomNameLabel.translatesAutoresizingMaskIntoConstraints = false
         NSLayoutConstraint.activate([
             roomNameLabel.bottomAnchor.constraint(equalTo: backgroundRoomName.bottomAnchor, constant: -32),
-            roomNameLabel.trailingAnchor.constraint(equalTo: backgroundRoomName.trailingAnchor, constant: -32),
-            roomNameLabel.leadingAnchor.constraint(equalTo: backgroundRoomName.leadingAnchor, constant: 4),
+            roomNameLabel.trailingAnchor.constraint(equalTo: backgroundRoomName.trailingAnchor, constant: -64),
+            roomNameLabel.leadingAnchor.constraint(equalTo: backgroundRoomName.leadingAnchor, constant: 8),
         ])
         var transform = CATransform3DIdentity
         transform = CATransform3DRotate(transform, 5.15 * .pi / 180, 0, 0, 1) /// rumus degree to radian = degree * .pi / 180

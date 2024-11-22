@@ -1,6 +1,6 @@
 import GamePantry
 
-public class ServerNetworkEventBroadcaster : GPGameEventBroadcaster {
+public class ServerNetworkEventBroadcaster : GPNetworkBroadcaster {
     
     public weak var eventRouter : GamePantry.GPEventRouter?
     
