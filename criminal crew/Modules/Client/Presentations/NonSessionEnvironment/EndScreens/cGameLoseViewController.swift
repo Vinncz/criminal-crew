@@ -28,7 +28,10 @@ public class GameLoseViewController : UIViewController, UsesDependenciesInjector
     }
     
     @objc public func backToMainMenu ( _ sender: UIButton ) {
+        AudioManager.shared.stopAllSoundEffects()
+        AudioManager.shared.stopBackgroundMusic()
         AudioManager.shared.playSoundEffect(fileName: "big_button_on_off")
+        
         relay?.navController?.popToRootViewController(animated: true)
     }
     
