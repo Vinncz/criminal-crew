@@ -1,15 +1,19 @@
 import GamePantry
 
-public class PenaltiesProgression : UsesDependenciesInjector, ObservableObject {
+public class TasksProgression : UsesDependenciesInjector, ObservableObject {
     
     @Published public var progress : Int {
         didSet {
-            debug("\(consoleIdentifier) Did update penalty progression to: \(progress)")
+            debug("\(consoleIdentifier) Did update task progresstion to: \(progress)")
         }
     }
     
     public let limit    : Int
     public var relay    : Relay?
+    public struct Relay : CommunicationPortal {
+        weak var eventBroadcaster: ServerNetworkEventBroadcaster?
+        weak var playerRuntimeContainer: ServerPlayerRuntimeContainer?
+    }
     
     public init ( limit: Int, startingAt: Int = 0 ) {
         self.limit     = limit
@@ -17,21 +21,16 @@ public class PenaltiesProgression : UsesDependenciesInjector, ObservableObject {
         self.progress  = startingAt
     }
     
-    public struct Relay : CommunicationPortal {
-        weak var eventBroadcaster: ServerNetworkEventBroadcaster?
-        weak var playerRuntimeContainer: ServerPlayerRuntimeContainer?
-    }
-    
-    private let consoleIdentifier : String = "[S-PEN]"
+    private let consoleIdentifier : String = "[S-TAS]"
     
 }
 
-extension PenaltiesProgression {
+extension TasksProgression {
     
     func advance ( by: Int ) {
         progress += by
         if progress >= limit {
-            guard let relay, let hostAddr = relay.playerRuntimeContainer?.host?.playerAddress else { return }
+            guard let relay, let hostAddr = relay.playerRuntimeContainer?.host?.address else { return }
             
             do {
                 try relay.eventBroadcaster?.broadcast(
@@ -39,7 +38,7 @@ extension PenaltiesProgression {
                     to: [hostAddr]
                 )
             } catch {
-                debug("Failed to emit penalty limit reached event: \(error)")
+                debug("Failed to emit task limit reached event: \(error)")
             }
         }
     }

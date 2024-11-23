@@ -6,23 +6,23 @@ public typealias PlayerName = String
 
 public class ServerPlayerRuntimeContainer : ObservableObject {
     
-    @Published public var players : Set<CriminalCrewPlayer> {
+    @Published public var players : Set<CriminalCrewServerPlayer> {
         didSet {
-            Logger.server.info("\(self.consoleIdentifier) Did update acquaintanced players to \(self.players.map{$0.playerDisplayName + $0.playerAddress.displayName})")
-            connectedPlayers$.send(self.players.filter { $0.playerConnectionState != .notConnected })
+            Logger.server.info("\(self.consoleIdentifier) Did update acquaintanced players to \(self.players.map{$0.name + $0.address.displayName})")
+            connectedPlayers$.send(self.players.filter { $0.connectionState != .notConnected })
         }
     }
-    @Published public var host    : CriminalCrewPlayer? {
+    @Published public var host    : CriminalCrewServerPlayer? {
         didSet {
-            Logger.server.info("\(self.consoleIdentifier) Did update host to \(self.host?.playerAddress.displayName ?? "nil")")
+            Logger.server.info("\(self.consoleIdentifier) Did update host to \(self.host?.address.displayName ?? "nil")")
         }
     }
     
     // A forwarded version of players that excludes players with connection state of notConnected.
-    public var connectedPlayers$ : PassthroughSubject<Set<CriminalCrewPlayer>, Never> = PassthroughSubject()
+    public var connectedPlayers$ : PassthroughSubject<Set<CriminalCrewServerPlayer>, Never> = PassthroughSubject()
     
-    public var connectedPlayers : Set<CriminalCrewPlayer> {
-        players.filter { $0.playerConnectionState != .notConnected }
+    public var connectedPlayers : Set<CriminalCrewServerPlayer> {
+        players.filter { $0.connectionState != .notConnected }
     }
     
     public init () {
@@ -48,33 +48,33 @@ extension ServerPlayerRuntimeContainer {
     public func updateConnection ( of peerId: MCPeerID, to newState: MCSessionState ) -> Bool {
         var flowIsComplete: Bool = false
         
-        if let player = players.first(where: { $0.playerAddress == peerId }) {
+        if let player = players.first(where: { $0.address == peerId }) {
             defer { flowIsComplete = true }
             
-            player.playerConnectionState = newState
+            player.connectionState = newState
         }
         
         return flowIsComplete
     }
     
-    /// Instanciates a new ```CriminalCrewPlayer``` object and inserts it into the pool of players.
+    /// Instanciates a new ```CriminalCrewServerPlayer``` object and inserts it into the pool of players.
     public func acquaint ( _ peerId: MCPeerID, _ metadata: Data? = nil ) -> Bool {
         var flowIsComplete: Bool = false
         
-        if nil != players.first(where: { $0.playerAddress == peerId }) {
+        if nil != players.first(where: { $0.address == peerId }) {
             Logger.server.error("\(self.consoleIdentifier) Player \(peerId) is already in the pool of players")
             return flowIsComplete
         }
         
-        guard let coherentMetadata : GameJoinRequestPayload = GameJoinRequestPayload.construct(from: fromData(data: metadata ?? Data()) ?? [:]) else {
+        guard let coherentMetadata : GameJoinRequestPayload = GameJoinRequestPayload.construct(from: fromData(metadata ?? Data()) ?? [:]) else {
             Logger.server.error("\(self.consoleIdentifier) Did fail to acquaint player \(peerId)")
             return flowIsComplete
         }
         
-        let newPlayer                       = CriminalCrewPlayer(addressed: peerId)
-            newPlayer.playerConnectionState = .notConnected
-            newPlayer.playerDisplayName     = coherentMetadata.playerName
-            newPlayer.playerMetadata        = coherentMetadata.payload.reduce(into: [String:String]()) { newPlayerMetadata, coherentMetadataElement in
+        let newPlayer                 = CriminalCrewServerPlayer(addressed: peerId)
+            newPlayer.connectionState = .notConnected
+            newPlayer.name            = coherentMetadata.playerName
+            newPlayer.metadata        = coherentMetadata.payload.reduce(into: [String:String]()) { newPlayerMetadata, coherentMetadataElement in
                                                   newPlayerMetadata[coherentMetadataElement.key] = String(describing: coherentMetadataElement.value)
                                               }
         
@@ -89,7 +89,7 @@ extension ServerPlayerRuntimeContainer {
     public func terminate ( _ peerId: MCPeerID ) -> Bool {
         var flowIsComplete: Bool = false
         
-        if let player = players.first(where: { $0.playerAddress == peerId }) {
+        if let player = players.first(where: { $0.address == peerId }) {
             defer { flowIsComplete = true }
             players.remove(player)
             Logger.server.info("\(self.consoleIdentifier) Did terminate (remove) player: \(String(describing: player))")
@@ -105,7 +105,7 @@ extension ServerPlayerRuntimeContainer {
     public func terminate ( _ playerName: PlayerName ) -> Bool {
         var flowIsComplete: Bool = false
         
-        if let player = players.first(where: { $0.playerAddress.displayName == playerName }) {
+        if let player = players.first(where: { $0.address.displayName == playerName }) {
             defer { flowIsComplete = true }
             players.remove(player)
             Logger.server.info("\(self.consoleIdentifier) Did terminate (remove) player: \(String(describing: player))")
