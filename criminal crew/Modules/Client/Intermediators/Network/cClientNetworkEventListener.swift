@@ -29,67 +29,67 @@ public class ClientNetworkEventListener : GPNetworkListener {
     public func heardData ( from peer: MCPeerID, _ data: Data ) {
         debug("\(consoleIdentifier) Did receive the following data: \(data.toString() ?? "<error>Invalid data</error>")")
         
-        if let parsedData = ConnectedPlayersNamesResponse.construct(from: fromData(data: data)!) {
+        if let parsedData = ConnectedPlayersNamesResponse.construct(from: fromData(data)!) {
             if !emit(parsedData) {
                 debug("\(consoleIdentifier) Did receive InquiryAboutConnectedPlayersRespondedEvent, but not shared via event router")
             }
         } 
         
-        else if let parsedData = HasBeenAssignedPanel.construct(from: fromData(data: data)!) {
+        else if let parsedData = HasBeenAssignedPanel.construct(from: fromData(data)!) {
             if !emit(parsedData) {
                 debug("\(consoleIdentifier) Did receive HasBeenAssignedPanel, but not shared via event router")
             }
-        } else if let parsedData = HasBeenAssignedHost.construct(from: fromData(data: data)!) {
+        } else if let parsedData = HasBeenAssignedHost.construct(from: fromData(data)!) {
             if !emit(parsedData) {
                 debug("\(consoleIdentifier) Did receive HasBeenAssignedHost, but not shared via event router")
             }
-        } else if let parsedData = HasBeenAssignedCriteria.construct(from: fromData(data: data)!) {
+        } else if let parsedData = HasBeenAssignedCriteria.construct(from: fromData(data)!) {
             if !emit(parsedData) {
                 debug("\(consoleIdentifier) Did receive HasBeenAssignedHost, but not shared via event router")
             }
-        } else if let parsedData = HasBeenAssignedInstruction.construct(from: fromData(data: data)!) {
+        } else if let parsedData = HasBeenAssignedInstruction.construct(from: fromData(data)!) {
             if !emit(parsedData) {
                 debug("\(consoleIdentifier) Did receive HasBeenAssignedHost, but not shared via event router")
             }
         } 
         
-        else if let parsedData = GPGameJoinRequestedEvent.construct(from: fromData(data: data)!) {
+        else if let parsedData = GPGameJoinRequestedEvent.construct(from: fromData(data)!) {
             if !emit(parsedData) {
                 debug("\(consoleIdentifier) Did receive GPGameJoinRequestedEvent, but not shared via event router")
             }
-        } else if let parsedData = GPTerminatedEvent.construct(from: fromData(data: data)!) {
+        } else if let parsedData = GPTerminatedEvent.construct(from: fromData(data)!) {
             if !emit(parsedData) {
                 debug("\(consoleIdentifier) Did receive GPTerminatedEvent, but not shared via event router")
             }
         } 
         
-        else if let parsedData = InstructionDidGetDismissed.construct(from: fromData(data: data)!) {
+        else if let parsedData = InstructionDidGetDismissed.construct(from: fromData(data)!) {
             if !emit(parsedData) {
                 debug("\(consoleIdentifier) Did receive InstructionDidGetDismissed, but not shared via event router")
             }
-        } else if let parsedData = CriteriaDidGetDismissed.construct(from: fromData(data: data)!) {
+        } else if let parsedData = CriteriaDidGetDismissed.construct(from: fromData(data)!) {
             if !emit(parsedData) {
                 debug("\(consoleIdentifier) Did receive CriteriaDidGetDismissed, but not shared via event router")
             }
         }
         
-        else if let parsedData = PenaltyProgressionUpdateEvent.construct(from: fromData(data: data)!) {
+        else if let parsedData = PenaltyProgressionUpdateEvent.construct(from: fromData(data)!) {
             if !emit(parsedData) {
                 debug("\(consoleIdentifier) Did receive PenaltyProgressionUpdateEvent, but not shared via event router")
             }
         }
         
-        else if let parsedData = PenaltyProgressionDidReachLimitEvent.construct(from: fromData(data: data)!) {
+        else if let parsedData = PenaltyProgressionDidReachLimitEvent.construct(from: fromData(data)!) {
             if !emit(parsedData) {
                 debug("\(consoleIdentifier) Did receive PenaltyDidReachLimitEvent, but not shared via event router")
             }
-        } else if let parsedData = TaskProgressionDidReachLimitEvent.construct(from: fromData(data: data)!) {
+        } else if let parsedData = TaskProgressionDidReachLimitEvent.construct(from: fromData(data)!) {
             if !emit(parsedData) {
                 debug("\(consoleIdentifier) Did receive TaskDidReachLimitEvent, but not shared via event router")
             }
         }
         
-        else if let parsedData = GameDifficultyUpdateEvent.construct(from: fromData(data: data)!) {
+        else if let parsedData = GameDifficultyUpdateEvent.construct(from: fromData(data)!) {
             if !emit(parsedData) {
                 debug("\(consoleIdentifier) Did receive GameDifficultyUpdateEvent, but not shared via event router")
             }

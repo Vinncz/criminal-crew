@@ -28,11 +28,13 @@ extension ServerPlayerConnectionResponder : GPHandlesEvents {
     
     public func placeSubscription ( on eventType: any GamePantry.GPEvent.Type ) {
         guard let relay = self.relay else {
-            Logger.server.error("\(self.consoleIdentifier) Did fail to place subscription: relay is missing or not set"); return
+            Logger.server.error("\(self.consoleIdentifier) Did fail to place subscription: relay is missing or not set")
+            return
         }
         
         guard let eventRouter = relay.eventRouter else {
-            Logger.server.error("\(self.consoleIdentifier) Did fail to place subscription: eventRouter is missing or not set"); return
+            Logger.server.error("\(self.consoleIdentifier) Did fail to place subscription: eventRouter is missing or not set")
+            return
         }
         
         eventRouter.subscribe(to: eventType)?
@@ -59,11 +61,13 @@ extension ServerPlayerConnectionResponder : GPEmitsEvents {
     
     public func emit ( _ event: GPEvent ) -> Bool {
         guard let relay = self.relay else {
-            Logger.server.error("\(self.consoleIdentifier) Did fail to emit: relay is missing or not set"); return false
+            Logger.server.error("\(self.consoleIdentifier) Did fail to emit: relay is missing or not set")
+            return false
         }
         
         guard let eventRouter = relay.eventRouter else {
-            Logger.server.error("\(self.consoleIdentifier) Did fail to emit: eventRouter is missing or not set"); return false
+            Logger.server.error("\(self.consoleIdentifier) Did fail to emit: eventRouter is missing or not set")
+            return false
         }
         
         return eventRouter.route(event)
@@ -93,8 +97,8 @@ extension ServerPlayerConnectionResponder {
                 guard let playerRuntimeContainer = relay.playerRuntimeContainer
                 else { return }
                 
-                if let player = playerRuntimeContainer.players.first(where: { $0.playerAddress == event.subject }) {
-                    player.playerConnectionState = event.status
+                if let player = playerRuntimeContainer.players.first(where: { $0.address == event.subject }) {
+                    player.connectionState = event.status
                     
                 } else {
                     Logger.server.error("\(self.consoleIdentifier) There is no player with address \(event.subject.displayName)")

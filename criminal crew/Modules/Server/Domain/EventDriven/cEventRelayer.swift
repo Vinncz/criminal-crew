@@ -81,8 +81,8 @@ extension EventRelayer {
         DispatchQueue.main.asyncAfter(deadline: .now() + .milliseconds(500)) {
             do {
                 try relay.eventBroadcaster?.broadcast (
-                    ConnectedPlayersNamesResponse(names: pRegistry.connectedPlayers.map{$0.playerDisplayName}).representedAsData(), 
-                    to: pRegistry.connectedPlayers.map { $0.playerAddress }
+                    ConnectedPlayersNamesResponse(ids: pRegistry.connectedPlayers.map{ $0.address.displayName }, names: pRegistry.connectedPlayers.map{$0.name}).representedAsData(), 
+                    to: pRegistry.connectedPlayers.map { $0.address }
                 )
                 Logger.server.info("\(self.consoleIdentifier) Did relay \(event.id) to every player")
             } catch {
@@ -93,12 +93,12 @@ extension EventRelayer {
     
     private func relayToClientHost ( _ event: any GPSendableEvent ) {
         guard let relay = relay else {
-            Logger.server.error("\(self.consoleIdentifier) Did fail to respond to \(event.id): relay is missing or not set")
+            Logger.server.error("\(self.consoleIdentifier) Did fail to respond to \(String(describing: event)): relay is missing or not set")
             return
         }
         
-        guard let player = relay.playerRegistry?.host?.playerAddress else {
-            Logger.server.error("\(self.consoleIdentifier) Did fail to respond to \(event.id): player is missing or not set or empty")
+        guard let player = relay.playerRegistry?.host?.address else {
+            Logger.server.error("\(self.consoleIdentifier) Did fail to respond to \(String(describing: event)): player is missing or not set or empty")
             return
         }
         
@@ -106,26 +106,26 @@ extension EventRelayer {
             try relay.eventBroadcaster?.broadcast(event.representedAsData(), to: [player])
             debug("\(consoleIdentifier) Did relay \(event) to client-host")
         } catch {
-            Logger.server.error("\(self.consoleIdentifier) Did fail to relay \(event.id) to client-host: \(error)")
+            Logger.server.error("\(self.consoleIdentifier) Did fail to relay \(String(describing: event)) to client-host: \(error)")
         }
     }
     
     private func relayToAll ( _ event: any GPSendableEvent ) {
         guard let relay = relay else {
-            Logger.server.error("\(self.consoleIdentifier) Did fail to respond to \(event.id): relay is missing or not set")
+            Logger.server.error("\(self.consoleIdentifier) Did fail to respond to \(String(describing: event)): relay is missing or not set")
             return
         }
         
         guard let players = relay.playerRegistry?.connectedPlayers else {
-            Logger.server.error("\(self.consoleIdentifier) Did fail to respond to \(event.id): players are missing or not set or empty")
+            Logger.server.error("\(self.consoleIdentifier) Did fail to respond to \(String(describing: event)): players are missing or not set or empty")
             return
         }
         
         do {
-            try relay.eventBroadcaster?.broadcast(event.representedAsData(), to: players.map{ $0.playerAddress })
-            Logger.server.info("\(self.consoleIdentifier) Did relay \(event.id) to all players")
+            try relay.eventBroadcaster?.broadcast(event.representedAsData(), to: players.map{ $0.address })
+            Logger.server.info("\(self.consoleIdentifier) Did relay \(String(describing: event)) to all players")
         } catch {
-            Logger.server.error("\(self.consoleIdentifier) Did fail to relay \(event.id) to all players: \(error)")
+            Logger.server.error("\(self.consoleIdentifier) Did fail to relay \(String(describing: event)) to all players: \(error)")
         }
     }
     

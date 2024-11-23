@@ -61,7 +61,7 @@ public class RootComposer : Composer, ObservableObject {
                                 self.serverComposer.ent_playerRuntimeContainer.$players
                                     .debounce(for: .milliseconds(100), scheduler: RunLoop.current)
                                     .sink { players in
-                                        let host = players.first { $0.playerAddress == hostID }
+                                        let host = players.first { $0.address == hostID }
                                         self.serverComposer.ent_playerRuntimeContainer.host = host
                                     }
                                     .store(in: &self.subscriptions)

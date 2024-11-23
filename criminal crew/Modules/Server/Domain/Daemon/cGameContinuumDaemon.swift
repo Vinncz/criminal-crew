@@ -72,7 +72,7 @@ extension GameContinuumDaemon {
                                     currentProgression: progression, 
                                     limit: gameRuntimeContainer.penaltiesProgression.limit
                                 ).representedAsData(),
-                                to: playerRuntimeContainer.players.map { $0.playerAddress }
+                                to: playerRuntimeContainer.players.map { $0.address }
                             )
                         } catch {
                             debug("\(self.consoleIdentifier) Did fail to broadcast game penalty progression update: \(error)")
@@ -125,7 +125,7 @@ extension GameContinuumDaemon {
                                         GPGameEndedEvent (
                                             effectiveOn: Date.now
                                         ).representedAsData(),
-                                        to: playerRuntimeContainer.players.map { $0.playerAddress }
+                                        to: playerRuntimeContainer.players.map { $0.address }
                                     )
                                 } catch {
                                     debug("\(self.consoleIdentifier) Did fail to broadcast game ended event: \(error)")
@@ -174,7 +174,7 @@ extension GameContinuumDaemon {
                                         currentProgression: progression,
                                         limit: gameRuntimeContainer.tasksProgression.limit
                                     ).representedAsData(),
-                                    to: playerRuntimeContainer.players.map { $0.playerAddress }
+                                    to: playerRuntimeContainer.players.map { $0.address }
                                 )
                             } catch {
                                 debug("\(self.consoleIdentifier) Did fail to broadcast game ended event: \(error)")
@@ -221,7 +221,7 @@ extension GameContinuumDaemon {
                                         currentProgression: progression,
                                         limit: gameRuntimeContainer.penaltiesProgression.limit
                                     ).representedAsData(),
-                                    to: playerRuntimeContainer.players.map { $0.playerAddress }
+                                    to: playerRuntimeContainer.players.map { $0.address }
                                 )
                             } catch {
                                 debug("\(self.consoleIdentifier) Did fail to broadcast game ended event: \(error)")

@@ -489,7 +489,7 @@ extension SelfSignalCommandCenter {
         return flowIsComplete
     }
     
-    public func verdictPlayer ( named playerName: String, isAdmitted: Bool ) {
+    public func verdictPlayer ( id playerId: String, isAdmitted: Bool ) {
         guard let relay else {
             debug("\(consoleIdentifier) Did fail to admit player: relay is missing or not set")
             return
@@ -522,22 +522,22 @@ extension SelfSignalCommandCenter {
         do {
             try eventBroadcaster.broadcast (
                 GPGameJoinVerdictDeliveredEvent (
-                    forName: playerName, 
+                    forName: playerId, 
                     verdict: isAdmitted, 
                     authorizedBy: eventBroadcaster.broadcastingFor.displayName
                 ).representedAsData(), 
                 to: [serverAddr]
             )
-            debug("\(consoleIdentifier) Did relay admission verdict of \(playerName) to server")
-            playerRuntime.joinRequestedPlayersNames.removeAll { $0 == playerName }
+            debug("\(consoleIdentifier) Did relay admission verdict of \(playerId) to server")
+            playerRuntime.requestingPlayers.removeAll { $0.id == playerId }
             
         } catch {
-            debug("\(consoleIdentifier) Did fail to relay admission verdict of \(playerName) to server: \(error)")
+            debug("\(consoleIdentifier) Did fail to relay admission verdict of \(playerId) to server: \(error)")
             
         }
     }
     
-    public func kickPlayer ( named playerName: String ) -> Bool {
+    public func kickPlayer ( id playerId: String ) -> Bool {
         var flowIsComplete = false
         
         guard let relay else {
@@ -564,8 +564,8 @@ extension SelfSignalCommandCenter {
             return flowIsComplete
         }
         
-        guard playerRuntime.connectedPlayersNames.contains(playerName) else {
-            debug("\(consoleIdentifier) Did fail to kick player: \(playerName) is not present: \(playerRuntime.connectedPlayersNames)")
+        guard playerRuntime.players.map({ $0.id }).contains(playerId) else {
+            debug("\(consoleIdentifier) Did fail to kick player: \(playerId) is not present: \(playerRuntime.players)")
             return flowIsComplete
         }
         
@@ -577,20 +577,20 @@ extension SelfSignalCommandCenter {
         do {
             try eventBroadcaster.broadcast (
                 GPTerminatedEvent (
-                    subject: playerName, 
+                    subject: playerId, 
                     reason: "Not given", 
                     authorizedBy: eventBroadcaster.broadcastingFor.displayName
                 ).representedAsData(), 
                 to: [serverAddr]
             )
-            debug("\(consoleIdentifier) Did relay termination of \(playerName) to server")
-            playerRuntime.connectedPlayersNames.removeAll { $0 == playerName }
-            playerRuntime.joinRequestedPlayersNames.removeAll { $0 == playerName }
+            debug("\(consoleIdentifier) Did relay termination of \(playerId) to server")
+            playerRuntime.players.removeAll { $0.id == playerId }
+            playerRuntime.requestingPlayers.removeAll { $0.id == playerId }
             
             flowIsComplete = true
             
         } catch {
-            debug("\(consoleIdentifier) Did fail to relay termination of \(playerName) to server: \(error)")
+            debug("\(consoleIdentifier) Did fail to relay termination of \(playerId) to server: \(error)")
             
         }
         

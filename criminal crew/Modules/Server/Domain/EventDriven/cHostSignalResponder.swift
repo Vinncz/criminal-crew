@@ -97,18 +97,22 @@ extension HostSignalResponder {
             return
         }
         
-        let playerNames: [String] = playerRuntimeContainer.players.map { val in
-            val.playerDisplayName
+        let playerIds: [String] = playerRuntimeContainer.players.map { val in
+            val.address.displayName
         }
         
-        let requestor = playerRuntimeContainer.players.first(where: { $0.playerAddress.displayName == event.signingKey })
+        let playerNames: [String] = playerRuntimeContainer.players.map { val in
+            val.name
+        }
+        
+        let requestor = playerRuntimeContainer.players.first(where: { $0.address.displayName == event.signingKey })
         guard let requestor else {
             Logger.server.error("\(self.consoleIdentifier) Did fail to respond to connected player names request: request came from someone who isn't a member of the game or has been kicked/disconnected since")
             return
         }
         
         do {
-            try relay.eventBroadcaster?.broadcast(ConnectedPlayersNamesResponse(names: playerNames).representedAsData(), to: [requestor.playerAddress])
+            try relay.eventBroadcaster?.broadcast(ConnectedPlayersNamesResponse(ids: playerIds, names: playerNames).representedAsData(), to: [requestor.address])
             Logger.server.info("\(self.consoleIdentifier) Responded with names of connected players")
         } catch {
             Logger.server.error("\(self.consoleIdentifier) Did fail to respond with names of connected players: \(error)")
@@ -163,7 +167,7 @@ extension HostSignalResponder {
         
         // - Check if the initiator is the host or another use case
         if 
-            let host = relay.playerRuntimeContainer!.players.first?.playerAddress,
+            let host = relay.playerRuntimeContainer!.players.first?.address,
             event.signingKey == host.displayName 
         {
             relay.gameRuntimeContainer?.state = .stopped
@@ -189,7 +193,7 @@ extension HostSignalResponder {
         }
         
         // - Check if the player had already joined or did have joined
-        if let requestor = playerRuntimeContainer.players.first(where: { $0.playerAddress.displayName == event.subjectName }) {
+        if let requestor = playerRuntimeContainer.players.first(where: { $0.address.displayName == event.subjectName }) {
             Logger.server.error("\(self.consoleIdentifier) Player is in the game, ignoring their request..")
             return
         }
@@ -227,20 +231,20 @@ extension HostSignalResponder {
                 }
                 
                 guard hostIsNot(event.subject) else { return }
-                guard let host = playerRuntimeContainer.host?.playerAddress else {
+                guard let host = playerRuntimeContainer.host?.address else {
                     Logger.server.error("\(self.consoleIdentifier) Did fail to terminate \(event.subject). Host is missing")
                     return
                 }
-                guard let player = playerRuntimeContainer.players.first(where: { $0.playerAddress.displayName == event.subject }) else {
+                guard let player = playerRuntimeContainer.players.first(where: { $0.address.displayName == event.subject }) else {
                     Logger.server.error("\(self.consoleIdentifier) Did fail to terminate \(event.subject). Player is not in the game")
                     return
                 }
                 
                 relay.terminatePlayer (
-                    GPTerminatedEvent (subject: player.playerAddress.displayName, reason: event.reason, authorizedBy: host.displayName)
+                    GPTerminatedEvent (subject: player.address.displayName, reason: event.reason, authorizedBy: host.displayName)
                 )
-                _ = playerRuntimeContainer.terminate(player.playerAddress.displayName)
-                advertService.pendingRequests.removeAll { $0.requesteeAddress.displayName == player.playerAddress.displayName }
+                _ = playerRuntimeContainer.terminate(player.address.displayName)
+                advertService.pendingRequests.removeAll { $0.requesteeAddress.displayName == player.address.displayName }
                 
         }
     }
@@ -299,7 +303,7 @@ extension HostSignalResponder {
     
     private func hostIs ( _ requesteeName: String ) -> Bool {
         guard 
-            let host = relay?.playerRuntimeContainer?.host?.playerAddress,
+            let host = relay?.playerRuntimeContainer?.host?.address,
                 host.displayName == requesteeName
         else {
             Logger.server.error("\(self.consoleIdentifier) Did fail to start the game. Requestor isn't the host")
@@ -331,7 +335,7 @@ extension HostSignalResponder {
         }
         
         // checking and scheduling another try if the panelRuntimeContainer hasn't finished the mapping
-        let playerPool = playerRuntimeContainer.players.map { $0.playerAddress.displayName }
+        let playerPool = playerRuntimeContainer.players.map { $0.address.displayName }
         guard panelRuntimeContainer.playerMapping.count == playerPool.count else {
             Logger.server.error("\(self.consoleIdentifier) Did fail to initialize and assign tasks: panelRuntimeContainer hasn't finished the mapping of players to their respective panels. Rescheduling in another second")
             
@@ -371,7 +375,7 @@ extension HostSignalResponder {
     
     private func hostIsNot ( _ name: String ) -> Bool {
         guard 
-            let host = relay?.playerRuntimeContainer?.host?.playerAddress,
+            let host = relay?.playerRuntimeContainer?.host?.address,
                 host.displayName != name
         else {
             Logger.server.error("\(self.consoleIdentifier) Did fail to terminate \(name). Host cannot be terminated")
