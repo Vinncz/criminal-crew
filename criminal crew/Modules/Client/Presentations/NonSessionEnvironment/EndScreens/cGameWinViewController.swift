@@ -20,8 +20,13 @@ public class GameWinViewController : UIViewController, UsesDependenciesInjector 
     }
     
     @objc public func backToMainMenu ( _ sender: UIButton ) {
+        AudioManager.shared.stopAllSoundEffects()
+        AudioManager.shared.stopBackgroundMusic()
+        AudioManager.shared.playSoundEffect(fileName: "big_button_on_off")
         relay?.navController?.popToRootViewController(animated: true)
     }
+    
+    private let consoleIdentifier = "[C-WIN]"
     
 }
 
@@ -36,7 +41,17 @@ extension GameWinViewController {
         view.backgroundColor = .clear
         navigationItem.hidesBackButton = true
         
-        let imageView = UIImageView(image: UIImage(named: "background_gameplay_info"))
+        guard
+            let relay = relay,
+            let gameRuntimeContainer = relay.gameRuntimeContainer
+        else {
+            debug("\(consoleIdentifier) failed to get relay, gameRuntimeContainer")
+            return
+        }
+        
+        let difficulty = gameRuntimeContainer.difficulty
+        
+        let imageView = UIImageView(image: UIImage(named: "win_screen\(difficulty ?? 1)"))
         imageView.contentMode = .scaleToFill
         imageView.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(imageView)
