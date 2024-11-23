@@ -46,7 +46,7 @@ public class CardSwipeViewController: BaseGameViewController {
         
         self.view.addSubview(landscapeContainerView)
         
-        let landscapeBackgroundImage = ViewFactory.addBackgroundImageView("BG Numpad")
+        let landscapeBackgroundImage = ViewFactory.addBackgroundImageView("BG Landscape")
         landscapeBackgroundImage.translatesAutoresizingMaskIntoConstraints = false
         landscapeContainerView.addSubview(landscapeBackgroundImage)
         
@@ -79,7 +79,7 @@ public class CardSwipeViewController: BaseGameViewController {
         containerView.translatesAutoresizingMaskIntoConstraints = false
         self.view.addSubview(containerView)
         
-        let portraitBackgroundImage = ViewFactory.addBackgroundImageView("BG Swiper")
+        let portraitBackgroundImage = ViewFactory.addBackgroundImageView("BG Portrait")
         portraitBackgroundImage.translatesAutoresizingMaskIntoConstraints = false
         containerView.addSubview(portraitBackgroundImage)
         
