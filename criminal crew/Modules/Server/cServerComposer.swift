@@ -217,6 +217,7 @@ extension ServerComposer {
         evtUC_eventRelayer.placeSubscription(on: GPGameJoinRequestedEvent.self)
         evtUC_eventRelayer.placeSubscription(on: GPUnableToBrowseEvent.self)
         evtUC_eventRelayer.placeSubscription(on: GPAcquaintanceStatusUpdateEvent.self)
+        evtUC_eventRelayer.placeSubscription(on: GameDifficultyUpdateEvent.self)
         debug("[S] Placed subscription of EventRelayer to GPGameJoinRequestedEvent & GPUnableToBrowseEvent")
         
         evtUC_hostSignalResponder.placeSubscription(on: GPGameStartRequestedEvent.self)
@@ -225,7 +226,6 @@ extension ServerComposer {
         evtUC_hostSignalResponder.placeSubscription(on: GPBlacklistedEvent.self)
         evtUC_hostSignalResponder.placeSubscription(on: GPTerminatedEvent.self)
         evtUC_hostSignalResponder.placeSubscription(on: InquiryAboutConnectedPlayersRequestedEvent.self)
-        evtUC_hostSignalResponder.placeSubscription(on: GameDifficultyUpdateEvent.self)
         debug("[S] Placed subscription of HostSignalResponder to GPGameStartRequestedEvent, GPGameEndRequestedEvent, GPGameJoinVerdictDeliveredEvent, GPBlacklistedEvent, and GPTerminatedEvent")
         
         evtUC_taskReportResponder.placeSubscription(on: CriteriaReportEvent.self)

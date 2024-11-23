@@ -425,7 +425,6 @@ extension LobbyViewController {
                 .debounce(for: .milliseconds(200), scheduler: RunLoop.main)
                 .receive(on: DispatchQueue.main)
                 .sink { [weak self] difficulty in
-                    print("update difficulty broh: \(difficulty)")
                     self?.difficultyButton.updateDifficultyIndex(to: difficulty ?? 0)
                 }.store(in: &subscriptions)
             

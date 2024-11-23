@@ -50,7 +50,6 @@ internal class HapticManager {
         guard isHapticEnabled, hapticIsOn else { return }
         impactGenerator = UIImpactFeedbackGenerator(style: style)
         impactGenerator.impactOccurred()
-        print("haptic geter")
     }
     
     internal func triggerSelectionFeedback() {
