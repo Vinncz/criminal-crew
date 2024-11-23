@@ -296,19 +296,22 @@ extension LobbyViewController {
                 card.configure(name: nil, id: nil)
             }
         }
-        guard 
-            let relay = relay,
-            let selfSignalCommandCenter = relay.selfSignalCommandCenter
-        else { 
-            debug("\(consoleIdentifier) Did fail to set up actions for list of connected players. Relay is missing or not set")
-            return 
-        }
-        let myId = selfSignalCommandCenter.whoAmI()
-        playerCards.forEach { card in
-            if ( card.playerId == myId ) {
-                card.kickButton.isHidden = true
-            }
-        }
+        //TODO: fix the silly bug
+//        guard 
+//            let relay = relay,
+//            let selfSignalCommandCenter = relay.selfSignalCommandCenter
+//        else { 
+//            debug("\(consoleIdentifier) Did fail to set up actions for list of connected players. Relay is missing or not set")
+//            return 
+//        }
+//        let myId = selfSignalCommandCenter.whoAmI()
+//        DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
+//            self.playerCards.forEach { card in
+//                if ( card.playerId == myId ) {
+//                    card.kickButton.isHidden = true
+//                }
+//            }
+//        }
     }
     
 }
