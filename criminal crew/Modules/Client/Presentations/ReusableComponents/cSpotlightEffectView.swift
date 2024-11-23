@@ -21,7 +21,7 @@ class SpotlightEffectView: UIView {
 
     private func setupGradient() {
         gradientLayer.colors = [
-            UIColor.white.withAlphaComponent(0.4).cgColor,
+            UIColor.white.withAlphaComponent(0.2).cgColor,
             UIColor.white.withAlphaComponent(0.1).cgColor,
             UIColor.clear.cgColor
         ]
