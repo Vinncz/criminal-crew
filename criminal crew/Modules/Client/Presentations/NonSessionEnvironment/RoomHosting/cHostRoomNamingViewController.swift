@@ -13,6 +13,9 @@ public class HostRoomNamingViewController : UIViewController, UsesDependenciesIn
     private let backButtonId = 1
     private let settingsButtonId = 2
     
+    var textFieldCenterXConstraintRealOne: NSLayoutConstraint?
+    var textFieldCenterYConstraintRealOne: NSLayoutConstraint?
+    
     var textFieldCenterXConstraint: NSLayoutConstraint?
     var textFieldCenterYConstraint: NSLayoutConstraint?
     
@@ -38,19 +41,10 @@ public class HostRoomNamingViewController : UIViewController, UsesDependenciesIn
         self.bSettings    = ButtonWithImage(imageName: "setting_button_default", tag: settingsButtonId)
         super.init(nibName: nibNameOrNil, bundle: nibBundleOrNil)
         
-        NotificationCenter.default.addObserver(
-            self,
-            selector: #selector(keyboardWillShow(notification:)),
-            name: UIResponder.keyboardWillShowNotification,
-            object: nil
-        )
-
-        NotificationCenter.default.addObserver(
-            self,
-            selector: #selector(keyboardWillHide(notification:)),
-            name: UIResponder.keyboardWillHideNotification,
-            object: nil
-        )
+        NotificationCenter.default.addObserver(self,
+            selector: #selector(keyboardWillChangeFrame(notification:)),
+            name: UIResponder.keyboardWillChangeFrameNotification,
+            object: nil)
     }
     
     required init? ( coder: NSCoder ) {
@@ -60,9 +54,7 @@ public class HostRoomNamingViewController : UIViewController, UsesDependenciesIn
     private let consoleIdentifier : String = "[C-HRN-VC]"
     
     deinit {
-        NotificationCenter.default.removeObserver(self, name: UIResponder.keyboardWillShowNotification, object: nil)
-        NotificationCenter.default.removeObserver(self, name: UIResponder.keyboardWillHideNotification, object: nil)
-
+        NotificationCenter.default.removeObserver(self, name: UIResponder.keyboardWillChangeFrameNotification, object: nil)
     }
     
 }
@@ -128,6 +120,9 @@ extension HostRoomNamingViewController {
             bExposeRoom.widthAnchor.constraint(equalTo: vstack.widthAnchor, multiplier: 0.3),
             bExposeRoom.centerXAnchor.constraint(equalTo: vstack.centerXAnchor)
         ])
+        
+        textFieldCenterXConstraintRealOne = tRoomName.centerXAnchor.constraint(equalTo: vstack.centerXAnchor)
+        textFieldCenterYConstraintRealOne = tRoomName.bottomAnchor.constraint(equalTo: vstack.bottomAnchor)
         
         // YOU DIDN'T OPEN YOUR EARS. HOW CAN YOU REACT TO SOMETHING IF YOU'RE DEAF?!
         _ = self.relay?.selfSignalCommandCenter?.startBrowsingForServers()
@@ -242,27 +237,51 @@ extension HostRoomNamingViewController {
         
     }
     
-    @objc private func keyboardWillShow(notification: Notification) {
-        guard let keyboardFrame = notification.userInfo?[UIResponder.keyboardFrameEndUserInfoKey] as? CGRect
-        else { return }
+    @objc private func keyboardWillChangeFrame(notification: Notification) {
+        print("keyboard change called")
+        guard let keyboardFrameEnd = notification.userInfo?[UIResponder.keyboardFrameEndUserInfoKey] as? CGRect,
+          let keyboardFrameBegin = notification.userInfo?[UIResponder.keyboardFrameBeginUserInfoKey] as? CGRect else { return }
         
-        textFieldCenterXConstraint = tRoomName.centerXAnchor.constraint(equalTo: view.centerXAnchor)
-        let keyboardHeight = keyboardFrame.height
-        textFieldCenterYConstraint = tRoomName.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: -keyboardHeight - 10)
-        textFieldCenterYConstraint?.isActive = true
-        textFieldCenterXConstraint?.isActive = true
+        let keyboardHeightEnd = keyboardFrameEnd.height
+        let keyboardHeightBegin = keyboardFrameBegin.height
+        
+        print("from \(keyboardHeightBegin) to \(keyboardHeightEnd).")
+        
+        if keyboardHeightEnd > keyboardHeightBegin {
+            print("Keyboard is expanding. from \(keyboardHeightBegin) to \(keyboardHeightEnd).")
+            textFieldCenterXConstraintRealOne?.isActive = false
+            textFieldCenterYConstraintRealOne?.isActive = false
+            textFieldCenterYConstraint?.isActive = false
+            let keyboardHeight = keyboardFrameEnd.height
+            textFieldCenterYConstraint = tRoomName.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: -keyboardHeight - 10)
+            textFieldCenterYConstraint?.isActive = true
+            textFieldCenterXConstraint?.isActive = true
 
-        UIView.animate(withDuration: 0.3) {
-            self.view.layoutIfNeeded()
-        }
-    }
+            UIView.animate(withDuration: 0.3) {
+                self.view.layoutIfNeeded()
+            }
+        } else if keyboardHeightEnd < keyboardHeightBegin {
+            print("Keyboard is shrinking. from \(keyboardHeightBegin) to \(keyboardHeightEnd).")
+            textFieldCenterXConstraintRealOne?.isActive = false
+            textFieldCenterYConstraintRealOne?.isActive = false
+            textFieldCenterYConstraint?.isActive = false
+            let keyboardHeight = keyboardFrameEnd.height
+            textFieldCenterYConstraint = tRoomName.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: -keyboardHeight - 10)
+            textFieldCenterYConstraint?.isActive = true
+            textFieldCenterXConstraint?.isActive = true
 
-    @objc private func keyboardWillHide(notification: Notification) {
-        textFieldCenterXConstraint?.isActive = false
-        textFieldCenterYConstraint?.isActive = false
-
-        UIView.animate(withDuration: 0.3) {
-            self.view.layoutIfNeeded()
+            UIView.animate(withDuration: 0.3) {
+                self.view.layoutIfNeeded()
+            }
+        } else if keyboardHeightEnd == keyboardHeightBegin {
+            textFieldCenterXConstraint?.isActive = false
+            textFieldCenterYConstraint?.isActive = false
+            
+            textFieldCenterXConstraintRealOne?.isActive = true
+            textFieldCenterYConstraintRealOne?.isActive = true
+            UIView.animate(withDuration: 0.3) {
+                self.view.layoutIfNeeded()
+            }
         }
     }
     
