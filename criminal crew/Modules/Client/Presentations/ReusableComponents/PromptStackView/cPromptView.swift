@@ -75,7 +75,7 @@ open class PromptView: UIView {
             promptLabel.topAnchor.constraint(equalTo: topAnchor, constant: 8),
             promptLabel.bottomAnchor.constraint(equalTo: bottomAnchor, constant: -8),
             promptLabel.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 50),
-            promptLabel.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -16),
+            promptLabel.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -32),
             
             timerButtonView.leadingAnchor.constraint(equalTo: leadingAnchor),
             timerButtonView.bottomAnchor.constraint(equalTo: bottomAnchor),
@@ -85,7 +85,7 @@ open class PromptView: UIView {
             timerBodyView.leadingAnchor.constraint(equalTo: leadingAnchor),
             timerBodyView.bottomAnchor.constraint(equalTo: bottomAnchor),
             timerBodyView.widthAnchor.constraint(equalToConstant: 50),
-            timerBodyView.heightAnchor.constraint(equalToConstant: 60),
+            timerBodyView.heightAnchor.constraint(equalToConstant: 50),
             
             timerView.leadingAnchor.constraint(equalTo: leadingAnchor),
             timerView.bottomAnchor.constraint(equalTo: bottomAnchor),
