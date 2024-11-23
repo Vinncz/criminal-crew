@@ -172,7 +172,7 @@ extension ServerComposer {
                 }
             },
             terminatePlayer        : { terminationEvent in
-                guard let playerToBeTerminated = self.ent_playerRuntimeContainer.players.first(where: { $0.playerAddress.displayName == terminationEvent.subject })?.playerAddress else {
+                guard let playerToBeTerminated = self.ent_playerRuntimeContainer.players.first(where: { $0.address.displayName == terminationEvent.subject })?.address else {
                     debug("[S] HostSignalResponder is unable to admit the player: the request record is missing or not found")
                     return
                 }
@@ -188,14 +188,14 @@ extension ServerComposer {
         debug("[S] HostSignalResponder relay has been set up")
         
         evtUC_taskReportResponder.relay = PlayerTaskReportResponder.Relay (
-            eventRouter          : self.router,
-            eventBroadcaster     : self.networkManager.eventBroadcaster,
-            gameRuntimeContainer : self.ent_gameRuntimeContainer,
-            panelRuntimeContainer: self.ent_panelRuntimeContainer,
-            playerRuntimeContainer: self.ent_playerRuntimeContainer,
-            taskRuntimeContainer: self.ent_taskRuntimeContainer,
-            taskAssigner: self.comUC_taskAssigner,
-            taskGenerator: self.comUC_taskGenerator
+            eventRouter            : self.router,
+            eventBroadcaster       : self.networkManager.eventBroadcaster,
+            gameRuntimeContainer   : self.ent_gameRuntimeContainer,
+            panelRuntimeContainer  : self.ent_panelRuntimeContainer,
+            playerRuntimeContainer : self.ent_playerRuntimeContainer,
+            taskRuntimeContainer   : self.ent_taskRuntimeContainer,
+            taskAssigner           : self.comUC_taskAssigner,
+            taskGenerator          : self.comUC_taskGenerator
         )
         debug("[S] PlayerTaskReportResponder relay has been set up")
         
@@ -217,6 +217,7 @@ extension ServerComposer {
         evtUC_eventRelayer.placeSubscription(on: GPGameJoinRequestedEvent.self)
         evtUC_eventRelayer.placeSubscription(on: GPUnableToBrowseEvent.self)
         evtUC_eventRelayer.placeSubscription(on: GPAcquaintanceStatusUpdateEvent.self)
+        evtUC_eventRelayer.placeSubscription(on: GameDifficultyUpdateEvent.self)
         debug("[S] Placed subscription of EventRelayer to GPGameJoinRequestedEvent & GPUnableToBrowseEvent")
         
         evtUC_hostSignalResponder.placeSubscription(on: GPGameStartRequestedEvent.self)
@@ -225,7 +226,6 @@ extension ServerComposer {
         evtUC_hostSignalResponder.placeSubscription(on: GPBlacklistedEvent.self)
         evtUC_hostSignalResponder.placeSubscription(on: GPTerminatedEvent.self)
         evtUC_hostSignalResponder.placeSubscription(on: InquiryAboutConnectedPlayersRequestedEvent.self)
-        evtUC_hostSignalResponder.placeSubscription(on: GameDifficultyUpdateEvent.self)
         debug("[S] Placed subscription of HostSignalResponder to GPGameStartRequestedEvent, GPGameEndRequestedEvent, GPGameJoinVerdictDeliveredEvent, GPBlacklistedEvent, and GPTerminatedEvent")
         
         evtUC_taskReportResponder.placeSubscription(on: CriteriaReportEvent.self)

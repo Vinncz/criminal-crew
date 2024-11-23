@@ -294,12 +294,11 @@ extension LobbyViewController {
                 
                 _ = selfCommandCenter.orderConnectedPlayerNames()
                     
-                playerRuntimeContainer.$connectedPlayersNames
+                playerRuntimeContainer.$players
                     .debounce(for: .milliseconds(200), scheduler: RunLoop.main)
                     .receive(on: DispatchQueue.main)
-                    .sink { [weak self] names in
-                        self?.updateCards(with: names)
-                        debug("Reloading joined players list with \(names)")
+                    .sink { [weak self] players in
+                        self?.updateCards(with: players.map { $0.name })
                     }
                     .store(in: &subscriptions)
                 
@@ -376,8 +375,8 @@ extension LobbyViewController {
                 self?.lConnectionStatus.text = conStatus.toString()
                 
                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-                    if ( relay.playerRuntimeContainer?.connectedPlayersNames.count ?? 0 >= 1 ) {
-                        self?.updateCards(with: relay.playerRuntimeContainer?.connectedPlayersNames ?? [])
+                    if ( relay.playerRuntimeContainer?.players.count ?? 0 >= 1 ) {
+                        self?.updateCards(with: relay.playerRuntimeContainer?.players.map{ $0.name } ?? [])
                     }
                 }
             }.store(in: &subscriptions)
@@ -469,7 +468,7 @@ extension LobbyViewController {
             Logger.client.error("\(self.consoleIdentifier) Did fail to refresh connected players.")
         }
         
-        guard let connectedPlayersNames = relay.playerRuntimeContainer?.connectedPlayersNames
+        guard let connectedPlayersNames = relay.playerRuntimeContainer?.players.map({ $0.name })
         else {
             debug("\(consoleIdentifier) failed to update palyers. ConnectedPlayersNames is missing")
             return

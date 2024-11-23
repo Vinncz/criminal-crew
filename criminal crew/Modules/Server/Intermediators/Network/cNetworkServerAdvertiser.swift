@@ -36,7 +36,8 @@ public class GameServerAdvertiser : GPGameServerAdvertiser {
         
         if !emit (
             GPGameJoinRequestedEvent (
-                requestedBy: peer.displayName
+                requestedBy: peer.displayName,
+                named: (fromData(withContext ?? Data())?["Unnamed Player"] as? String) ?? "Unnamed Player"
             )
         ) {
             consoleMsg += "\(consoleIdentifier) Did fail to emit the event that a player has requested to join the game\n"
