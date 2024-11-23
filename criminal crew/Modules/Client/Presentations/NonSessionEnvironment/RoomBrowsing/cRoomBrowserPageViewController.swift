@@ -1,5 +1,6 @@
 import Combine
 import UIKit
+import os
 
 public class RoomBrowserPageViewController : UIViewController {
     
@@ -101,12 +102,10 @@ extension RoomBrowserPageViewController {
         
         _ = self.relay?.selfSignalCommandCenter?.startBrowsingForServers()
         enableUpdateJobForDiscoveredServers()
-        AudioManager.shared.playBackgroundMusic(fileName: "bgm_lobby")
     }
     
     override public func viewDidDisappear ( _ animated: Bool ) {
         super.viewDidDisappear(animated)
-        AudioManager.shared.stopBackgroundMusic()
         subscriptions.forEach { $0.cancel() }
     }
     
@@ -152,6 +151,7 @@ extension RoomBrowserPageViewController {
         }
         
         serverBrowser.$discoveredServers
+            .debounce(for: .milliseconds(200), scheduler: RunLoop.main)
             .receive(on: DispatchQueue.main)
             .sink { [weak self] _ in
                 self?.tDiscoveredServers.reloadData()
@@ -242,7 +242,9 @@ extension RoomBrowserPageViewController : UITableViewDelegate, UITableViewDataSo
         
         let extractedRoomId = "ID"
         
-        cell.configure(roomName: extractedRoomName, roomIndex: indexPath.row + 1, roomId: extractedRoomId)
+        let extractedRoomDiff = Int(serverBrowser.discoveredServers[indexPath.row].discoveryContext["difficulty"]!) ?? 3
+        
+        cell.configure(roomName: extractedRoomName, roomDifficulty: extractedRoomDiff, roomIndex: indexPath.row + 1, roomId: extractedRoomId)
         cell.selectionStyle = .default
         
         if indexPath.row % 2 == 0 {
@@ -270,6 +272,19 @@ extension RoomBrowserPageViewController : UITableViewDelegate, UITableViewDataSo
         
         let selectedServer = serverBrowser.discoveredServers[indexPath.row]
         _ = selfSignalCommandCenter.sendJoinRequest(to: selectedServer.serverId)
+        guard let cell = tableView.cellForRow(at: indexPath) as? RoomCell else {
+            debug("\(consoleIdentifier) Could not retrieve RoomCell for indexPath: \(indexPath)")
+            return
+        }
+        let roomName = cell.roomName
+        let roomDifficulty = cell.roomDifficulty
+        guard let gameRuntimeContainer = relay.gameRuntimeContainer
+        else {
+            Logger.client.error("\(self.consoleIdentifier) failed to handle didSelectRowAt: gameRuntimeContainer is missing")
+            return
+        }
+        gameRuntimeContainer.playedRoomName = roomName
+        gameRuntimeContainer.difficulty = roomDifficulty
         _ = selfSignalCommandCenter.stopBrowsingForServers()
         
         let lobbyViewController = LobbyViewController()

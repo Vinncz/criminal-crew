@@ -102,6 +102,7 @@ internal class SettingSliderView: UIView {
         switch labelName {
             case "BG_Music":
                 AudioManager.shared.backgroundVolume = sender.value
+                AudioManager.shared.resetBackgroundMusic()
                 break
             case "Sound_Effects":
                 AudioManager.shared.soundEffectVolume = sender.value

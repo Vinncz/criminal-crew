@@ -731,6 +731,24 @@ extension CardSwipeViewController {
         self.relay = relay
         if let panelRuntimeContainer = relay.panelRuntimeContainer {
             bindInstruction(to: panelRuntimeContainer)
+            bindPenaltyProgression(panelRuntimeContainer)
+            let panelPlayed = panelRuntimeContainer.panelPlayed
+            switch panelPlayed {
+                case is ClientSwitchesPanel:
+                    updateBackgroundImage("background_module_switches")
+                case is ClientCardPanel:
+                    updateBackgroundImage("background_module_card")
+                case is ClientKnobPanel:
+                    updateBackgroundImage("background_module_slider")
+                case is ClientClockPanel:
+                    updateBackgroundImage("background_module_clock")
+                case is ClientWiresPanel:
+                    updateBackgroundImage("background_module_cable")
+                case is ClientColorPanel:
+                    updateBackgroundImage("background_module_color")
+                default:
+                    print("\(consoleIdentifier) Did fail to update background image. Unsupported panel type: \(String(describing: panelPlayed))")
+            }
         }
         return self
     }
@@ -748,6 +766,16 @@ extension CardSwipeViewController {
                 self?.resetTimerAndAnimation()
                 self?.changePromptText(instruction.content)
                 self?.changeTimeInterval(instruction.displayDuration)
+            }
+            .store(in: &subscriptions)
+    }
+    
+    private func bindPenaltyProgression(_ panelRunTimeContainer: ClientPanelRuntimeContainer) {
+        panelRunTimeContainer.$penaltyProgression
+            .receive(on: DispatchQueue.main)
+            .debounce(for: .milliseconds(200), scheduler: RunLoop.main)
+            .sink { [weak self] progression in
+                self?.updateLossCondition(intensity: Float(progression))
             }
             .store(in: &subscriptions)
     }

@@ -58,11 +58,17 @@ internal class AudioManager {
         audioPlayerForBackgroundMusic = nil
     }
     
+    internal func resetBackgroundMusic() {
+        audioPlayerForBackgroundMusic?.pause()
+        audioPlayerForBackgroundMusic?.volume = backgroundVolume / 100
+        audioPlayerForBackgroundMusic?.play()
+    }
+    
     internal func playIndicatorMusic(fileName: String) {
         guard let url = Bundle.main.url(forResource: fileName, withExtension: "mp3") else { return }
         do {
             audioPlayerForIndicator = try AVAudioPlayer(contentsOf: url)
-            audioPlayerForIndicator?.volume = soundEffectVolume / 100
+            audioPlayerForIndicator?.volume = soundEffectVolume / 50
             audioPlayerForIndicator?.numberOfLoops = 0
             audioPlayerForIndicator?.play()
         } catch {
@@ -98,7 +104,7 @@ internal class AudioManager {
         guard let url = Bundle.main.url(forResource: "timer", withExtension: "mp3") else { return }
         do {
             audioPlayerForTimer = try AVAudioPlayer(contentsOf: url)
-            audioPlayerForIndicator?.volume = soundEffectVolume / 100
+            audioPlayerForIndicator?.volume = soundEffectVolume / 20
             audioPlayerForTimer?.numberOfLoops = 0
             audioPlayerForTimer?.play()
         } catch {

@@ -161,6 +161,7 @@ extension ClientComposer {
         evtUC_serverSignalResponder.placeSubscription(on: TaskProgressionDidReachLimitEvent.self)
         
         evtUC_serverSignalResponder.placeSubscription(on: ConnectedPlayersNamesResponse.self)
+        evtUC_serverSignalResponder.placeSubscription(on: GameDifficultyUpdateEvent.self)
         
         debug("[C] Placed subscription of ServerSignalResponder to GPAcquaintanceStatusUpdateEvent, HasBeenAssignedHost, HasBeenAssignedPanel, HasBeenAssignedTask, PenaltyDidReachLimitEvent, TaskDidReachLimitEvent, ConnectedPlayerNamesResponse")
     }

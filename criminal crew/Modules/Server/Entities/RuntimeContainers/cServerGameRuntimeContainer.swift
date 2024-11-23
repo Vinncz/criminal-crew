@@ -5,17 +5,17 @@ public class ServerGameRuntimeContainer : ObservableObject {
     
     @Published public var state : GameState { 
         didSet {
-            Logger.server.log("\(self.consoleIdentifier) Did update game state to: \(String(describing: self.state))")
+            Logger.server.info("\(self.consoleIdentifier) Did update game state to: \(String(describing: self.state))")
         } 
     }
     @Published public var difficulty : GameDifficulty {
         didSet {
-            Logger.server.log("\(self.consoleIdentifier) Did update game difficulty to: \(String(describing: self.difficulty))")
+            Logger.server.info("\(self.consoleIdentifier) Did update game difficulty to: \(String(describing: self.difficulty))")
         }
     }
     @Published public var penaltiesProgression : PenaltiesProgression { 
         didSet {
-            Logger.server.log("\(self.consoleIdentifier) Did update penalties progression to: \(String(describing: self.penaltiesProgression))")
+            Logger.server.info("\(self.consoleIdentifier) Did update penalties progression to: \(String(describing: self.penaltiesProgression))")
         } 
     }
     @Published public var tasksProgression : TasksProgression { 

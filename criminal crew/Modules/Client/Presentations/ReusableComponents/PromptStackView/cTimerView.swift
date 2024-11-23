@@ -9,7 +9,7 @@ protocol TimerViewDelegate: AnyObject {
 internal class TimerView: UIView {
     
     weak var delegate: TimerViewDelegate?
-    
+    let dispatchWork = DispatchWorkItem { AudioManager.shared.playTimerMusic() }
     
     private let timerLayer = CAShapeLayer()
     private let backgroundLayer = CAShapeLayer()
@@ -71,12 +71,14 @@ internal class TimerView: UIView {
 
         timerLayer.add(animation, forKey: "timerAnimation")
         
+        
+        
         if duration > 10 {
-            DispatchQueue.main.asyncAfter(deadline: .now() + (duration - 10)) {
-                AudioManager.shared.playTimerMusic()
-            }
+            DispatchQueue.main.asyncAfter(deadline: .now() + (duration - 10), execute: dispatchWork)
+            
         } else if duration <= 10 {
             AudioManager.shared.playTimerMusic()
+            
         }
     }
     

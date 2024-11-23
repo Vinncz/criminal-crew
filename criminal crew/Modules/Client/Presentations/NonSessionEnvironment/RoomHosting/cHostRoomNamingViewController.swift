@@ -13,6 +13,12 @@ public class HostRoomNamingViewController : UIViewController, UsesDependenciesIn
     private let backButtonId = 1
     private let settingsButtonId = 2
     
+    var textFieldCenterXConstraintRealOne: NSLayoutConstraint?
+    var textFieldCenterYConstraintRealOne: NSLayoutConstraint?
+    
+    var textFieldCenterXConstraint: NSLayoutConstraint?
+    var textFieldCenterYConstraint: NSLayoutConstraint?
+    
     public var relay: Relay?
     public struct Relay : CommunicationPortal {
         weak var selfSignalCommandCenter : SelfSignalCommandCenter?
@@ -34,6 +40,11 @@ public class HostRoomNamingViewController : UIViewController, UsesDependenciesIn
         self.bBackButton = ButtonWithImage(imageName: "back_button_default", tag: backButtonId)
         self.bSettings    = ButtonWithImage(imageName: "setting_button_default", tag: settingsButtonId)
         super.init(nibName: nibNameOrNil, bundle: nibBundleOrNil)
+        
+        NotificationCenter.default.addObserver(self,
+            selector: #selector(keyboardWillChangeFrame(notification:)),
+            name: UIResponder.keyboardWillChangeFrameNotification,
+            object: nil)
     }
     
     required init? ( coder: NSCoder ) {
@@ -41,6 +52,10 @@ public class HostRoomNamingViewController : UIViewController, UsesDependenciesIn
     }
     
     private let consoleIdentifier : String = "[C-HRN-VC]"
+    
+    deinit {
+        NotificationCenter.default.removeObserver(self, name: UIResponder.keyboardWillChangeFrameNotification, object: nil)
+    }
     
 }
 
@@ -106,9 +121,11 @@ extension HostRoomNamingViewController {
             bExposeRoom.centerXAnchor.constraint(equalTo: vstack.centerXAnchor)
         ])
         
+        textFieldCenterXConstraintRealOne = tRoomName.centerXAnchor.constraint(equalTo: vstack.centerXAnchor)
+        textFieldCenterYConstraintRealOne = tRoomName.bottomAnchor.constraint(equalTo: vstack.bottomAnchor)
+        
         // YOU DIDN'T OPEN YOUR EARS. HOW CAN YOU REACT TO SOMETHING IF YOU'RE DEAF?!
         _ = self.relay?.selfSignalCommandCenter?.startBrowsingForServers()
-        AudioManager.shared.playBackgroundMusic(fileName: "bgm_lobby")
     }
     
     private func setupBackButton() {
@@ -135,10 +152,6 @@ extension HostRoomNamingViewController {
             bSettings.widthAnchor.constraint(equalToConstant: 45.0),
             bSettings.heightAnchor.constraint(equalToConstant: 45.0)
         ])
-    }
-    
-    public override func viewDidDisappear(_ animated: Bool) {
-        AudioManager.shared.stopBackgroundMusic()
     }
     
 }
@@ -191,7 +204,8 @@ extension HostRoomNamingViewController {
                 
             case .success:
                 relay.publicizeRoom? ([
-                    "roomName": tRoomName.text!.isEmpty ? "Unnamed Room" : tRoomName.text!
+                    "roomName": tRoomName.text!.isEmpty ? "Unnamed Room" : tRoomName.text!,
+                    "difficulty" : String(relay.gameRuntimeContainer?.difficulty ?? 0)
                 ])
                 
                 relay.gameRuntimeContainer?.playedRoomName = tRoomName.text!.isEmpty ? "Unnamed Room" : tRoomName.text!
@@ -217,6 +231,54 @@ extension HostRoomNamingViewController {
                 relay.navigate?(lobby)
         }
         
+    }
+    
+    @objc private func keyboardWillChangeFrame(notification: Notification) {
+        print("keyboard change called")
+        guard let keyboardFrameEnd = notification.userInfo?[UIResponder.keyboardFrameEndUserInfoKey] as? CGRect,
+          let keyboardFrameBegin = notification.userInfo?[UIResponder.keyboardFrameBeginUserInfoKey] as? CGRect else { return }
+        
+        let keyboardHeightEnd = keyboardFrameEnd.height
+        let keyboardHeightBegin = keyboardFrameBegin.height
+        
+        print("from \(keyboardHeightBegin) to \(keyboardHeightEnd).")
+        
+        if keyboardHeightEnd > keyboardHeightBegin {
+            print("Keyboard is expanding. from \(keyboardHeightBegin) to \(keyboardHeightEnd).")
+            textFieldCenterXConstraintRealOne?.isActive = false
+            textFieldCenterYConstraintRealOne?.isActive = false
+            textFieldCenterYConstraint?.isActive = false
+            let keyboardHeight = keyboardFrameEnd.height
+            textFieldCenterYConstraint = tRoomName.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: -keyboardHeight - 10)
+            textFieldCenterYConstraint?.isActive = true
+            textFieldCenterXConstraint?.isActive = true
+
+            UIView.animate(withDuration: 0.3) {
+                self.view.layoutIfNeeded()
+            }
+        } else if keyboardHeightEnd < keyboardHeightBegin {
+            print("Keyboard is shrinking. from \(keyboardHeightBegin) to \(keyboardHeightEnd).")
+            textFieldCenterXConstraintRealOne?.isActive = false
+            textFieldCenterYConstraintRealOne?.isActive = false
+            textFieldCenterYConstraint?.isActive = false
+            let keyboardHeight = keyboardFrameEnd.height
+            textFieldCenterYConstraint = tRoomName.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: -keyboardHeight - 10)
+            textFieldCenterYConstraint?.isActive = true
+            textFieldCenterXConstraint?.isActive = true
+
+            UIView.animate(withDuration: 0.3) {
+                self.view.layoutIfNeeded()
+            }
+        } else if keyboardHeightEnd == keyboardHeightBegin {
+            textFieldCenterXConstraint?.isActive = false
+            textFieldCenterYConstraint?.isActive = false
+            
+            textFieldCenterXConstraintRealOne?.isActive = true
+            textFieldCenterYConstraintRealOne?.isActive = true
+            UIView.animate(withDuration: 0.3) {
+                self.view.layoutIfNeeded()
+            }
+        }
     }
     
 }

@@ -97,13 +97,9 @@ extension HostSignalResponder {
             return
         }
         
-        let playerIds: [String] = playerRuntimeContainer.players.map { val in
-            val.address.displayName
-        }
+        let playerIds: [String] = playerRuntimeContainer.connectedPlayers.map { $0.address.displayName }
         
-        let playerNames: [String] = playerRuntimeContainer.players.map { val in
-            val.name
-        }
+        let playerNames: [String] = playerRuntimeContainer.connectedPlayers.map { $0.name }
         
         let requestor = playerRuntimeContainer.players.first(where: { $0.address.displayName == event.signingKey })
         guard let requestor else {
@@ -251,7 +247,7 @@ extension HostSignalResponder {
     
     private func respondToGameDiffUpdate ( _ event: GameDifficultyUpdateEvent ) {
         guard let relay = relay else {
-            Logger.server.error("\(self.consoleIdentifier) Did fail to respond to terminated event: relay is missing or not set")
+            Logger.server.error("\(self.consoleIdentifier) Did fail to respond to game diff update: relay is missing or not set")
             return
         }
         

@@ -32,6 +32,11 @@ public class ClientGameRuntimeContainer : ObservableObject {
             debug("\(consoleIdentifier) Did update admission policy to \(admissionPolicy.rawValue)")
         }
     }
+    @Published public var difficulty           : Int? {
+        didSet {
+            debug("\(consoleIdentifier) Did update difficulty to \(String(describing: difficulty))")
+        }
+    }
     
     public init () {
         state            = .notStarted
@@ -78,6 +83,8 @@ extension ClientGameRuntimeContainer {
         connectionState      = .notConnected
         isHost               = false
         admissionPolicy      = .open
+        playedRoomName       = nil
+        difficulty           = nil
     }
     
 }

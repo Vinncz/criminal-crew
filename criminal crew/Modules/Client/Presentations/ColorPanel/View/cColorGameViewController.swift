@@ -1,5 +1,6 @@
 import UIKit
 import Combine
+import os
 
 internal class ColorGameViewController: BaseGameViewController {
     
@@ -209,6 +210,23 @@ extension ColorGameViewController {
         if let panelRuntimeContainer = relay.panelRuntimeContainer {
             bindInstruction(to: panelRuntimeContainer)
             bindPenaltyProgression(panelRuntimeContainer)
+            let panelPlayed = panelRuntimeContainer.panelPlayed
+            switch panelPlayed {
+                case is ClientSwitchesPanel:
+                    updateBackgroundImage("background_module_switches")
+                case is ClientCardPanel:
+                    updateBackgroundImage("background_module_card")
+                case is ClientKnobPanel:
+                    updateBackgroundImage("background_module_slider")
+                case is ClientClockPanel:
+                    updateBackgroundImage("background_module_clock")
+                case is ClientWiresPanel:
+                    updateBackgroundImage("background_module_cable")
+                case is ClientColorPanel:
+                    updateBackgroundImage("background_module_color")
+                default:
+                    Logger.client.error("\(self.consoleIdentifier) Did fail to update background image. Unsupported panel type: \(String(describing: panelPlayed))")
+            }
         }
         return self
     }

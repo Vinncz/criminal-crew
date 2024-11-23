@@ -1,16 +1,20 @@
 import UIKit
 
-internal class PLayerCardView: UIView {
+internal class PlayerCardView: UIView {
     
     internal var playerNameLabel: UILabel
     
     internal var cardView: UIView
+    internal let kickButton: UIButton
+    internal var playerId: String
     
     internal let angle: CGFloat
     
-    init(angle: CGFloat) {
+    init(angle: CGFloat, kickButtonId: Int) {
         playerNameLabel = ViewFactory.createLabel(text: "")
         cardView = UIView()
+        kickButton = ButtonWithImage(imageName: "kick_button_default", tag: kickButtonId)
+        playerId = ""
         self.angle = angle
         super.init(frame: .zero)
         setupView()
@@ -51,13 +55,24 @@ internal class PLayerCardView: UIView {
             playerNameLabel.centerXAnchor.constraint(equalTo: cardView.centerXAnchor)
         ])
         
+        cardView.addSubview(kickButton)
+        kickButton.translatesAutoresizingMaskIntoConstraints = false
+        NSLayoutConstraint.activate([
+            kickButton.trailingAnchor.constraint(equalTo: cardView.trailingAnchor, constant: -8),
+            kickButton.topAnchor.constraint(equalTo: cardView.topAnchor, constant: 8),
+            kickButton.widthAnchor.constraint(equalToConstant: 32),
+            kickButton.heightAnchor.constraint(equalToConstant: 32)
+        ])
+        
         var transform = CATransform3DIdentity
         transform = CATransform3DRotate(transform, angle * .pi / 180, 0, 0, 1) /// rumus degree to radian = degree * .pi / 180
         cardView.layer.transform = transform
     }
     
-    internal func configure(name: String?) {
+    internal func configure(name: String?, id: String?) {
         playerNameLabel.text = name
+        kickButton.accessibilityLabel = id
+        self.playerId = id ?? ""
         cardView.isHidden = (name == nil)
     }
     

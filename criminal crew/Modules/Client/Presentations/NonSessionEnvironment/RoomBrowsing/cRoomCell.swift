@@ -7,11 +7,15 @@ internal class RoomCell: UITableViewCell {
     internal let tableView: UIView
     private let roomIdLabel: UILabel
     private let roomNameAndIndexLabel: UILabel
+    internal var roomName: String
+    internal var roomDifficulty: Int
     
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
         self.tableView = UIView()
         self.roomIdLabel = UILabel()
         self.roomNameAndIndexLabel = UILabel()
+        self.roomName = ""
+        self.roomDifficulty = 1
         super.init(style: style, reuseIdentifier: reuseIdentifier)
         setupView()
     }
@@ -75,8 +79,10 @@ internal class RoomCell: UITableViewCell {
         ])
     }
     
-    func configure(roomName: String, roomIndex: Int, roomId: String) {
+    func configure(roomName: String, roomDifficulty: Int, roomIndex: Int, roomId: String) {
         roomIdLabel.text = roomId
+        self.roomDifficulty = roomDifficulty
+        self.roomName = roomName
         roomNameAndIndexLabel.text = "#\(roomIndex)  |  \(roomName)"
     }
     

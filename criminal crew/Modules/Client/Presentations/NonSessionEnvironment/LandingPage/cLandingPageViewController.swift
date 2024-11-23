@@ -11,6 +11,10 @@ public class LandingPageViewController : UIViewController, UsesDependenciesInjec
     let bTutorial    : UIButton
     let playerTextField : PlayerNameView
     
+    let horizontalStackView = UIView()
+    var textFieldCenterXConstraintRealOne: NSLayoutConstraint?
+    var textFieldCenterYConstraintRealOne: NSLayoutConstraint?
+    
     var textFieldCenterXConstraint: NSLayoutConstraint?
     var textFieldCenterYConstraint: NSLayoutConstraint?
     
@@ -42,19 +46,11 @@ public class LandingPageViewController : UIViewController, UsesDependenciesInjec
         super.init(nibName: nibNameOrNil, bundle: nibBundleOrNil)
         self.playerTextField.delegate = self
         
-        NotificationCenter.default.addObserver(
-            self,
-            selector: #selector(keyboardWillShow(notification:)),
-            name: UIResponder.keyboardWillShowNotification,
-            object: nil
-        )
+        NotificationCenter.default.addObserver(self,
+            selector: #selector(keyboardWillChangeFrame(notification:)),
+            name: UIResponder.keyboardWillChangeFrameNotification,
+            object: nil)
 
-        NotificationCenter.default.addObserver(
-            self,
-            selector: #selector(keyboardWillHide(notification:)),
-            name: UIResponder.keyboardWillHideNotification,
-            object: nil
-        )
     }
     
     required init? ( coder: NSCoder ) {
@@ -64,32 +60,53 @@ public class LandingPageViewController : UIViewController, UsesDependenciesInjec
     private let consoleIdentifer = "[C-LAP]"
     
     deinit {
-        NotificationCenter.default.removeObserver(self, name: UIResponder.keyboardWillShowNotification, object: nil)
-        NotificationCenter.default.removeObserver(self, name: UIResponder.keyboardWillHideNotification, object: nil)
-
+        NotificationCenter.default.removeObserver(self)
+        AudioManager.shared.stopBackgroundMusic()
+        AudioManager.shared.stopAllSoundEffects()
     }
     
-    @objc private func keyboardWillShow(notification: Notification) {
-        if !playerTextField.isFirstResponder {
-            playerTextField.becomeFirstResponder()
-        }
-        textFieldCenterXConstraint?.isActive = true
-        textFieldCenterYConstraint?.isActive = true
+    @objc private func keyboardWillChangeFrame(notification: Notification) {
+        guard let keyboardFrameEnd = notification.userInfo?[UIResponder.keyboardFrameEndUserInfoKey] as? CGRect,
+          let keyboardFrameBegin = notification.userInfo?[UIResponder.keyboardFrameBeginUserInfoKey] as? CGRect else { return }
+        
+        let keyboardHeightEnd = keyboardFrameEnd.height
+        let keyboardHeightBegin = keyboardFrameBegin.height
+        
+        if keyboardHeightEnd > keyboardHeightBegin {
+            textFieldCenterXConstraintRealOne?.isActive = false
+            textFieldCenterYConstraintRealOne?.isActive = false
+            textFieldCenterYConstraint?.isActive = false
+            let keyboardHeight = keyboardFrameEnd.height
+            textFieldCenterYConstraint = playerTextField.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: -keyboardHeight - 10)
+            textFieldCenterYConstraint?.isActive = true
+            textFieldCenterXConstraint?.isActive = true
 
-        UIView.animate(withDuration: 0.3) {
-            self.view.layoutIfNeeded()
+            UIView.animate(withDuration: 0.3) {
+                self.view.layoutIfNeeded()
+            }
+        } else if keyboardHeightEnd < keyboardHeightBegin {
+            textFieldCenterXConstraintRealOne?.isActive = false
+            textFieldCenterYConstraintRealOne?.isActive = false
+            textFieldCenterYConstraint?.isActive = false
+            let keyboardHeight = keyboardFrameEnd.height
+            textFieldCenterYConstraint = playerTextField.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: -keyboardHeight - 10)
+            textFieldCenterYConstraint?.isActive = true
+            textFieldCenterXConstraint?.isActive = true
+
+            UIView.animate(withDuration: 0.3) {
+                self.view.layoutIfNeeded()
+            }
+        } else if keyboardHeightEnd == keyboardHeightBegin {
+            textFieldCenterXConstraint?.isActive = false
+            textFieldCenterYConstraint?.isActive = false
+            
+            textFieldCenterXConstraintRealOne?.isActive = true
+            textFieldCenterYConstraintRealOne?.isActive = true
+            UIView.animate(withDuration: 0.3) {
+                self.view.layoutIfNeeded()
+            }
         }
     }
-
-    @objc private func keyboardWillHide(notification: Notification) {
-        textFieldCenterXConstraint?.isActive = false
-        textFieldCenterYConstraint?.isActive = false
-
-        UIView.animate(withDuration: 0.3) {
-            self.view.layoutIfNeeded()
-        }
-    }
-    
 }
 
 extension LandingPageViewController {
@@ -140,7 +157,6 @@ extension LandingPageViewController {
         ])
         
         textFieldCenterXConstraint = playerTextField.centerXAnchor.constraint(equalTo: view.centerXAnchor)
-        textFieldCenterYConstraint = playerTextField.centerYAnchor.constraint(equalTo: view.centerYAnchor)
         
         view.addSubview(topRightCornerStack)
         topRightCornerStack.translatesAutoresizingMaskIntoConstraints = false
@@ -150,7 +166,6 @@ extension LandingPageViewController {
         ])
         
         setupBackground()
-        AudioManager.shared.playBackgroundMusic(fileName: "bgm_lobby")
     }
     
     private func addTargetButton() {
@@ -195,16 +210,17 @@ extension LandingPageViewController {
     }
     
     private func setupBotRightStack() -> UIView {
-        let horizontalStackView = UIView()
-        
         horizontalStackView.addSubview(playerTextField)
         playerTextField.translatesAutoresizingMaskIntoConstraints = false
         NSLayoutConstraint.activate([
             playerTextField.widthAnchor.constraint(equalTo: horizontalStackView.widthAnchor, multiplier: 0.5),
             playerTextField.heightAnchor.constraint(equalTo: horizontalStackView.heightAnchor, multiplier: 0.2),
-            playerTextField.centerXAnchor.constraint(equalTo: horizontalStackView.centerXAnchor),
-            playerTextField.centerYAnchor.constraint(equalTo: horizontalStackView.centerYAnchor)
         ])
+        
+        textFieldCenterXConstraintRealOne = playerTextField.centerXAnchor.constraint(equalTo: horizontalStackView.centerXAnchor)
+        textFieldCenterXConstraintRealOne?.isActive = true
+        textFieldCenterYConstraintRealOne = playerTextField.centerYAnchor.constraint(equalTo: horizontalStackView.centerYAnchor)
+        textFieldCenterYConstraintRealOne?.isActive = true
         
         return horizontalStackView
     }
@@ -224,6 +240,10 @@ extension LandingPageViewController {
         ])
     }
     
+    override public func viewIsAppearing ( _ animated: Bool ) {
+        AudioManager.shared.playBackgroundMusic(fileName: "bgm_lobby")
+    }
+    
     override public func viewDidAppear ( _ animated: Bool ) {
         self.relay?.gameRuntimeContainer?.reset()
         self.relay?.playerRuntimeContainer?.reset()
@@ -233,9 +253,6 @@ extension LandingPageViewController {
         self.relay?.resetServer()
     }
     
-    override public func viewDidDisappear(_ animated: Bool) {
-        AudioManager.shared.stopBackgroundMusic()
-    }
     
 }
 

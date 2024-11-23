@@ -1,5 +1,6 @@
 import UIKit
 import Combine
+import os
 
 internal class ClockGameViewController : BaseGameViewController, UsesDependenciesInjector {
     
@@ -447,6 +448,23 @@ extension ClockGameViewController {
         if let panelRuntimeContainer = relay.panelRuntimeContainer {
             bindInstruction(to: panelRuntimeContainer)
             bindPenaltyProgression(panelRuntimeContainer)
+            let panelPlayed = panelRuntimeContainer.panelPlayed
+            switch panelPlayed {
+                case is ClientSwitchesPanel:
+                    updateBackgroundImage("background_module_switches")
+                case is ClientCardPanel:
+                    updateBackgroundImage("background_module_card")
+                case is ClientKnobPanel:
+                    updateBackgroundImage("background_module_slider")
+                case is ClientClockPanel:
+                    updateBackgroundImage("background_module_clock")
+                case is ClientWiresPanel:
+                    updateBackgroundImage("background_module_cable")
+                case is ClientColorPanel:
+                    updateBackgroundImage("background_module_color")
+                default:
+                    Logger.client.error("\(self.consoleIdentifier) Did fail to update background image. Unsupported panel type: \(String(describing: panelPlayed))")
+            }
         }
         return self
     }
@@ -473,6 +491,29 @@ extension ClockGameViewController {
             .debounce(for: .milliseconds(200), scheduler: RunLoop.main)
             .sink { [weak self] progression in
                 self?.updateLossCondition(intensity: Float(progression))
+            }
+            .store(in: &cancellables)
+    }
+    
+}
+
+extension ClockGameViewController {
+    
+    private func timerPublisher() {
+        timerUpPublisher
+            .sink { [weak self] isExpired in
+                guard
+                    let relay = self?.relay,
+                    let selfSignalCommandCenter = relay.selfSignalCommandCenter,
+                    let panelRuntimeContainer = relay.panelRuntimeContainer,
+                    let instruction = panelRuntimeContainer.instruction
+                else {
+                    debug("\(self?.consoleIdentifier ?? "ClockGameViewController") Did fail to send report of instruction's expiry: Relay and all of its requirements are not met")
+                    return
+                }
+  
+                let isSuccess = selfSignalCommandCenter.sendIstructionReport(instructionId: instruction.id, isAccomplished: isExpired, penaltiesGiven: 1)
+                debug("\(self?.consoleIdentifier ?? "ClockGameViewController") Did send report of instruction's expiry. It was \(isSuccess ? "delivered" : "not delivered") to server. The last updated status is \(isExpired ? "accomplished" : "not done")")
             }
             .store(in: &cancellables)
     }

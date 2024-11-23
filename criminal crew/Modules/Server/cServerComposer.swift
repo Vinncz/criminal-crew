@@ -1,5 +1,6 @@
 import Combine
 import GamePantry
+import os
 
 final public class ServerComposer : Composer, UsesDependenciesInjector {
     
@@ -163,6 +164,16 @@ extension ServerComposer {
                 if decideToAdmit {
                     self.networkManager.eventBroadcaster.approve(playerRequest.resolve(to: .admit))
                     _ = self.ent_playerRuntimeContainer.acquaint(playerRequest.requesteeAddress, playerRequest.requestContext)
+                    
+                    DispatchQueue.main.asyncAfter(deadline: .now() + .seconds(2)){
+                        try? self.networkManager.eventBroadcaster.broadcast (
+                            GameDifficultyUpdateEvent (
+                                submittedBy: self.networkManager.myself.displayName, 
+                                difficultyAsInt: self.ent_gameRuntimeContainer.difficulty.convenienceId!
+                            ).representedAsData(), 
+                            to: self.ent_playerRuntimeContainer.connectedPlayers.map{$0.address}
+                        )
+                    }
                     debug("[S] HostSignalResponder admitted the player named: \(playerName)")
                     
                 } else {
@@ -226,6 +237,7 @@ extension ServerComposer {
         evtUC_hostSignalResponder.placeSubscription(on: GPBlacklistedEvent.self)
         evtUC_hostSignalResponder.placeSubscription(on: GPTerminatedEvent.self)
         evtUC_hostSignalResponder.placeSubscription(on: InquiryAboutConnectedPlayersRequestedEvent.self)
+        evtUC_hostSignalResponder.placeSubscription(on: GameDifficultyUpdateEvent.self)
         debug("[S] Placed subscription of HostSignalResponder to GPGameStartRequestedEvent, GPGameEndRequestedEvent, GPGameJoinVerdictDeliveredEvent, GPBlacklistedEvent, and GPTerminatedEvent")
         
         evtUC_taskReportResponder.placeSubscription(on: CriteriaReportEvent.self)

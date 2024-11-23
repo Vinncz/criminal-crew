@@ -6,12 +6,22 @@ public class CriminalCrewServerPlayer : GPPlayer {
     public var name            : String
     public var connectionState : GPPlayerState
     public var metadata        : [String : String]?
+    public var instanciatedOn  : Date
     
     public init ( addressed address: MCPeerID ) {
         self.address         = address
         self.name            = "Unnamed Player"
         self.connectionState = .notConnected
         self.metadata        = [:]
+        self.instanciatedOn  = .now
+    }
+    
+}
+
+extension CriminalCrewServerPlayer {
+    
+    public func timeSinceInstanciation () -> TimeInterval {
+        Date().timeIntervalSince(self.instanciatedOn)
     }
     
 }

@@ -99,10 +99,44 @@ extension ServerPlayerConnectionResponder {
                 
                 if let player = playerRuntimeContainer.players.first(where: { $0.address == event.subject }) {
                     player.connectionState = event.status
+                    if event.status == .notConnected && player.timeSinceInstanciation() > 8 {
+                        guard player.address != playerRuntimeContainer.host?.address else {
+                            Logger.server.info("\(self.consoleIdentifier) Host disconnected, but will not be removed")
+                            return
+                        }
+                        
+                        remove(player)
+                        Logger.server.info("\(self.consoleIdentifier) Removed player named \(player.name) -- \(player.address.displayName)")
+                    }
                     
                 } else {
-                    Logger.server.error("\(self.consoleIdentifier) There is no player with address \(event.subject.displayName)")
+                    Logger.server.error("\(self.consoleIdentifier) There is no player with address \(event.subject.displayName). Did you forget to call `acquaintance()` on ServerPlayerRuntimeContainer?")
+                    return
                 }
+        }
+    }
+    
+    private func remove ( _ player: CriminalCrewServerPlayer ) {
+        guard let relay = self.relay else {
+            Logger.server.error("\(self.consoleIdentifier) Did fail to remove player: relay is missing or not set"); return
+        }
+        
+        switch (
+            relay.assertPresent (
+                \.eventRouter,
+                \.playerRuntimeContainer
+            )
+        ) {
+            case .failure(let missingRequirements):
+                Logger.server.error("\(self.consoleIdentifier) Did fail to remove player: \(missingRequirements)")
+                return
+                
+            case .success:
+                /* Typecast for better readibility */
+                guard let playerRuntimeContainer = relay.playerRuntimeContainer
+                else { return }
+                
+                playerRuntimeContainer.players.remove(player)
         }
     }
     

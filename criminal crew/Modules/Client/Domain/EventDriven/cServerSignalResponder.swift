@@ -80,6 +80,8 @@ extension ServerSignalResponder : GPHandlesEvents {
                 didGetAdmissionRequest(event)
             case let event as ConnectedPlayersNamesResponse:
                 didGetResponseOfConnectedPlayerNames(event)
+            case let event as GameDifficultyUpdateEvent:
+                didGetGameDifficultyUpdate(event)
                 
             default:
                 debug("\(consoleIdentifier) Unhandled event: \(event)")
@@ -364,6 +366,9 @@ extension ServerSignalResponder {
                 relay.gameRuntime?.reset()
                 relay.panelRuntime?.reset()
                 relay.playerRuntime?.reset()
+                
+                AudioManager.shared.stopAllSoundEffects()
+                AudioManager.shared.stopBackgroundMusic()
         }
     }
     
@@ -390,6 +395,7 @@ extension ServerSignalResponder {
                 DispatchQueue.main.sync {
                     let winningScreen = GameWinViewController()
                     winningScreen.relay = .init (
+                        gameRuntimeContainer: gameRuntime,
                         navController: relay.navController
                     )
                     relay.navController?.pushViewController(winningScreen, animated: true)
@@ -398,6 +404,9 @@ extension ServerSignalResponder {
                 relay.gameRuntime?.reset()
                 relay.panelRuntime?.reset()
                 relay.playerRuntime?.reset()
+                
+                AudioManager.shared.stopAllSoundEffects()
+                AudioManager.shared.stopBackgroundMusic()
         }
     }
     
@@ -489,4 +498,20 @@ extension ServerSignalResponder {
         }
     }
     
+}
+
+extension ServerSignalResponder {
+    public func didGetGameDifficultyUpdate(_ event: GameDifficultyUpdateEvent) {
+        guard let relay else {
+            debug("\(consoleIdentifier) Relay is missing or not set")
+            return
+        }
+        
+        guard let gameRuntime = relay.gameRuntime else {
+            debug("\(consoleIdentifier) Did fail to handle didGetResponseOfConnectedPlayerNames since PanelRuntime is missing or not set")
+            return
+        }
+        
+        gameRuntime.difficulty = event.difficulty
+    }
 }

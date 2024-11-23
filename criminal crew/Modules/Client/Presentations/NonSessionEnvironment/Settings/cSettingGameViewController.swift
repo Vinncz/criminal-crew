@@ -19,7 +19,6 @@ internal class SettingGameViewController: UIViewController {
     
     override func viewDidLoad() {
         setupView()
-        AudioManager.shared.playBackgroundMusic(fileName: "bgm_lobby")
     }
     
     private func setupView() {
@@ -105,7 +104,6 @@ internal class SettingGameViewController: UIViewController {
     
     @objc private func popViewController(_sender : UIButton) {
         AudioManager.shared.playSoundEffect(fileName: "button_on_off")
-        AudioManager.shared.stopBackgroundMusic()
         relay?.dismiss()
     }
     
