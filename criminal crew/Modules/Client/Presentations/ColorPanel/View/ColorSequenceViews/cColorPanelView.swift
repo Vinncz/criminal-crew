@@ -4,6 +4,7 @@ internal class ColorPanelView: UIView {
     
     weak var delegate: ButtonTappedDelegate?
     private let colorArray: [String]
+    internal var colorSquareButtons: [ColorSquareButton] = []
     
     init(colorArray: [String]) {
         self.colorArray = colorArray
@@ -17,16 +18,20 @@ internal class ColorPanelView: UIView {
     
     private func setupColorPanelGrid() {
         let leverGridStackView = ViewFactory.createVerticalStackView()
+        leverGridStackView.distribution = .fillEqually
+        leverGridStackView.spacing = 4
         leverGridStackView.translatesAutoresizingMaskIntoConstraints = false
         
         for rowIndex in 0..<2 {
             let rowStackView = ViewFactory.createHorizontalStackView()
-            rowStackView.translatesAutoresizingMaskIntoConstraints = false
-            
+            rowStackView.distribution = .fillEqually
+            rowStackView.spacing = 4
+            let colorArrayHalf = colorArray.count / 2
             for columnIndex in 0..<4 {
-                let button = ColorSquareButton(imageName: "\(colorArray[rowIndex * 4 + columnIndex]) Square Button Off")
+                let button = ColorSquareButton(imageName: colorArray[rowIndex * colorArrayHalf + columnIndex])
                 button.addTarget(self, action: #selector(colorSquareTapped), for: .touchUpInside)
                 rowStackView.addArrangedSubview(button)
+                colorSquareButtons.append(button)
             }
             leverGridStackView.addArrangedSubview(rowStackView)
         }

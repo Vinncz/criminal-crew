@@ -9,6 +9,7 @@ import UIKit
 import Combine
 
 open class BaseGameViewController: UIViewController, GameContentProvider {
+    
     open func createFirstPanelView() -> UIView {
         return UIView()
     }
@@ -24,6 +25,7 @@ open class BaseGameViewController: UIViewController, GameContentProvider {
     private let firstPanelView = UIView()
     private let secondPanelView = UIView()
     private let promptView = UIView()
+    private let backgroundView = UIImageView()
     private let loseIndicatorView: LoseIndicatorView = LoseIndicatorView()
     
     public let mainStackView: UIStackView = UIStackView()
@@ -39,19 +41,40 @@ open class BaseGameViewController: UIViewController, GameContentProvider {
     }
     
     open override func viewDidLoad() {
+        setupViewModel()
         navigationItem.hidesBackButton = true
         contentProvider = self
         if let contentProvider = contentProvider {
-            addContentToFirstPanelView(contentProvider.createFirstPanelView())
             addContentToSecondPanelView(contentProvider.createSecondPanelView())
+            addContentToFirstPanelView(contentProvider.createFirstPanelView())
         }
         super.viewDidLoad()
         setupView()
         setupGameContent()
+        AudioManager.shared.playBackgroundMusic(fileName: "bgm")
+    }
+    
+    override open func viewDidDisappear(_ animated: Bool) {
+        super.viewDidDisappear(animated)
+        AudioManager.shared.stopBackgroundMusic()
+        AudioManager.shared.stopAllSoundEffects()
+        promptStackView.promptLabelView.timerView.dispatchWork.cancel()
     }
     
     private func setupView() {
-        view.backgroundColor = .systemBackground
+        view.backgroundColor = .clear
+        
+        backgroundView.contentMode = .scaleToFill
+        backgroundView.translatesAutoresizingMaskIntoConstraints = false
+        view.addSubview(backgroundView)
+        
+        NSLayoutConstraint.activate([
+            backgroundView.topAnchor.constraint(equalTo: view.topAnchor),
+            backgroundView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            backgroundView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+            backgroundView.bottomAnchor.constraint(equalTo: view.bottomAnchor)
+        ])
+        
         loseIndicatorView.translatesAutoresizingMaskIntoConstraints = false
         loseIndicatorView.isUserInteractionEnabled = false
         
@@ -86,6 +109,10 @@ open class BaseGameViewController: UIViewController, GameContentProvider {
             secondPanelView.widthAnchor.constraint(equalTo: rightStackView.widthAnchor)
         ])
         
+        let spotlight = SpotlightEffectView(frame: view.bounds)
+        spotlight.isUserInteractionEnabled = false
+        view.addSubview(spotlight)
+        
         view.addSubview(loseIndicatorView)
         
         NSLayoutConstraint.activate([
@@ -98,6 +125,10 @@ open class BaseGameViewController: UIViewController, GameContentProvider {
     
     open func setupGameContent() {
         /// for subclass to override to fill their game settings
+    }
+    
+    open func setupViewModel() {
+        /// for subclass to override to initiate their view model
     }
     
     public func updateLossCondition(intensity: Float) {
@@ -113,6 +144,8 @@ open class BaseGameViewController: UIViewController, GameContentProvider {
             view.leadingAnchor.constraint(equalTo: firstPanelView.leadingAnchor),
             view.trailingAnchor.constraint(equalTo: firstPanelView.trailingAnchor),
         ])
+        
+        firstPanelView.bringSubviewToFront(view)
     }
     
     public func addContentToSecondPanelView(_ view: UIView) {
@@ -156,11 +189,16 @@ open class BaseGameViewController: UIViewController, GameContentProvider {
     }
     
     public func resetTimerAndAnimation() {
-        promptStackView.promptLabelView.resetTimerAndAnimation()
+        promptStackView.promptLabelView.timerView.resetTimerAndAnimation()
     }
     
     public func completeTaskIndicator() {
         loseIndicatorView.flashTaskCompletion()
+    }
+    
+    public func updateBackgroundImage(_ imageName: String) {
+        let image = UIImage(named: imageName)
+        backgroundView.image = image
     }
     
 }

@@ -1,3 +1,4 @@
+import Combine
 import GamePantry
 import UIKit
 import SwiftUI
@@ -11,7 +12,8 @@ public class ClientComposer : Composer, UsesDependenciesInjector {
         serviceType  : AppConfig.serviceType,
         timeout      : 10
     )
-    
+
+    public let id : String = "ClientComposer"
     public let navigationController : UINavigationController
     
     public var relay          : Relay?
@@ -129,7 +131,9 @@ extension ClientComposer {
             router.openChannel(for:HasBeenAssignedCriteria.self),
             
             router.openChannel(for:InstructionDidGetDismissed.self),
-            router.openChannel(for:CriteriaDidGetDismissed.self)
+            router.openChannel(for:CriteriaDidGetDismissed.self),
+            
+            router.openChannel(for:GameDifficultyUpdateEvent.self)
         else {
             debug("[C] Did fail to open all required channels for EventRouter")
             return
@@ -157,6 +161,7 @@ extension ClientComposer {
         evtUC_serverSignalResponder.placeSubscription(on: TaskProgressionDidReachLimitEvent.self)
         
         evtUC_serverSignalResponder.placeSubscription(on: ConnectedPlayersNamesResponse.self)
+        evtUC_serverSignalResponder.placeSubscription(on: GameDifficultyUpdateEvent.self)
         
         debug("[C] Placed subscription of ServerSignalResponder to GPAcquaintanceStatusUpdateEvent, HasBeenAssignedHost, HasBeenAssignedPanel, HasBeenAssignedTask, PenaltyDidReachLimitEvent, TaskDidReachLimitEvent, ConnectedPlayerNamesResponse")
     }
@@ -179,28 +184,67 @@ extension ClientComposer {
                         return
                     }
                     
-                    cancellableForAutoJoinSelfCreatedServer = self.networkManager.browser.$discoveredServers.sink { servers in
-                        servers.forEach { serv in
-                            if ( serv.serverId == serverAddr ) {
-                                self.networkManager.eventBroadcaster.approve(
-                                    self.networkManager.browser.requestToJoin(serv.serverId)
-                                )
+                    let playerName = UserDefaults.standard.string(forKey: "criminal_crew_username") ?? "Anonymous"
+                    
+                    cancellableForAutoJoinSelfCreatedServer = self.networkManager.browser.$discoveredServers
+                        .debounce(for: .milliseconds(100), scheduler: RunLoop.main)
+                        .sink { servers in
+                            servers.forEach { serv in
+                                if ( serv.serverId == serverAddr ) {
+                                    self.networkManager.eventBroadcaster.approve(
+                                        self.networkManager.browser.requestToJoin (
+                                            serv.serverId,
+                                            payload  : GameJoinRequestPayload(playerName: playerName).representedAsData(),
+                                            validFor : self.networkManager.gameProcessConfig.timeout
+                                        )
+                                    )
+                                }
                             }
                         }
-                    }
                     
                     relay?.placeJobToAdmitHost(self.networkManager.myself)
                 }, 
                 navigate: { [weak self] to in 
                     self?.navigate(to: to)
+                },
+                popViewController: { [weak self] in
+                    self?.popViewController()
+                },
+                dismiss: { [weak self] in
+                    self?.dismiss()
+                },
+                navigateSwiftUI: { [weak self] to in
+                    self?.navigateSwiftUI(to: to)
                 }
             )
         
-        navigationController.pushViewController(landingPage, animated: true)
+        navigationController.pushViewController(landingPage, animated: false)
     }
     
     public func navigate ( to destination: UIViewController ) {
-        self.navigationController.pushViewController(destination, animated: true)
+        if let destination = destination as? SettingGameViewController {
+            destination.modalPresentationStyle = .popover
+            destination.modalTransitionStyle = .crossDissolve
+            self.navigationController.present(destination, animated: true)
+        } else {
+            self.navigationController.pushViewController(destination, animated: false)
+        }
     }
     
+    public func navigateSwiftUI<Content: View> ( to destination: Content ) {
+        let hostingController = UIHostingController(rootView: destination)
+            
+        hostingController.modalTransitionStyle = .crossDissolve
+        hostingController.modalPresentationStyle = .popover
+        
+        navigationController.present(hostingController, animated: true, completion: nil)
+    }
+    
+    public func popViewController () {
+        navigationController.popViewController(animated: true)
+    }
+    
+    public func dismiss() {
+        navigationController.dismiss(animated: true)
+    }
 }

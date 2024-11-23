@@ -6,7 +6,7 @@ internal class ColorSquareButton: UIButton, ToggleButtonState {
     internal var buttonState: ButtonState = .off
     
     init(imageName: String) {
-        self.colorSquareColor = imageName.components(separatedBy: " ")[0]
+        self.colorSquareColor = imageName
         super.init(frame: .zero)
         setupButton(imageName: imageName)
     }
@@ -16,11 +16,11 @@ internal class ColorSquareButton: UIButton, ToggleButtonState {
     }
     
     private func setupButton(imageName: String) {
-        if let image = UIImage(named: imageName)?.withRenderingMode(.alwaysOriginal) {
+        if let image = UIImage(named: "\(imageName) Square Button Off")?.withRenderingMode(.alwaysOriginal) {
             setImage(image, for: .normal)
         }
         
-        accessibilityLabel = imageName.components(separatedBy: " ").first
+        accessibilityLabel = imageName
         backgroundColor = .clear
         imageView?.contentMode = .scaleAspectFit
     }
@@ -28,12 +28,17 @@ internal class ColorSquareButton: UIButton, ToggleButtonState {
     internal func toggleButtonState() {
         switch buttonState {
             case .on:
-                setImage(UIImage(named: "\(colorSquareColor) Lever Off")?.withRenderingMode(.alwaysOriginal), for: .normal)
+                setImage(UIImage(named: "\(colorSquareColor) Square Button Off")?.withRenderingMode(.alwaysOriginal), for: .normal)
                 buttonState = .off
             case .off:
-                setImage(UIImage(named: "\(colorSquareColor) Lever On")?.withRenderingMode(.alwaysOriginal), for: .normal)
+                setImage(UIImage(named: "\(colorSquareColor) Square Button On")?.withRenderingMode(.alwaysOriginal), for: .normal)
                 buttonState = .on
         }
+    }
+    
+    internal func resetButtonState() {
+        setImage(UIImage(named: "\(colorSquareColor) Square Button Off")?.withRenderingMode(.alwaysOriginal), for: .normal)
+        buttonState = .off
     }
     
 }

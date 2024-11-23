@@ -146,20 +146,8 @@ internal class SwitchGameViewController: BaseGameViewController {
                 }
             }
             .store(in: &cancellables)
-        viewModel.finishGameAlert
-            .receive(on: DispatchQueue.main)
-            .sink { [weak self] message in
-                self?.showAlert(message)
-            }
-            .store(in: &cancellables)
     }
     
-    private func showAlert(_ message: String) {
-        let alert = UIAlertController(title: "Game Over", message: message, preferredStyle: .alert)
-        alert.addAction(UIAlertAction(title: "OK", style: .default, handler: nil))
-        present(alert, animated: true, completion: nil)
-    }
-
     private func showTaskAlert(isSuccess: Bool) {
         if let switchStackView = switchStackView {
             if isSuccess {
@@ -188,6 +176,7 @@ internal class SwitchGameViewController: BaseGameViewController {
 extension SwitchGameViewController: ButtonTappedDelegate {
     
     internal func buttonTapped(sender: UIButton) {
+        HapticManager.shared.triggerImpactFeedback(style: .medium)
         if let sender = sender as? LeverButton {
             if let label = sender.accessibilityLabel {
                 didPressedButton.send(label)
@@ -198,11 +187,23 @@ extension SwitchGameViewController: ButtonTappedDelegate {
             }
             
             sender.toggleButtonState()
+            if sender.buttonState == .on {
+                AudioManager.shared.playSoundEffect(fileName: "lever_down")
+                AudioManager.shared.playIndicatorMusic(fileName: "light_bulb_on")
+            } else {
+                AudioManager.shared.playSoundEffect(fileName: "lever_up")
+                AudioManager.shared.playIndicatorMusic(fileName: "light_bulb_off")
+            }
         } else if let sender = sender as? SwitchButton {
             if let label = sender.accessibilityLabel {
                 didPressedButton.send(label)
             }
             sender.toggleButtonState()
+            if sender.buttonState == .on {
+                AudioManager.shared.playSoundEffect(fileName: "switch_down")
+            } else {
+                AudioManager.shared.playSoundEffect(fileName: "switch_up")
+            }
         }
         
     }
@@ -216,6 +217,29 @@ extension SwitchGameViewController {
         if let panelRuntimeContainer = relay.panelRuntimeContainer {
             bindInstruction(to: panelRuntimeContainer)
             bindPenaltyProgression(panelRuntimeContainer)
+            let panelPlayed = panelRuntimeContainer.panelPlayed
+            switch panelPlayed {
+                case is ClientSwitchesPanel:
+                    updateBackgroundImage("background_module_switches")
+                    break
+                case is ClientCardPanel:
+                    updateBackgroundImage("background_module_card")
+                    break
+                case is ClientKnobPanel:
+                    updateBackgroundImage("background_module_slider")
+                    break
+                case is ClientClockPanel:
+                    updateBackgroundImage("background_module_clock")
+                    break
+                case is ClientWiresPanel:
+                    updateBackgroundImage("background_module_cable")
+                    break
+                case is ClientColorPanel:
+                    updateBackgroundImage("background_module_color")
+                    break
+                default:
+                    print("\(consoleIdentifier) Did fail to update background image. Unsupported panel type: \(String(describing: panelPlayed))")
+            }
         }
         return self
     }

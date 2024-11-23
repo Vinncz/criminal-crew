@@ -98,7 +98,7 @@ extension BrowseRoomsViewController {
         }
         relay.stopSearchingForServers()
         relay.startSearchingForServers()
-        print("started browsing")
+
         roomList = relay.requestDiscoveredServersData()
         roomTableView.reloadData()
     }
@@ -131,8 +131,9 @@ extension BrowseRoomsViewController: UITableViewDataSource {
             return UITableViewCell()
         }
         let roomName = roomList[indexPath.row]
+        let roomDifficulty = cell.roomDifficulty
         
-        cell.configure(roomName: roomName)
+        cell.configure(roomName: roomName, roomDifficulty: cell.roomDifficulty, roomIndex: indexPath.row + 1, roomId: roomName)
         return cell
     }
     
@@ -142,7 +143,6 @@ extension BrowseRoomsViewController: UITableViewDataSource {
 extension BrowseRoomsViewController: UITableViewDelegate {
     public func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         let selectedRoomName = roomList[indexPath.row]
-        print("Selected room: \(selectedRoomName)")
     }
 }
 

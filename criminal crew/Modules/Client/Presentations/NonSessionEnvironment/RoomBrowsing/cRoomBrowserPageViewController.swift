@@ -1,11 +1,16 @@
 import Combine
 import UIKit
+import os
 
 public class RoomBrowserPageViewController : UIViewController {
     
-    let lPageTitle         : UILabel
     let bRefreshBrowser    : UIButton
     let tDiscoveredServers : UITableView
+    public let bBackButton : UIButton
+    public let bSettings : UIButton
+    
+    private let backButtonId = 1
+    private let settingsButtonId = 2
     
     public var subscriptions : Set<AnyCancellable> = []
     
@@ -16,13 +21,16 @@ public class RoomBrowserPageViewController : UIViewController {
         weak var serverBrowser           : ClientGameBrowser?
         weak var panelRuntimeContainer   : ClientPanelRuntimeContainer?
         weak var gameRuntimeContainer    : ClientGameRuntimeContainer?
-             var navigate                : ( _ to: UIViewController ) -> Void
+             var navigate                : (( _ to: UIViewController ) -> Void)?
+             var popViewController       : (() -> Void)?
+             var dismiss                : (() -> Void)?
     }
     
     override init ( nibName nibNameOrNil: String?, bundle nibBundleOrNil: Bundle? ) {
-        self.lPageTitle         = UILabel().labeled("Join Game").styled(.title)
         self.bRefreshBrowser    = UIButton().styled(.secondary).tagged(Self.refreshBrowser).withIcon(systemName: "arrow.trianglehead.clockwise.rotate.90")
         self.tDiscoveredServers = UITableView()
+        self.bBackButton = ButtonWithImage(imageName: "back_button_default", tag: backButtonId)
+        self.bSettings    = ButtonWithImage(imageName: "setting_button_default", tag: settingsButtonId)
         
         super.init(nibName: nil, bundle: nil)
     }
@@ -43,36 +51,53 @@ extension RoomBrowserPageViewController {
     
     public override func viewDidLoad () {
         super.viewDidLoad()
+        navigationItem.hidesBackButton = true
+        let backgroundView = UIImageView(image: UIImage(named: "background_laptop_screen_with_wall"))
+        backgroundView.contentMode = .scaleToFill
+        backgroundView.isUserInteractionEnabled = false
+        backgroundView.translatesAutoresizingMaskIntoConstraints = false
+        view.addSubview(backgroundView)
+        NSLayoutConstraint.activate([
+            backgroundView.topAnchor.constraint(equalTo: view.topAnchor),
+            backgroundView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            backgroundView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+            backgroundView.bottomAnchor.constraint(equalTo: view.bottomAnchor)
+        ])
+        
+        setupBackButton()
+        setupSettingButton()
+        
         self.relay?.gameRuntimeContainer?.state = .searchingForServers
         
         _ = bRefreshBrowser.executes(self, action: #selector(refreshServerBrowser), for: .touchUpInside)
         
-        let vstack = Self.makeStack(direction: .vertical)
-                        .thatHolds(
-                            Self.makeStack(direction: .horizontal, distribution: .equalCentering)
-                                .thatHolds(
-                                    lPageTitle,
-                                    Self.makeStack(direction: .horizontal, distribution: .equalCentering)
-                                        .thatHolds(
-                                            bRefreshBrowser
-                                        )
-                                )
-                                .withMaxHeight(64),
-                            tDiscoveredServers
-                                .withMinHeight(150)
-                        )
-                        .padded(UIViewConstants.Paddings.huge)
+        let tableBackgroundView = UIImageView(image: UIImage(named: "background_list_room"))
+        tableBackgroundView.contentMode = .scaleToFill
+        tableBackgroundView.isUserInteractionEnabled = true
+        tableBackgroundView.translatesAutoresizingMaskIntoConstraints = false
+        view.addSubview(tableBackgroundView)
+        
+        NSLayoutConstraint.activate([
+            tableBackgroundView.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+            tableBackgroundView.centerYAnchor.constraint(equalTo: view.centerYAnchor),
+            tableBackgroundView.widthAnchor.constraint(equalTo: view.widthAnchor, multiplier: 0.5),
+            tableBackgroundView.heightAnchor.constraint(equalTo: view.heightAnchor, multiplier: 0.55)
+        ])
+        
+        tableBackgroundView.addSubview(tDiscoveredServers)
         tDiscoveredServers.register(RoomCell.self, forCellReuseIdentifier: RoomCell.identifier)
         tDiscoveredServers.delegate = self
         tDiscoveredServers.dataSource = self
-        tDiscoveredServers.backgroundColor = .white
-        
-        view.addSubview(vstack)
-        
+        tDiscoveredServers.backgroundColor = .clear
+        tDiscoveredServers.separatorStyle = .none
+        tDiscoveredServers.allowsSelection = true
+        tDiscoveredServers.isUserInteractionEnabled = true
+        tDiscoveredServers.translatesAutoresizingMaskIntoConstraints = false
         NSLayoutConstraint.activate([
-            vstack.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
-            vstack.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor),
-            vstack.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor)
+            tDiscoveredServers.topAnchor.constraint(equalTo: tableBackgroundView.topAnchor, constant: 32),
+            tDiscoveredServers.leadingAnchor.constraint(equalTo: tableBackgroundView.leadingAnchor, constant: 16),
+            tDiscoveredServers.trailingAnchor.constraint(equalTo: tableBackgroundView.trailingAnchor, constant: -16),
+            tDiscoveredServers.bottomAnchor.constraint(equalTo: tableBackgroundView.bottomAnchor, constant: -16)
         ])
         
         _ = self.relay?.selfSignalCommandCenter?.startBrowsingForServers()
@@ -82,6 +107,32 @@ extension RoomBrowserPageViewController {
     override public func viewDidDisappear ( _ animated: Bool ) {
         super.viewDidDisappear(animated)
         subscriptions.forEach { $0.cancel() }
+    }
+    
+    private func setupBackButton() {
+        bBackButton.imageView?.contentMode = .scaleAspectFit
+        bBackButton.addTarget(self, action: #selector(ButtonTapped), for: .touchUpInside)
+        view.addSubview(bBackButton)
+        bBackButton.translatesAutoresizingMaskIntoConstraints = false
+        NSLayoutConstraint.activate([
+            bBackButton.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
+            bBackButton.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor, constant: 16),
+            bBackButton.widthAnchor.constraint(equalToConstant: 45.0),
+            bBackButton.heightAnchor.constraint(equalToConstant: 45.0)
+        ])
+    }
+    
+    private func setupSettingButton() {
+        bSettings.imageView?.contentMode = .scaleAspectFit
+        bSettings.addTarget(self, action: #selector(ButtonTapped), for: .touchUpInside)
+        view.addSubview(bSettings)
+        bSettings.translatesAutoresizingMaskIntoConstraints = false
+        NSLayoutConstraint.activate([
+            bSettings.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
+            bSettings.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor, constant: 16),
+            bSettings.widthAnchor.constraint(equalToConstant: 45.0),
+            bSettings.heightAnchor.constraint(equalToConstant: 45.0)
+        ])
     }
     
 }
@@ -100,6 +151,7 @@ extension RoomBrowserPageViewController {
         }
         
         serverBrowser.$discoveredServers
+            .debounce(for: .milliseconds(200), scheduler: RunLoop.main)
             .receive(on: DispatchQueue.main)
             .sink { [weak self] _ in
                 self?.tDiscoveredServers.reloadData()
@@ -112,6 +164,32 @@ extension RoomBrowserPageViewController {
 }
 
 extension RoomBrowserPageViewController {
+    
+    @objc private func ButtonTapped(_ sender: UIButton) {
+        AudioManager.shared.playSoundEffect(fileName: "button_on_off")
+        guard let relay else {
+            debug("\(consoleIdentifier) Unable to cue navigation. Relay is missing or not set")
+            return
+        }
+        
+        switch ( sender.tag ) {
+            case backButtonId:
+                relay.popViewController?()
+                break
+            case settingsButtonId:
+                let settingPage = SettingGameViewController()
+                settingPage.relay = SettingGameViewController.Relay (
+                    dismiss: {
+                        self.relay?.dismiss?()
+                    }
+                )
+                relay.navigate?(settingPage)
+                break
+            default:
+                debug("\(consoleIdentifier) Unhandled button tag: \(sender.tag)")
+                break
+        }
+    }
     
     @objc func refreshServerBrowser () {
         guard let relay else {
@@ -160,18 +238,26 @@ extension RoomBrowserPageViewController : UITableViewDelegate, UITableViewDataSo
         }
         
         debug("Did try to access discoveredServers array at index \(indexPath.row)")
-        let extractedRoomName      = serverBrowser.discoveredServers[indexPath.row].discoveryContext["roomName"] 
+        let extractedRoomName      = serverBrowser.discoveredServers[indexPath.row].discoveryContext["roomName"] ?? "Unnamed Room"
         
-        var validRoomName : String = extractedRoomName ?? "Unnamed Room"
-        if extractedRoomName != nil && extractedRoomName!.isEmpty {
-            validRoomName = "Unnamed Room"
+        let extractedRoomId = "ID"
+        
+        let extractedRoomDiff = Int(serverBrowser.discoveredServers[indexPath.row].discoveryContext["difficulty"]!) ?? 3
+        
+        cell.configure(roomName: extractedRoomName, roomDifficulty: extractedRoomDiff, roomIndex: indexPath.row + 1, roomId: extractedRoomId)
+        cell.selectionStyle = .default
+        
+        if indexPath.row % 2 == 0 {
+            cell.tableView.backgroundColor = UIColor(cgColor: CGColor(red: 199.0/255.0, green: 207.0/255.0, blue: 204.0/255.0, alpha: 1.0))
+        } else {
+            cell.tableView.backgroundColor = UIColor(cgColor: CGColor(red: 168.0/255.0, green: 181.0/255.0, blue: 178.0/255.0, alpha: 1.0))
         }
         
-        cell.configure(roomName: validRoomName)
         return cell
     }
     
     public func tableView ( _ tableView: UITableView, didSelectRowAt indexPath: IndexPath ) {
+        AudioManager.shared.playSoundEffect(fileName: "button_on_off")
         guard let relay = self.relay else {
             debug("\(consoleIdentifier) Did fail to handle didSelectRowAt: relay is missing or not set"); return
         }
@@ -186,6 +272,19 @@ extension RoomBrowserPageViewController : UITableViewDelegate, UITableViewDataSo
         
         let selectedServer = serverBrowser.discoveredServers[indexPath.row]
         _ = selfSignalCommandCenter.sendJoinRequest(to: selectedServer.serverId)
+        guard let cell = tableView.cellForRow(at: indexPath) as? RoomCell else {
+            debug("\(consoleIdentifier) Could not retrieve RoomCell for indexPath: \(indexPath)")
+            return
+        }
+        let roomName = cell.roomName
+        let roomDifficulty = cell.roomDifficulty
+        guard let gameRuntimeContainer = relay.gameRuntimeContainer
+        else {
+            Logger.client.error("\(self.consoleIdentifier) failed to handle didSelectRowAt: gameRuntimeContainer is missing")
+            return
+        }
+        gameRuntimeContainer.playedRoomName = roomName
+        gameRuntimeContainer.difficulty = roomDifficulty
         _ = selfSignalCommandCenter.stopBrowsingForServers()
         
         let lobbyViewController = LobbyViewController()
@@ -197,11 +296,17 @@ extension RoomBrowserPageViewController : UITableViewDelegate, UITableViewDataSo
             serverBrowser           : self.relay?.serverBrowser,
             navigate                : { [weak self] to in
                 debug("lobby view did navigate from room browser")
-                self?.relay?.navigate(to)
+                self?.relay?.navigate?(to)
+            },
+            popViewController: {
+                self.relay?.popViewController?()
+            },
+            dismiss: {
+                self.relay?.dismiss?()
             }
         )
         
-        relay.navigate(lobbyViewController)
+        relay.navigate?(lobbyViewController)
     }
     
 }

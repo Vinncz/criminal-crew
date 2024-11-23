@@ -2,9 +2,11 @@ import UIKit
 
 internal class ColorBulbIndicatorView: UIImageView {
     
-    private var isOn: Bool = false
+    internal var isOn: Bool = false
+    internal var currentColor: String
     
     init() {
+        currentColor = ""
         super.init(frame: .zero)
         setupImageView()
     }
@@ -21,11 +23,13 @@ internal class ColorBulbIndicatorView: UIImageView {
     internal func toggleOn(bulbColor: String) {
         isOn = true
         image = UIImage(named: "\(bulbColor) Bulb On")
+        currentColor = bulbColor
     }
     
     internal func toggleOff() {
         isOn = false
         image = UIImage(named: "Bulb Off")
+        currentColor = ""
     }
     
 }

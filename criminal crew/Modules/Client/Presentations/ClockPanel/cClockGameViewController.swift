@@ -1,7 +1,8 @@
 import UIKit
 import Combine
+import os
 
-internal class ClockGameViewController: BaseGameViewController, UsesDependenciesInjector {
+internal class ClockGameViewController : BaseGameViewController, UsesDependenciesInjector {
     
     var switchStackView: SwitchStackView?
     
@@ -200,14 +201,12 @@ extension ClockGameViewController : ButtonTappedDelegate {
         if let shortHand = shortHand {
             handleHandDrag(gesture, hand: shortHand)
         }
-//        if gesture.state == .ended { checkIfMatched() }
     }
     
     @objc func dragLongHand ( _ gesture: UIPanGestureRecognizer ) {
         if let longHand = longHand {
             handleHandDrag(gesture, hand: longHand)
         }
-//        if gesture.state == .ended { checkIfMatched() }
     }
     
     @objc func switchTapped ( _ sender: UIButton ) {
@@ -220,12 +219,19 @@ extension ClockGameViewController : ButtonTappedDelegate {
             return
         }
         
+        
         let tappedSymbol = sender.accessibilityLabel ?? ""
         let isOn         = panelEntity.flipSwitch(tappedSymbol)
-
-        print(" \(tappedSymbol) is on \(isOn)")
-        let imageName = isOn ? "Switch On" : "Switch Off"
-        sender.setBackgroundImage(UIImage(named: imageName), for: .normal)
+        
+        HapticManager.shared.triggerImpactFeedback(style: .medium)
+        
+        if isOn {
+            AudioManager.shared.playSoundEffect(fileName: "switch_down")
+            sender.setBackgroundImage(UIImage(named: "Switch On"), for: .normal)
+        } else {
+            AudioManager.shared.playSoundEffect(fileName: "switch_up")
+            sender.setBackgroundImage(UIImage(named: "Switch Off"), for: .normal)
+        }
         
         checkSituationAndReportCompletionIfApplicable()
     }
@@ -294,7 +300,7 @@ extension ClockGameViewController {
             
         }
     }
-
+    
     func setCurrentSymbol ( _ symbol: String, for hand: UIView ) {
         guard 
             let relay,
@@ -319,13 +325,6 @@ extension ClockGameViewController {
         let touchPoint         = gesture.location(in: clockFace)
         let dx                 = touchPoint.x - clockFace.center.x
         let dy                 = touchPoint.y - clockFace.center.y
-//        let distanceFromCenter = hypot(dx, dy)
-//        let clockRadius        = clockFace.frame.width / 2
-        
-//        guard distanceFromCenter <= clockRadius else {
-//            if gesture.state == .ended { checkIfMatched() }
-//            return
-//        }
         
         let angle = atan2(dy, dx)
         hand.transform = CGAffineTransform(rotationAngle: angle - .pi / 2 + .pi)
@@ -333,18 +332,21 @@ extension ClockGameViewController {
         if gesture.state == .changed {
             let snappedAngle  = snapToNearestSymbol(angle: angle)
             let nearestSymbol = getNearestSymbolForAngle(angle: snappedAngle)
-
+            
+            HapticManager.shared.triggerImpactFeedback(style: .light)
             setCurrentSymbol(nearestSymbol, for: hand)
         }
 
         if gesture.state == .ended {
             let snappedAngle = snapToNearestSymbol(angle: angle)
+            AudioManager.shared.playSoundEffect(fileName: "clock")
             UIView.animate(withDuration: 0.3) {
                 hand.transform = CGAffineTransform(rotationAngle: snappedAngle - .pi / 2 + .pi)
             }
             let nearestSymbol = getNearestSymbolForAngle(angle: snappedAngle)
 
             setCurrentSymbol(nearestSymbol, for: hand)
+            AudioManager.shared.playSoundEffect(fileName: "clock")
             checkSituationAndReportCompletionIfApplicable()
         }
     }
@@ -446,6 +448,23 @@ extension ClockGameViewController {
         if let panelRuntimeContainer = relay.panelRuntimeContainer {
             bindInstruction(to: panelRuntimeContainer)
             bindPenaltyProgression(panelRuntimeContainer)
+            let panelPlayed = panelRuntimeContainer.panelPlayed
+            switch panelPlayed {
+                case is ClientSwitchesPanel:
+                    updateBackgroundImage("background_module_switches")
+                case is ClientCardPanel:
+                    updateBackgroundImage("background_module_card")
+                case is ClientKnobPanel:
+                    updateBackgroundImage("background_module_slider")
+                case is ClientClockPanel:
+                    updateBackgroundImage("background_module_clock")
+                case is ClientWiresPanel:
+                    updateBackgroundImage("background_module_cable")
+                case is ClientColorPanel:
+                    updateBackgroundImage("background_module_color")
+                default:
+                    Logger.client.error("\(self.consoleIdentifier) Did fail to update background image. Unsupported panel type: \(String(describing: panelPlayed))")
+            }
         }
         return self
     }
@@ -476,4 +495,40 @@ extension ClockGameViewController {
             .store(in: &cancellables)
     }
     
+}
+
+extension ClockGameViewController {
+    
+    private func timerPublisher() {
+        timerUpPublisher
+            .sink { [weak self] isExpired in
+                guard
+                    let relay = self?.relay,
+                    let selfSignalCommandCenter = relay.selfSignalCommandCenter,
+                    let panelRuntimeContainer = relay.panelRuntimeContainer,
+                    let instruction = panelRuntimeContainer.instruction
+                else {
+                    debug("\(self?.consoleIdentifier ?? "ClockGameViewController") Did fail to send report of instruction's expiry: Relay and all of its requirements are not met")
+                    return
+                }
+  
+                let isSuccess = selfSignalCommandCenter.sendIstructionReport(instructionId: instruction.id, isAccomplished: isExpired, penaltiesGiven: 1)
+                debug("\(self?.consoleIdentifier ?? "ClockGameViewController") Did send report of instruction's expiry. It was \(isSuccess ? "delivered" : "not delivered") to server. The last updated status is \(isExpired ? "accomplished" : "not done")")
+            }
+            .store(in: &cancellables)
+    }
+    
+}
+
+#Preview{
+    let cprc = ClientPanelRuntimeContainer()
+    cprc.panelPlayed = ClientClockPanel()
+    
+    let vc = ClockGameViewController()
+    vc.relay = ClockGameViewController.Relay (
+        panelRuntimeContainer: cprc,
+        selfSignalCommandCenter: SelfSignalCommandCenter()
+    )
+    
+    return vc
 }

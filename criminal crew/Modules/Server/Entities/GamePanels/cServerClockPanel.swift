@@ -2,7 +2,10 @@ import GamePantry
 
 public class ServerClockPanel : ServerGamePanel {
     
-    public let panelId       :  String  = "ClockPanel"
+    public let id       :  String  = "ClockPanel"
+    
+    public var criteriaLength      : Int = 2
+    public var instructionDuration : TimeInterval = 28
     
     public let clockSymbols  : [String] = ["Æ", "Ë", "ß", "æ", "Ø", "ɧ", "ɶ", "Ψ", "Ω", "Ђ", "б", "Ӭ"]
     public let switchSymbols : [String] = ["Æ", "Ë", "ß", "æ", "Ø", "ɧ", "ɶ", "Σ", "Φ", "Ψ", "Ω", "Ђ", "б", "Ӭ"]
@@ -17,15 +20,15 @@ public class ServerClockPanel : ServerGamePanel {
 
 extension ServerClockPanel {
     
-    public func generateSingleTask () -> GameTask {
+    public func generate ( taskConfiguredWith configuration: GameTaskModifier ) -> GameTask {
         let hourHandSymbol   = clockSymbols.randomElement()!
         let minuteHandSymbol = clockSymbols.randomElement()!
         
-        let switchSymbols = self.switchSymbols.shuffled().prefix(2)
+        let switchSymbols = self.switchSymbols.shuffled().prefix(self.criteriaLength)
         
         let prompt = 
         """
-        Turn longhand to \(minuteHandSymbol), shorthand to \(hourHandSymbol)
+        Minute to \(minuteHandSymbol), hour to \(hourHandSymbol)
         Then these symbols \(switchSymbols.joined(separator: ", "))
         """
         let completionCriteria : [String] = [
@@ -36,21 +39,14 @@ extension ServerClockPanel {
         return GameTask (
             instruction: GameTaskInstruction (
                 content: prompt,
-                displayDuration: 28
+                displayDuration: self.instructionDuration * configuration.instructionDurationScale
             ), 
             completionCriteria: GameTaskCriteria.init (
                 requirements: completionCriteria,
-                validityDuration: 28
-            )
+                validityDuration: self.instructionDuration * configuration.instructionDurationScale
+            ),
+            owner: id
         )
-    }
-
-    public func generateTasks ( limit: Int ) -> [GameTask] {
-        var tasks = [GameTask]()
-        for _ in 0..<limit {
-            tasks.append(generateSingleTask())
-        }
-        return tasks
     }
     
 }

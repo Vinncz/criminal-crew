@@ -6,7 +6,7 @@ public class TaskAssigner : UseCase {
     
     public var relay : Relay?
     public struct Relay : CommunicationPortal {
-        weak var eventBroadcaster       : GPGameEventBroadcaster?
+        weak var eventBroadcaster       : GPNetworkBroadcaster?
         weak var playerRuntimeContainer : ServerPlayerRuntimeContainer?
     }
     
@@ -16,7 +16,7 @@ public class TaskAssigner : UseCase {
 
 extension TaskAssigner {
     
-    public func assignToSpecificAndPush ( instruction: GameTaskInstruction, to player: String ) {
+    public func assignToSpecificAndPush ( instruction: GameTaskInstruction, to playerId: String ) {
         guard let relay else { 
             debug("\(consoleIdentifier) Did fail to assign instruction to specific player: relay is missing or not set") 
             return 
@@ -32,8 +32,8 @@ extension TaskAssigner {
                       let eventBroadcaster = relay.eventBroadcaster 
                 else { return }
                 
-                guard let playerReport = playerRuntimeContainer.getReportOnPlayer(named: player) else {
-                    debug("\(consoleIdentifier) Did fail to assign task to \(player): player is not found")
+                guard let player = playerRuntimeContainer.players.first(where: { $0.address.displayName == playerId }) else {
+                    debug("\(consoleIdentifier) Did fail to assign task to \(playerId): player is not found")
                     return
                 }
                 
@@ -44,16 +44,16 @@ extension TaskAssigner {
                             instruction: instruction.content,
                             displayDuration: instruction.displayDuration
                         ).representedAsData(),
-                        to: [playerReport.address]
+                        to: [player.address]
                     )
-                    debug("\(consoleIdentifier) Did assign instriction \(instruction.id) to \(player)")
+                    debug("\(consoleIdentifier) Did assign instruction \(instruction.id) to \(player.name)")
                 } catch {
                     debug("\(consoleIdentifier) Did fail to assign instruction \(instruction.id) to \(player)")
                 }
         }
     }
     
-    public func assignToSpecificAndPush ( criteria: GameTaskCriteria, to player: String ) {
+    public func assignToSpecificAndPush ( criteria: GameTaskCriteria, to playerId: String ) {
         guard let relay else { 
             debug("\(consoleIdentifier) Did fail to assign criteria to specific player: relay is missing or not set") 
             return 
@@ -69,8 +69,8 @@ extension TaskAssigner {
                       let eventBroadcaster = relay.eventBroadcaster 
                 else { return }
                 
-                guard let playerReport = playerRuntimeContainer.getReportOnPlayer(named: player) else {
-                    debug("\(consoleIdentifier) Did fail to assign task to \(player): player is not found")
+                guard let player = playerRuntimeContainer.players.first(where: { $0.address.displayName == playerId }) else {
+                    debug("\(consoleIdentifier) Did fail to assign task to \(playerId): player is not found")
                     return
                 }
                 
@@ -80,7 +80,7 @@ extension TaskAssigner {
                             criteriaId: criteria.id,
                             requirements: criteria.requirements
                         ).representedAsData(),
-                        to: [playerReport.address]
+                        to: [player.address]
                     )
                     debug("\(consoleIdentifier) Did assign \(criteria.id) to \(player)")
                 } catch {

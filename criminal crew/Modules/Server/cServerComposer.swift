@@ -1,4 +1,6 @@
+import Combine
 import GamePantry
+import os
 
 final public class ServerComposer : Composer, UsesDependenciesInjector {
     
@@ -9,6 +11,8 @@ final public class ServerComposer : Composer, UsesDependenciesInjector {
         serviceType  : AppConfig.serviceType,
         timeout      : 10
     )
+    
+    public let id : String = "ServerComposer"
     
     public var relay          : Relay?
     public struct Relay : CommunicationPortal {
@@ -98,7 +102,9 @@ extension ServerComposer {
             router.openChannel(for:InstructionReportEvent.self),
             router.openChannel(for:GPAcquaintanceStatusUpdateEvent.self),
             
-            router.openChannel(for:InquiryAboutConnectedPlayersRequestedEvent.self)
+            router.openChannel(for:InquiryAboutConnectedPlayersRequestedEvent.self),
+                
+            router.openChannel(for:GameDifficultyUpdateEvent.self)
         else {
             debug("[S] Did fail to open all required channels for EventRouter")
             return
@@ -116,6 +122,12 @@ extension ServerComposer {
             playerRuntimeContainer : self.ent_playerRuntimeContainer
         )
         debug("[S] TaskAssigner relay has been set up")
+        
+        comUC_taskGenerator.relay = TaskGenerator.Relay (
+            gameRuntimeContainer  : self.ent_gameRuntimeContainer,
+            panelRuntimeContainer : self.ent_panelRuntimeContainer,
+            taskRuntimeContainer  : self.ent_taskRuntimeContainer
+        )
         
         comUC_panelAssigner.relay = PanelAssigner.Relay (
             eventBroadcaster       : self.networkManager.eventBroadcaster,
@@ -144,22 +156,34 @@ extension ServerComposer {
             gameRuntimeContainer   : self.ent_gameRuntimeContainer,
             taskRuntimeContainer   : self.ent_taskRuntimeContainer,
             admitPlayer            : { playerName, decideToAdmit in
-                guard let playerRequest = self.networkManager.advertiserService.pendingRequests.first(where: { $0.requestee.displayName == playerName }) else {
+                guard let playerRequest = self.networkManager.advertiserService.pendingRequests.first(where: { $0.requesteeAddress.displayName == playerName }) else {
                     debug("[S] HostSignalResponder is unable to admit the player: the request record is missing or not found")
                     return
                 }
                 
                 if decideToAdmit {
                     self.networkManager.eventBroadcaster.approve(playerRequest.resolve(to: .admit))
+                    _ = self.ent_playerRuntimeContainer.acquaint(playerRequest.requesteeAddress, playerRequest.requestContext)
+                    
+                    DispatchQueue.main.asyncAfter(deadline: .now() + .seconds(2)){
+                        try? self.networkManager.eventBroadcaster.broadcast (
+                            GameDifficultyUpdateEvent (
+                                submittedBy: self.networkManager.myself.displayName, 
+                                difficultyAsInt: self.ent_gameRuntimeContainer.difficulty.convenienceId!
+                            ).representedAsData(), 
+                            to: self.ent_playerRuntimeContainer.connectedPlayers.map{$0.address}
+                        )
+                    }
                     debug("[S] HostSignalResponder admitted the player named: \(playerName)")
+                    
                 } else {
                     self.networkManager.eventBroadcaster.approve(playerRequest.resolve(to: .reject))
-                    self.networkManager.advertiserService.pendingRequests.removeAll { $0.requestee.displayName == playerName }
+                    self.networkManager.advertiserService.pendingRequests.removeAll { $0.requesteeAddress.displayName == playerName }
                     debug("[S] HostSignalResponder rejected the player named: \(playerName), and removed their request")
                 }
             },
             terminatePlayer        : { terminationEvent in
-                guard let playerToBeTerminated = self.ent_playerRuntimeContainer.getAcquaintancedPartiesAndTheirState().first(where: { $0.key.displayName == terminationEvent.subject })?.key else {
+                guard let playerToBeTerminated = self.ent_playerRuntimeContainer.players.first(where: { $0.address.displayName == terminationEvent.subject })?.address else {
                     debug("[S] HostSignalResponder is unable to admit the player: the request record is missing or not found")
                     return
                 }
@@ -175,14 +199,14 @@ extension ServerComposer {
         debug("[S] HostSignalResponder relay has been set up")
         
         evtUC_taskReportResponder.relay = PlayerTaskReportResponder.Relay (
-            eventRouter          : self.router,
-            eventBroadcaster     : self.networkManager.eventBroadcaster,
-            gameRuntimeContainer : self.ent_gameRuntimeContainer,
-            panelRuntimeContainer: self.ent_panelRuntimeContainer,
-            playerRuntimeContainer: self.ent_playerRuntimeContainer,
-            taskRuntimeContainer: self.ent_taskRuntimeContainer,
-            taskAssigner: self.comUC_taskAssigner,
-            taskGenerator: self.comUC_taskGenerator
+            eventRouter            : self.router,
+            eventBroadcaster       : self.networkManager.eventBroadcaster,
+            gameRuntimeContainer   : self.ent_gameRuntimeContainer,
+            panelRuntimeContainer  : self.ent_panelRuntimeContainer,
+            playerRuntimeContainer : self.ent_playerRuntimeContainer,
+            taskRuntimeContainer   : self.ent_taskRuntimeContainer,
+            taskAssigner           : self.comUC_taskAssigner,
+            taskGenerator          : self.comUC_taskGenerator
         )
         debug("[S] PlayerTaskReportResponder relay has been set up")
         
@@ -203,6 +227,8 @@ extension ServerComposer {
     private final func subscribeUCsToEvents () {
         evtUC_eventRelayer.placeSubscription(on: GPGameJoinRequestedEvent.self)
         evtUC_eventRelayer.placeSubscription(on: GPUnableToBrowseEvent.self)
+        evtUC_eventRelayer.placeSubscription(on: GPAcquaintanceStatusUpdateEvent.self)
+        evtUC_eventRelayer.placeSubscription(on: GameDifficultyUpdateEvent.self)
         debug("[S] Placed subscription of EventRelayer to GPGameJoinRequestedEvent & GPUnableToBrowseEvent")
         
         evtUC_hostSignalResponder.placeSubscription(on: GPGameStartRequestedEvent.self)
@@ -211,6 +237,7 @@ extension ServerComposer {
         evtUC_hostSignalResponder.placeSubscription(on: GPBlacklistedEvent.self)
         evtUC_hostSignalResponder.placeSubscription(on: GPTerminatedEvent.self)
         evtUC_hostSignalResponder.placeSubscription(on: InquiryAboutConnectedPlayersRequestedEvent.self)
+        evtUC_hostSignalResponder.placeSubscription(on: GameDifficultyUpdateEvent.self)
         debug("[S] Placed subscription of HostSignalResponder to GPGameStartRequestedEvent, GPGameEndRequestedEvent, GPGameJoinVerdictDeliveredEvent, GPBlacklistedEvent, and GPTerminatedEvent")
         
         evtUC_taskReportResponder.placeSubscription(on: CriteriaReportEvent.self)

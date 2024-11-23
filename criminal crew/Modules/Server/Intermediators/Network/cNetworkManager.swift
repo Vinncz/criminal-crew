@@ -4,8 +4,8 @@ public class ServerNetworkManager : GPGameServerNetworkManager, ObservableObject
     
     public let myself : MCPeerID
     
-    @Published public var eventListener     : any GamePantry.GPGameEventListener
-    @Published public var eventBroadcaster  : GamePantry.GPGameEventBroadcaster
+    @Published public var eventListener     : any GamePantry.GPNetworkListener
+    @Published public var eventBroadcaster  : GamePantry.GPNetworkBroadcaster
     @Published public var advertiserService : any GamePantry.GPGameServerAdvertiser
     
     public let gameProcessConfig : GamePantry.GPGameProcessConfiguration
@@ -21,7 +21,7 @@ public class ServerNetworkManager : GPGameServerNetworkManager, ObservableObject
         let ad = GameServerAdvertiser(serves: myself, configuredWith: configuration, router: router)
         
         self.eventListener     = el
-        self.eventBroadcaster  = eb.pair(el)
+        self.eventBroadcaster  = try! eb.pair(el)
         self.advertiserService = ad
     }
     

@@ -3,7 +3,6 @@ import Combine
 
 public class CableGameViewController: BaseGameViewController, UsesDependenciesInjector {
     
-//    public var connections: [[String]] = []
     public var currentCableHead: UIImageView?
     public var connectedCableHeads: Set<UIImageView> = []
     
@@ -144,10 +143,10 @@ extension CableGameViewController {
         CableManager.shared.cableYellowStart.image = UIImage(named: "client.panels.cables-panel.yellow-cable-vertical")
         CableManager.shared.cableGreenStart.image = UIImage(named: "client.panels.cables-panel.green-cable-vertical")
         
-        CableManager.shared.cableRedEnd.image = UIImage(named: "client.panels.cables-panel.red-cable-vertical")
-        CableManager.shared.cableBlueEnd.image = UIImage(named: "client.panels.cables-panel.blue-cable-vertical")
-        CableManager.shared.cableYellowEnd.image = UIImage(named: "client.panels.cables-panel.yellow-cable-vertical")
-        CableManager.shared.cableGreenEnd.image = UIImage(named: "client.panels.cables-panel.green-cable-vertical")
+        CableManager.shared.cableRedEnd.image = UIImage(named: "client.panels.cables-panel.red-cable-port")
+        CableManager.shared.cableBlueEnd.image = UIImage(named: "client.panels.cables-panel.blue-cable-port")
+        CableManager.shared.cableYellowEnd.image = UIImage(named: "client.panels.cables-panel.yellow-cable-port")
+        CableManager.shared.cableGreenEnd.image = UIImage(named: "client.panels.cables-panel.green-cable-port")
         
         CableManager.shared.cableRedHead.image = UIImage(named: "client.panels.cables-panel.cable-head.vertical")
         CableManager.shared.cableBlueHead.image = UIImage(named: "client.panels.cables-panel.cable-head.vertical")
@@ -220,12 +219,13 @@ extension CableGameViewController {
     @objc func handleCableLeverTap(_ sender: UITapGestureRecognizer) {
         let leverImagePulled = UIImage(named: "client.panels.cables-panel.cable-lever-pulled")
         let leverImageDefault = UIImage(named: "client.panels.cables-panel.cable-lever")
-
-        // Animate the lever pull
+        
+        HapticManager.shared.triggerNotificationFeedback(type: .success)
+        
         UIView.transition(with: CableManager.shared.cableLever, duration: 0.2, options: .transitionCrossDissolve, animations: {
             CableManager.shared.cableLever.image = leverImagePulled
         }) { _ in
-            // Delay and revert to the original lever image
+            
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
                 UIView.transition(with: CableManager.shared.cableLever, duration: 0.2, options: .transitionCrossDissolve, animations: {
                     CableManager.shared.cableLever.image = leverImageDefault
@@ -275,26 +275,21 @@ extension CableGameViewController {
             }
 
             NSLayoutConstraint.activate([
-                // Start Point Constraints
                 startPoint.bottomAnchor.constraint(equalTo: target.safeAreaLayoutGuide.bottomAnchor, constant: -40),
-                startPoint.leadingAnchor.constraint(equalTo: target.leadingAnchor, constant: CGFloat(CGFloat(16 + (index * 70)) + startPointLeadingConstant)),  // Responsive leading
+                startPoint.leadingAnchor.constraint(equalTo: target.leadingAnchor, constant: CGFloat(CGFloat(16 + (index * 70)) + startPointLeadingConstant)),
                 startPoint.widthAnchor.constraint(equalToConstant: 50 ),
                 startPoint.heightAnchor.constraint(equalToConstant: 50),
 
-                // End Point Constraints
                 endPoint.topAnchor.constraint(equalTo: target.safeAreaLayoutGuide.topAnchor),
-                endPoint.leadingAnchor.constraint(equalTo: target.leadingAnchor, constant: CGFloat(CGFloat(16 + (index * 70)) + startPointLeadingConstant)), // Responsive leading
+                endPoint.leadingAnchor.constraint(equalTo: target.leadingAnchor, constant: CGFloat(CGFloat(16 + (index * 70)) + startPointLeadingConstant)),
                 endPoint.widthAnchor.constraint(equalToConstant: 50),
                 endPoint.heightAnchor.constraint(equalToConstant: 50),
 
-                // Cable Head Constraints
                 cableHead.centerXAnchor.constraint(equalTo: startPoint.centerXAnchor),
-                cableHead.centerYAnchor.constraint(equalTo: startPoint.centerYAnchor, constant: -25),  // Responsive vertical offset
+                cableHead.centerYAnchor.constraint(equalTo: startPoint.centerYAnchor, constant: -25),
                 cableHead.widthAnchor.constraint(equalToConstant: 40),
                 cableHead.heightAnchor.constraint(equalToConstant: 40),
             ])
-            
-            endPoint.transform = CGAffineTransform(rotationAngle: .pi)
         }
     }
     
@@ -638,6 +633,7 @@ extension CableGameViewController {
                 let startPoint = findStartPoint(for: cableHead) {
                 if !isEndPointAlreadyConnected(endPoint: nearestEndPoint) {
                     connectCable(startHead: startPoint, endPoint: nearestEndPoint)
+                    checkConditionAndSendReportIfApplicable()
                 } else {
                     resetCablePosition(cableHead)
                 }
@@ -707,7 +703,9 @@ extension CableGameViewController {
 
         panelEntity.connections.removeAll { $0 == connectedPairing }
         connectedCableHeads.remove(tappedCableHeadView)
-
+        
+        HapticManager.shared.triggerImpactFeedback(style: .light)
+        
         if let startPoint = findStartPoint(for: tappedCableHeadView) {
             resetCableLayer(startPoint)
         }
@@ -717,17 +715,21 @@ extension CableGameViewController {
         if let nearestEndPoint = findNearestEndPoint(to: tappedCableHeadView){
             switch nearestEndPoint {
             case CableManager.shared.cableGreenEnd:
-                nearestEndPoint.image = UIImage(named: "client.panels.cables-panel.green-cable-vertical")
-                
+                nearestEndPoint.image = UIImage(named: "client.panels.cables-panel.green-cable-port")
             case CableManager.shared.cableRedEnd:
-                nearestEndPoint.image = UIImage(named: "client.panels.cables-panel.red-cable-vertical")
-                
+                nearestEndPoint.image = UIImage(named: "client.panels.cables-panel.red-cable-port")
             case CableManager.shared.cableBlueEnd:
-                nearestEndPoint.image = UIImage(named: "client.panels.cables-panel.blue-cable-vertical")
-                
+                nearestEndPoint.image = UIImage(named: "client.panels.cables-panel.blue-cable-port")
             case CableManager.shared.cableYellowEnd:
-                nearestEndPoint.image = UIImage(named: "client.panels.cables-panel.yellow-cable-vertical")
-                
+                nearestEndPoint.image = UIImage(named: "client.panels.cables-panel.yellow-cable-port")
+            case CableManager.shared.starEnd:
+                nearestEndPoint.image = UIImage(named: "client.panels.cables-panel.star-peg")
+            case CableManager.shared.squareEnd:
+                nearestEndPoint.image = UIImage(named: "client.panels.cables-panel.square-peg")
+            case CableManager.shared.triangleEnd:
+                nearestEndPoint.image = UIImage(named: "client.panels.cables-panel.triangle-peg")
+            case CableManager.shared.circleEnd:
+                nearestEndPoint.image = UIImage(named: "client.panels.cables-panel.circle-peg")
             default:
                 break
             }
@@ -921,7 +923,7 @@ extension CableGameViewController {
         
         var newCenter : CGPoint = CGPoint(x: endPoint.center.x, y: endPoint.center.y)
         
-        if distanceToEndpoint < 20 {
+        if distanceToEndpoint < 35 {
             if let startID = startPointIDs[startHead],
                let endID = endPointIDs[endPoint] 
             {                
@@ -933,7 +935,7 @@ extension CableGameViewController {
             } else if let startID = secondStartPointIDs[startHead],
                       let endID = secondEndPointIDs[endPoint] 
             {                
-                newCenter.x -= 22
+                newCenter.x -= 18
                 panelEntity.connections.append([startID, endID])
                 landscapeContainerView?.layer.insertSublayer(cableHead.layer, below: endPoint.layer)
                 cableHead.transform = CGAffineTransform.identity
@@ -950,16 +952,31 @@ extension CableGameViewController {
             let tapGesture = UITapGestureRecognizer(target: self, action: #selector(handleCableHeadTap(_:)))
             cableHead.addGestureRecognizer(tapGesture)
             cableHead.isUserInteractionEnabled = true
+            
+            AudioManager.shared.playSoundEffect(fileName: "plugging_cable")
+            HapticManager.shared.triggerImpactFeedback(style: .medium)
 
             switch endPoint {
             case CableManager.shared.cableGreenEnd:
                 endPoint.image = UIImage(named: "client.panels.cables-panel.green-cable-endPoint")
+                endPoint.transform = CGAffineTransform(rotationAngle: 0)
             case CableManager.shared.cableRedEnd:
                 endPoint.image = UIImage(named: "client.panels.cables-panel.red-cable-endPoint")
+                endPoint.transform = CGAffineTransform(rotationAngle: 0)
             case CableManager.shared.cableBlueEnd:
                 endPoint.image = UIImage(named: "client.panels.cables-panel.blue-cable-endPoint")
+                endPoint.transform = CGAffineTransform(rotationAngle: 0)
             case CableManager.shared.cableYellowEnd:
                 endPoint.image = UIImage(named: "client.panels.cables-panel.yellow-cable-endPoint")
+                endPoint.transform = CGAffineTransform(rotationAngle: 0)
+            case CableManager.shared.starEnd:
+                endPoint.image = UIImage(named: "client.panels.cables-panel.star-cover")
+            case CableManager.shared.squareEnd:
+                endPoint.image = UIImage(named: "client.panels.cables-panel.square-cover")
+            case CableManager.shared.circleEnd:
+                endPoint.image = UIImage(named: "client.panels.cables-panel.circle-cover")
+            case CableManager.shared.triangleEnd:
+                endPoint.image = UIImage(named: "client.panels.cables-panel.triangle-cover")
             default:
                 break
             }
@@ -973,7 +990,6 @@ extension CableGameViewController {
                 updateCableLayerAfterConnection(cableHead: CableManager.shared.cableYellowHead, cableLayer: CableManager.shared.yellowCableLayer!, borderLayer: CableManager.shared.yellowBorderLayer!, endPoint: CableManager.shared.cableYellowEnd)
             case CableManager.shared.cableGreenStart:
                 updateCableLayerAfterConnection(cableHead: CableManager.shared.cableGreenHead, cableLayer: CableManager.shared.greenCableLayer!, borderLayer: CableManager.shared.greenBorderLayer!, endPoint: CableManager.shared.cableGreenEnd)
-                    
             case CableManager.shared.secondCableRedStart:
                 updateCableLayerAfterConnection(cableHead: CableManager.shared.secondCableRedHead, cableLayer: CableManager.shared.secondRedCableLayer!, borderLayer: CableManager.shared.secondRedBorderLayer!, endPoint: CableManager.shared.starEnd)
             case CableManager.shared.secondCableBlueStart:
@@ -1176,6 +1192,29 @@ extension CableGameViewController {
         if let panelRuntimeContainer = relay.panelRuntimeContainer {
             bindInstruction(to: panelRuntimeContainer)
             bindPenaltyProgression(panelRuntimeContainer)
+            let panelPlayed = panelRuntimeContainer.panelPlayed
+            switch panelPlayed {
+                case is ClientSwitchesPanel:
+                    updateBackgroundImage("background_module_switches")
+                    break
+                case is ClientCardPanel:
+                    updateBackgroundImage("background_module_card")
+                    break
+                case is ClientKnobPanel:
+                    updateBackgroundImage("background_module_slider")
+                    break
+                case is ClientClockPanel:
+                    updateBackgroundImage("background_module_clock")
+                    break
+                case is ClientWiresPanel:
+                    updateBackgroundImage("background_module_cable")
+                    break
+                case is ClientColorPanel:
+                    updateBackgroundImage("background_module_color")
+                    break
+                default:
+                    print("\(consoleIdentifier) Did fail to update background image. Unsupported panel type: \(String(describing: panelPlayed))")
+            }
         }
         return self
     }
@@ -1202,6 +1241,29 @@ extension CableGameViewController {
             .debounce(for: .milliseconds(200), scheduler: RunLoop.main)
             .sink { [weak self] progression in
                 self?.updateLossCondition(intensity: Float(progression))
+            }
+            .store(in: &cancellables)
+    }
+    
+}
+
+extension CableGameViewController {
+    
+    private func timerPublisher() {
+        timerUpPublisher
+            .sink { [weak self] isExpired in
+                guard
+                    let relay = self?.relay,
+                    let selfSignalCommandCenter = relay.selfSignalCommandCenter,
+                    let panelRuntimeContainer = relay.panelRuntimeContainer,
+                    let instruction = panelRuntimeContainer.instruction
+                else {
+                    debug("\(self?.consoleIdentifier ?? "ClockGameViewController") Did fail to send report of instruction's expiry: Relay and all of its requirements are not met")
+                    return
+                }
+  
+                let isSuccess = selfSignalCommandCenter.sendIstructionReport(instructionId: instruction.id, isAccomplished: isExpired, penaltiesGiven: 1)
+                debug("\(self?.consoleIdentifier ?? "ClockGameViewController") Did send report of instruction's expiry. It was \(isSuccess ? "delivered" : "not delivered") to server. The last updated status is \(isExpired ? "accomplished" : "not done")")
             }
             .store(in: &cancellables)
     }

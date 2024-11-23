@@ -1,4 +1,6 @@
+import Combine
 import GamePantry
+import os
 
 public class ServerSignalResponder : UseCase {
     
@@ -7,7 +9,7 @@ public class ServerSignalResponder : UseCase {
     public var relay    : Relay?
     public struct Relay : CommunicationPortal {
         weak var eventRouter      : GPEventRouter?
-        weak var eventBroadcaster : GPGameEventBroadcaster?
+        weak var eventBroadcaster : GPNetworkBroadcaster?
         weak var browser          : ClientGameBrowser?
         weak var gameRuntime      : ClientGameRuntimeContainer?
         weak var panelRuntime     : ClientPanelRuntimeContainer?
@@ -78,6 +80,8 @@ extension ServerSignalResponder : GPHandlesEvents {
                 didGetAdmissionRequest(event)
             case let event as ConnectedPlayersNamesResponse:
                 didGetResponseOfConnectedPlayerNames(event)
+            case let event as GameDifficultyUpdateEvent:
+                didGetGameDifficultyUpdate(event)
                 
             default:
                 debug("\(consoleIdentifier) Unhandled event: \(event)")
@@ -173,7 +177,7 @@ extension ServerSignalResponder {
             return
         }
         
-        eventBroadcaster.ceaseCommunication()
+        eventBroadcaster.disconnect()
         eventBroadcaster.reset()
         gameRuntime.reset()
         panelRuntime.reset()
@@ -362,6 +366,9 @@ extension ServerSignalResponder {
                 relay.gameRuntime?.reset()
                 relay.panelRuntime?.reset()
                 relay.playerRuntime?.reset()
+                
+                AudioManager.shared.stopAllSoundEffects()
+                AudioManager.shared.stopBackgroundMusic()
         }
     }
     
@@ -388,6 +395,7 @@ extension ServerSignalResponder {
                 DispatchQueue.main.sync {
                     let winningScreen = GameWinViewController()
                     winningScreen.relay = .init (
+                        gameRuntimeContainer: gameRuntime,
                         navController: relay.navController
                     )
                     relay.navController?.pushViewController(winningScreen, animated: true)
@@ -396,6 +404,9 @@ extension ServerSignalResponder {
                 relay.gameRuntime?.reset()
                 relay.panelRuntime?.reset()
                 relay.playerRuntime?.reset()
+                
+                AudioManager.shared.stopAllSoundEffects()
+                AudioManager.shared.stopBackgroundMusic()
         }
     }
     
@@ -423,7 +434,7 @@ extension ServerSignalResponder {
             return
         }
         
-        guard playerRuntime.joinRequestedPlayersNames.contains(event.subjectName) == false else {
+        guard playerRuntime.requestingPlayerNames().contains(event.subjectName) == false else {
             debug("\(consoleIdentifier) Did fail to admit player. \(event.subjectName) has already requested to join or has already joined")
             return
         }
@@ -443,14 +454,14 @@ extension ServerSignalResponder {
             do {
                 try eventBroadcaster.broadcast (
                     GPGameJoinVerdictDeliveredEvent (
-                        forName: event.subjectName, 
+                        forName: event.subjectId, 
                         verdict: true, 
                         authorizedBy: eventBroadcaster.broadcastingFor.displayName
                     ).representedAsData(), 
                     to: [serverAddr]
                 )
                 debug("\(consoleIdentifier) Did relay admission verdict of \(event.subjectName) to server")
-                playerRuntime.joinRequestedPlayersNames.removeAll { $0 == event.subjectName }
+                playerRuntime.requestingPlayers.removeAll { $0.name == event.subjectName }
                 
             } catch {
                 debug("\(consoleIdentifier) Did fail to relay admission verdict of \(event.subjectName) to server: \(error)")
@@ -460,10 +471,15 @@ extension ServerSignalResponder {
             return
         }
         
-        playerRuntime.joinRequestedPlayersNames.append(event.subjectName)
+        playerRuntime.add(requestingPlayerNamed: event.subjectName, withId: event.subjectName)
     }
     
     public func didGetResponseOfConnectedPlayerNames ( _ event: ConnectedPlayersNamesResponse ) {
+        guard event.connectedPlayerNames.count == event.connectedPlayerIds.count else {
+            Logger.client.error("\(self.consoleIdentifier) Did fail to act on the response of connected players. The number of connected players does not match the number of connected player ids.")
+            return
+        }
+        
         guard let relay else { 
             debug("\(consoleIdentifier) Relay is missing or not set")
             return 
@@ -474,7 +490,28 @@ extension ServerSignalResponder {
             return
         }
         
-        playerRuntime.connectedPlayersNames = event.connectedPlayerNames
+        playerRuntime.players = event.connectedPlayerIds.enumerated().map { index, id in 
+            CriminalCrewClientPlayer (
+                id   : id, 
+                name : event.connectedPlayerNames[index]
+            )
+        }
     }
     
+}
+
+extension ServerSignalResponder {
+    public func didGetGameDifficultyUpdate(_ event: GameDifficultyUpdateEvent) {
+        guard let relay else {
+            debug("\(consoleIdentifier) Relay is missing or not set")
+            return
+        }
+        
+        guard let gameRuntime = relay.gameRuntime else {
+            debug("\(consoleIdentifier) Did fail to handle didGetResponseOfConnectedPlayerNames since PanelRuntime is missing or not set")
+            return
+        }
+        
+        gameRuntime.difficulty = event.difficulty
+    }
 }

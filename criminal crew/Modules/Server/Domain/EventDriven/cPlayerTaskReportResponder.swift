@@ -1,3 +1,4 @@
+import Combine
 import GamePantry
 
 public class PlayerTaskReportResponder : UseCase {
@@ -11,7 +12,7 @@ public class PlayerTaskReportResponder : UseCase {
     
     public struct Relay : CommunicationPortal {
         weak var eventRouter            : GPEventRouter?
-        weak var eventBroadcaster       : GPGameEventBroadcaster?
+        weak var eventBroadcaster       : GPNetworkBroadcaster?
         weak var gameRuntimeContainer   : ServerGameRuntimeContainer?
         weak var panelRuntimeContainer  : ServerPanelRuntimeContainer?
         weak var playerRuntimeContainer : ServerPlayerRuntimeContainer?
@@ -129,12 +130,19 @@ extension PlayerTaskReportResponder {
                 taskRuntimeContainer.playerTaskCriteriaMapping[event.submitterName]?.removeAll { $0.id == event.criteriaId }
                 
                 // make new task to ensure the player that holds the instruction get new instruction replacing the old one
-                guard let randomPanel = panelRuntimeContainer.getRegisteredPanels().randomElement() else {
-                    debug("\(consoleIdentifier) Did fail to pluck a random panel. No panel is registered")
-                    return
-                }
+//                guard let randomPanel = panelRuntimeContainer.getRegisteredPanels().randomElement() else {
+//                    debug("\(consoleIdentifier) Did fail to pluck a random panel. No panel is registered")
+//                    return
+//                }
+//                
+//                let task = taskGenerator.generate(for: randomPanel)
                 
-                let task = taskGenerator.generate(for: randomPanel)
+                guard let task = taskGenerator.generate() else {
+                    fatalError("TaskGenerator did fail to generate a task")
+                }
+                guard let panelWhichGeneratedTheTask = panelRuntimeContainer.getPanel(fromId: task.owner ?? "") else {
+                    fatalError("Panel hasn't signed the task")
+                }
                 
                 taskRuntimeContainer.registerTask(task)
                 
@@ -145,8 +153,8 @@ extension PlayerTaskReportResponder {
                 taskRuntimeContainer.registerTaskInstruction(task.instruction, to: nameOfThePlayerHoldingTheInstruction)
                 
                 // find out who plays the random panel
-                guard let nameOfThePlayerWhoPlaysThePanelPickedForTaskGeneration = panelRuntimeContainer.playerMapping.first(where: { $0.value.panelId == randomPanel.panelId })?.key else {
-                    debug("\(consoleIdentifier) Did fail to reassign new criteria. \(randomPanel.panelId) is not registered to be played by anyone")
+                guard let nameOfThePlayerWhoPlaysThePanelPickedForTaskGeneration = panelRuntimeContainer.playerMapping.first(where: { $0.value.id == panelWhichGeneratedTheTask.id })?.key else {
+                    debug("\(consoleIdentifier) Did fail to reassign new criteria. \(panelWhichGeneratedTheTask.id) is not registered to be played by anyone")
                     return
                 }
                 
@@ -224,14 +232,20 @@ extension PlayerTaskReportResponder {
                 // remove the mappings: both the instruction and the criteria
                 taskRuntimeContainer.playerTaskInstructionMapping[event.submitterName]?.removeAll { $0.id == completeGameTaskObject.instruction.id }
                 taskRuntimeContainer.playerTaskCriteriaMapping[nameOfThePlayerHoldingCriteria]?.removeAll { $0.id == completeGameTaskObject.criteria.id }
-                
-                // make new task to ensure the player that holds the instruction get new instruction replacing the old one
-                guard let randomPanel = panelRuntimeContainer.getRegisteredPanels().randomElement() else {
-                    debug("\(consoleIdentifier) Did fail to pluck a random panel. No panel is registered")
-                    return
+//                
+//                // make new task to ensure the player that holds the instruction get new instruction replacing the old one
+//                guard let randomPanel = panelRuntimeContainer.getRegisteredPanels().randomElement() else {
+//                    debug("\(consoleIdentifier) Did fail to pluck a random panel. No panel is registered")
+//                    return
+//                }
+//                
+//                let task = taskGenerator.generate(for: randomPanel)
+                guard let task = taskGenerator.generate() else {
+                    fatalError("TaskGenerator did fail to generate a task")
                 }
-                
-                let task = taskGenerator.generate(for: randomPanel)
+                guard let panelWhichGeneratedTheTask = panelRuntimeContainer.getPanel(fromId: task.owner ?? "") else {
+                    fatalError("Panel hasn't signed the task")
+                }
                 
                 taskRuntimeContainer.registerTask(task)
                 
@@ -242,8 +256,8 @@ extension PlayerTaskReportResponder {
                 taskRuntimeContainer.registerTaskInstruction(task.instruction, to: event.submitterName)
                 
                 // find out who plays the random panel
-                guard let nameOfThePlayerWhoPlaysThePanelPickedForTaskGeneration = panelRuntimeContainer.playerMapping.first(where: { $0.value.panelId == randomPanel.panelId })?.key else {
-                    debug("\(consoleIdentifier)  Did fail to reassign new criteria. \(randomPanel.panelId) is not registered to be played by anyone")
+                guard let nameOfThePlayerWhoPlaysThePanelPickedForTaskGeneration = panelRuntimeContainer.playerMapping.first(where: { $0.value.id == panelWhichGeneratedTheTask.id })?.key else {
+                    debug("\(consoleIdentifier)  Did fail to reassign new criteria. \(panelWhichGeneratedTheTask.id) is not registered to be played by anyone")
                     return
                 }
                 
@@ -272,8 +286,7 @@ extension PlayerTaskReportResponder {
     
     private func isOneOfListedPlayers ( _ playerName: String ) -> Bool {
         guard 
-            let playerReport = relay?.playerRuntimeContainer?.getReportOnPlayer(named: playerName),
-            playerReport.isBlacklisted == false
+            let player = relay?.playerRuntimeContainer?.players.first(where: { $0.address.displayName == playerName }) 
         else {
             debug("\(consoleIdentifier) Did fail to check player: player is missing or blacklisted")
             return false
@@ -292,8 +305,8 @@ extension PlayerTaskReportResponder {
         debug("\(consoleIdentifier) Did advance the penalty progression by \(penaltyPoints)")
     }
     
-    private func sendInstructionDismissal ( for instructionId: String, to playerName: String, using broadcaster: GPGameEventBroadcaster ) {
-        guard let playerRecord = relay?.playerRuntimeContainer?.getReportOnPlayer(named: playerName) else {
+    private func sendInstructionDismissal ( for instructionId: String, to playerName: String, using broadcaster: GPNetworkBroadcaster ) {
+        guard let player = relay?.playerRuntimeContainer?.players.first(where: { $0.address.displayName == playerName }) else {
             debug("\(consoleIdentifier) Did fail to signal instruction can safely be dismissed: player is not found in playerRuntimeContainer")
             return
         }
@@ -303,15 +316,15 @@ extension PlayerTaskReportResponder {
                 InstructionDidGetDismissed (
                     instructionId: instructionId
                 ).representedAsData(),
-                to: [playerRecord.address]
+                to: [player.address]
             )
         } catch {
             debug("\(consoleIdentifier) Did fail to signal instruction can safely be dismissed: \(error)")
         }
     }
     
-    private func sendCriteriaDismissal ( for criteriaId: String, to playerName: String, using broadcaster: GPGameEventBroadcaster ) {
-        guard let playerRecord = relay?.playerRuntimeContainer?.getReportOnPlayer(named: playerName) else {
+    private func sendCriteriaDismissal ( for criteriaId: String, to playerName: String, using broadcaster: GPNetworkBroadcaster ) {
+        guard let player = relay?.playerRuntimeContainer?.players.first(where: { $0.address.displayName == playerName }) else {
             debug("\(consoleIdentifier) Did fail to signal criteria can safely be dismissed: player is not found in playerRuntimeContainer")
             return
         }
@@ -321,7 +334,7 @@ extension PlayerTaskReportResponder {
                 CriteriaDidGetDismissed (
                     criteriaId: criteriaId
                 ).representedAsData(),
-                to: [playerRecord.address]
+                to: [player.address]
             )
         } catch {
             debug("\(consoleIdentifier) Did fail to signal criteria can safely be dismissed: \(error)")

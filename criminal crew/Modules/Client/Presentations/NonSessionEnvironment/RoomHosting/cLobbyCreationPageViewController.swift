@@ -28,6 +28,7 @@ public class LobbyCreationPageViewController : UIViewController, UsesDependencie
         weak var panelRuntimeContainer   : ClientPanelRuntimeContainer?
              var publicizeRoom : ( _ advertContent: [String: String] ) -> Void
              var navigate      : ( _ to: UIViewController ) -> Void
+             var popViewController : () -> Void
     }
     
     override init ( nibName nibNameOrNil: String?, bundle nibBundleOrNil: Bundle? ) {
@@ -174,15 +175,15 @@ extension LobbyCreationPageViewController {
             return
         }
         
-        playerRuntimeContainer.$joinRequestedPlayersNames
+        playerRuntimeContainer.$requestingPlayers
             .debounce(for: .milliseconds(200), scheduler: RunLoop.main)
             .receive(on: DispatchQueue.main)
             .sink { [weak self] names in
                 self?.tPendingPlayers.reloadData()
                 debug("Reloading pending players list with \(names)")
             }.store(in: &subscriptions)
-            
-        playerRuntimeContainer.$connectedPlayersNames
+        
+        playerRuntimeContainer.$players
             .debounce(for: .milliseconds(200), scheduler: RunLoop.main)
             .receive(on: DispatchQueue.main)
             .sink { [weak self] names in
@@ -217,6 +218,15 @@ extension LobbyCreationPageViewController {
                     case is ClientSwitchesPanel:
                         vc = SwitchGameViewController()
                             .withRelay(of: .init(panelRuntimeContainer: panelRuntimeContainer, selfSignalCommandCenter: self.relay?.selfSignalCommandCenter))
+                    case is ClientColorPanel:
+                        vc = ColorGameViewController()
+                            .withRelay(of: .init(panelRuntimeContainer: panelRuntimeContainer, selfSignalCommandCenter: self.relay?.selfSignalCommandCenter))
+                    case is ClientCardPanel:
+                        vc = CardSwipeViewController()
+                            .withRelay(of: .init(panelRuntimeContainer: panelRuntimeContainer, selfSignalCommandCenter: self.relay?.selfSignalCommandCenter))
+                    case is ClientKnobPanel:
+                        vc = KnobGameViewController()
+                            .withRelay(of: .init(panelRuntimeContainer: panelRuntimeContainer, selfSignalCommandCenter: self.relay?.selfSignalCommandCenter))
                     default:
                         debug("Did fail to set up game view controller")
                         break
@@ -227,6 +237,7 @@ extension LobbyCreationPageViewController {
                 }
             }
             .store(in: &subscriptions)
+        
     }
     
 }
@@ -332,8 +343,8 @@ fileprivate class PendingPlayerRefresher : NSObject, UITableViewDataSource, UITa
             return
         }
         
-        let playerName = playerRuntimeContainer.joinRequestedPlayersNames[indexPath.row]
-        selfSignalCommandCenter.verdictPlayer(named: playerName, isAdmitted: true)
+        let playerId = playerRuntimeContainer.requestingPlayers[indexPath.row].id
+        selfSignalCommandCenter.verdictPlayer(id: playerId, isAdmitted: true)
     }
     
     public func tableView ( _ tableView: UITableView, trailingSwipeActionsConfigurationForRowAt indexPath: IndexPath ) -> UISwipeActionsConfiguration? {
@@ -348,7 +359,7 @@ fileprivate class PendingPlayerRefresher : NSObject, UITableViewDataSource, UITa
         }
         
         let kickAction = UIContextualAction(style: .destructive, title: "Kick") { (action, view, completionHandler) in
-            let playerToKick = playerRuntimeContainer.joinRequestedPlayersNames[indexPath.row]
+            let playerToKick = playerRuntimeContainer.requestingPlayers[indexPath.row]
             print("Declined player: \(playerToKick)")
             completionHandler(true)
         }
@@ -371,7 +382,7 @@ fileprivate class PendingPlayerRefresher : NSObject, UITableViewDataSource, UITa
             return 0
         }
         
-        return playerRuntimeContainer.joinRequestedPlayersNames.count
+        return playerRuntimeContainer.requestingPlayers.count
     }
     
     public func tableView ( _ tableView: UITableView, cellForRowAt indexPath: IndexPath ) -> UITableViewCell {
@@ -389,7 +400,7 @@ fileprivate class PendingPlayerRefresher : NSObject, UITableViewDataSource, UITa
             return UITableViewCell()
         }
         
-        let playerName = playerRuntimeContainer.joinRequestedPlayersNames[indexPath.row]
+        let playerName = playerRuntimeContainer.requestingPlayers[indexPath.row].name
         if playerName == relay.selfSignalCommandCenter?.whoAmI() {
             cell.configure(playerName: "\(playerName) (You)")
         } else {
@@ -427,13 +438,13 @@ fileprivate class JoinedPlayerRefresher : NSObject, UITableViewDataSource, UITab
             return
         }
         
-        let playerName = playerRuntimeContainer.connectedPlayersNames[indexPath.row]
-        if playerName == selfSignalCommandCenter.whoAmI() {
-            debug("\(consoleIdentifier) Did fail to kick player: \(playerName). You cannot kick yourself")
+        let playerId = playerRuntimeContainer.players[indexPath.row].id
+        if playerId == selfSignalCommandCenter.whoAmI() {
+            debug("\(consoleIdentifier) Did fail to kick player: \(playerId). You cannot kick yourself")
             return
         }
         
-        _ = selfSignalCommandCenter.kickPlayer(named: playerName)
+        _ = selfSignalCommandCenter.kickPlayer(id: playerId)
     }
     
     public func tableView ( _ tableView: UITableView, trailingSwipeActionsConfigurationForRowAt indexPath: IndexPath ) -> UISwipeActionsConfiguration? {
@@ -452,14 +463,15 @@ fileprivate class JoinedPlayerRefresher : NSObject, UITableViewDataSource, UITab
             return nil
         }
         
-        let playerName = playerRuntimeContainer.connectedPlayersNames[indexPath.row]
-        if playerName == selfSignalCommandCenter.whoAmI() {
-            debug("\(consoleIdentifier) Did fail to kick player: \(playerName). You cannot kick yourself")
+        let playerId = playerRuntimeContainer.players[indexPath.row].id
+        if playerId == selfSignalCommandCenter.whoAmI() {
+            debug("\(consoleIdentifier) Did fail to kick player: \(playerId). You cannot kick yourself")
+            return nil
         }
         
         let kickAction = UIContextualAction(style: .destructive, title: "Kick") { (action, view, completionHandler) in
-            let playerName = playerRuntimeContainer.connectedPlayersNames[indexPath.row]
-                _ = selfSignalCommandCenter.kickPlayer(named: playerName)
+            let playerName = playerRuntimeContainer.players[indexPath.row].id
+                _ = selfSignalCommandCenter.kickPlayer(id: playerName)
             
             if playerName == selfSignalCommandCenter.whoAmI() {
                 debug("\(self.consoleIdentifier) Did fail to kick player: \(playerName). You cannot kick yourself")
@@ -486,7 +498,7 @@ fileprivate class JoinedPlayerRefresher : NSObject, UITableViewDataSource, UITab
             return 0
         }
         
-        return playerRuntimeContainer.connectedPlayersNames.count
+        return playerRuntimeContainer.players.count
     }
     
     public func tableView ( _ tableView: UITableView, cellForRowAt indexPath: IndexPath ) -> UITableViewCell {
@@ -504,7 +516,7 @@ fileprivate class JoinedPlayerRefresher : NSObject, UITableViewDataSource, UITab
             return UITableViewCell()
         }
         
-        let playerName = playerRuntimeContainer.connectedPlayersNames[indexPath.row]
+        let playerName = playerRuntimeContainer.players[indexPath.row].name
         if playerName == relay.selfSignalCommandCenter?.whoAmI() {
             cell.configure(playerName: "\(playerName) (You)")
         } else {

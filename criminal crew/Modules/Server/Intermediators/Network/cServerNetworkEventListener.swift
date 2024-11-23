@@ -1,6 +1,6 @@
 import GamePantry
 
-public class ServerNetworkEventListener : GPGameEventListener {
+public class ServerNetworkEventListener : GPNetworkListener {
     
     public weak var eventRouter: GPEventRouter?
     
@@ -8,7 +8,7 @@ public class ServerNetworkEventListener : GPGameEventListener {
     public init ( router: GPEventRouter ) {
         self.eventRouter = router
         super.init()
-        startListening(self)
+        undeafen(self)
     }
     
     public func heardNews ( of: MCPeerID, to: MCSessionState ) {
@@ -25,33 +25,37 @@ public class ServerNetworkEventListener : GPGameEventListener {
     public func heardData ( from peer: MCPeerID, _ data: Data ) {
         debug("ServerNetworkEventListener did receive the following data: \(data.toString() ?? "<error>Invalid data</error>")")
         
-        if let parsedData = GPTerminatedEvent.construct(from: fromData(data: data)!) {
+        if let parsedData = GPTerminatedEvent.construct(from: fromData(data)!) {
             if !emit(parsedData) {
                 debug("\(consoleIdentifier) Events on the network are received but not shared via the event router")
             }
-        } else if let parsedData = InquiryAboutConnectedPlayersRequestedEvent.construct(from: fromData(data: data)!) {
+        } else if let parsedData = InquiryAboutConnectedPlayersRequestedEvent.construct(from: fromData(data)!) {
             if !emit(parsedData) {
                 debug("\(consoleIdentifier) Did receive an inquiry about connected players request but not shared via the event router")
             }
-        } else if let parsedData = CriteriaReportEvent.construct(from: fromData(data: data)!) {
+        } else if let parsedData = CriteriaReportEvent.construct(from: fromData(data)!) {
             if !emit(parsedData) {
                 debug("\(consoleIdentifier) Did receive a criteria report event but not shared via the event router")
             }
-        } else if let parsedData = InstructionReportEvent.construct(from: fromData(data: data)!) {
+        } else if let parsedData = InstructionReportEvent.construct(from: fromData(data)!) {
             if !emit(parsedData) {
                 debug("\(consoleIdentifier) Did receive a instruction report event but not shared via the event router")
             }
-        } else if let parsedData: GPGameJoinRequestedEvent = GPGameJoinRequestedEvent.construct(from: fromData(data: data)!) {
+        } else if let parsedData: GPGameJoinRequestedEvent = GPGameJoinRequestedEvent.construct(from: fromData(data)!) {
             if !emit(parsedData) {
                 debug("\(consoleIdentifier) Did receive a game join request event but not shared via the event router")
             }
-        } else if let parsedData = GPGameJoinVerdictDeliveredEvent.construct(from: fromData(data: data)!) {
+        } else if let parsedData = GPGameJoinVerdictDeliveredEvent.construct(from: fromData(data)!) {
             if !emit(parsedData) {
                 debug("\(consoleIdentifier) Did receive a game join verdict event but not shared via the event router")
             }
-        } else if let parsedData = GPGameStartRequestedEvent.construct(from: fromData(data: data)!) {
+        } else if let parsedData = GPGameStartRequestedEvent.construct(from: fromData(data)!) {
             if !emit(parsedData) {
                 debug("\(consoleIdentifier) Did receive a game start request event but not shared via the event router")
+            }
+        } else if let parsedData = GameDifficultyUpdateEvent.construct(from: fromData(data)!) {
+            if !emit(parsedData) {
+                debug("\(consoleIdentifier) Did receive a game difficulty change event but not shared via the event router")
             }
         } else {
             debug("\(consoleIdentifier) Did receive data, but could not parse it")

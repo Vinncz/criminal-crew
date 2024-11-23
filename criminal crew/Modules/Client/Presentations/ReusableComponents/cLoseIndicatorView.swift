@@ -48,18 +48,18 @@ internal class LoseIndicatorView: UIView {
         ]
         colorAnimation.toValue = [
             CGColor(red: 33.0/255.0, green: 153.0/255.0, blue: 0.0, alpha: 0.0),
-            CGColor(red: 0.0, green: 153.0/255.0, blue: 3.0/255.0, alpha: 0.0),
+            CGColor(red: 0.0, green: 153.0/255.0, blue: 3.0/255.0, alpha: 0.5),
             CGColor(red: 0.0, green: 255.0/255.0, blue: 9.0/255.0, alpha: 1.0)
         ]
-        colorAnimation.duration = 0.3
+        colorAnimation.duration = 0.7
         colorAnimation.autoreverses = false
         colorAnimation.fillMode = .removed
         colorAnimation.isRemovedOnCompletion = true
         
         let opacityAnimation = CABasicAnimation(keyPath: "opacity")
         opacityAnimation.fromValue = 0.0
-        opacityAnimation.toValue = 0.6
-        opacityAnimation.duration = 0.3
+        opacityAnimation.toValue = 0.8
+        opacityAnimation.duration = 0.7
         opacityAnimation.autoreverses = false
         opacityAnimation.fillMode = .removed
         opacityAnimation.isRemovedOnCompletion = true
