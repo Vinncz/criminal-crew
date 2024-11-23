@@ -281,12 +281,12 @@ extension CableGameViewController {
                 startPoint.heightAnchor.constraint(equalToConstant: 50),
 
                 endPoint.topAnchor.constraint(equalTo: target.safeAreaLayoutGuide.topAnchor),
-                endPoint.leadingAnchor.constraint(equalTo: target.leadingAnchor, constant: CGFloat(CGFloat(16 + (index * 70)) + startPointLeadingConstant)), // Responsive leading
+                endPoint.leadingAnchor.constraint(equalTo: target.leadingAnchor, constant: CGFloat(CGFloat(16 + (index * 70)) + startPointLeadingConstant)),
                 endPoint.widthAnchor.constraint(equalToConstant: 50),
                 endPoint.heightAnchor.constraint(equalToConstant: 50),
 
                 cableHead.centerXAnchor.constraint(equalTo: startPoint.centerXAnchor),
-                cableHead.centerYAnchor.constraint(equalTo: startPoint.centerYAnchor, constant: -25),  // Responsive vertical offset
+                cableHead.centerYAnchor.constraint(equalTo: startPoint.centerYAnchor, constant: -25),
                 cableHead.widthAnchor.constraint(equalToConstant: 40),
                 cableHead.heightAnchor.constraint(equalToConstant: 40),
             ])
