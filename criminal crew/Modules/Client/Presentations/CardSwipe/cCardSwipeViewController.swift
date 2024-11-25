@@ -173,6 +173,8 @@ public class CardSwipeViewController: BaseGameViewController {
         let screenWidth = UIScreen.main.bounds.width
         let screenWidthInMm = screenWidth / UIScreen.main.scale
         
+        print("\(screenWidthInMm)")
+        
         var originalPositionx: CGFloat = 0
         var originalPositiony: CGFloat = 0
         var cardOrginalPositonSpacing: CGFloat = 0
@@ -194,6 +196,12 @@ public class CardSwipeViewController: BaseGameViewController {
             indicatorYlevel = 126
             
         } else if screenWidthInMm >= 284 {
+            originalPositionx = 115
+            originalPositiony = 250
+            cardOrginalPositonSpacing = 63
+            indicatorStartX = 156
+            indicatorYlevel = 122
+        } else {
             originalPositionx = 115
             originalPositiony = 250
             cardOrginalPositonSpacing = 63
@@ -275,10 +283,6 @@ public class CardSwipeViewController: BaseGameViewController {
         var numPadPanelSize = CGSize()
         var numPadEnterButtonSize = CGSize()
         var numPadDeleteButtonSize = CGSize()
-        var panelTrailingAnchor: CGFloat = 0
-        var numPadLeadingAnchor: CGFloat = 0
-        var displayLabelLeadingAnchor: CGFloat = 0
-        var buttonBelowPanel: CGFloat = 0
         var labelXLevel: CGFloat = 0
         
         let buttonSpacing: CGFloat = 10
@@ -288,10 +292,6 @@ public class CardSwipeViewController: BaseGameViewController {
             numPadPanelSize = CGSize(width: 250, height: 130)
             numPadEnterButtonSize = CGSize(width: 130, height: 51)
             numPadDeleteButtonSize = CGSize(width: 50, height: 51)
-            panelTrailingAnchor = -10
-            numPadLeadingAnchor = -115
-            displayLabelLeadingAnchor = 20
-            buttonBelowPanel = -30
             labelXLevel = 2
             displayLabel.font = UIFont(name: "digital-7", size: 110)
             
@@ -300,10 +300,6 @@ public class CardSwipeViewController: BaseGameViewController {
             numPadPanelSize = CGSize(width: 265, height: 110)
             numPadEnterButtonSize = CGSize(width: 120, height: 46)
             numPadDeleteButtonSize = CGSize(width: 45, height: 46)
-            panelTrailingAnchor = 15
-            numPadLeadingAnchor = -100
-            displayLabelLeadingAnchor = 40
-            buttonBelowPanel = -24
             labelXLevel = 1
             displayLabel.font = UIFont(name: "digital-7", size: 90)
             
@@ -312,41 +308,16 @@ public class CardSwipeViewController: BaseGameViewController {
             numPadPanelSize = CGSize(width: 265, height: 110)
             numPadEnterButtonSize = CGSize(width: 120, height: 46)
             numPadDeleteButtonSize = CGSize(width: 45, height: 46)
-            panelTrailingAnchor = 15
-            numPadLeadingAnchor = -100
-            displayLabelLeadingAnchor = 40
-            buttonBelowPanel = -24
+            labelXLevel = 1
+            displayLabel.font = UIFont(name: "digital-7", size: 90)
+        } else {
+            numPadButtonSize = CGSize(width: 45, height: 46)
+            numPadPanelSize = CGSize(width: 265, height: 110)
+            numPadEnterButtonSize = CGSize(width: 120, height: 46)
+            numPadDeleteButtonSize = CGSize(width: 45, height: 46)
             labelXLevel = 1
             displayLabel.font = UIFont(name: "digital-7", size: 90)
         }
-
-        NSLayoutConstraint.activate([
-            numPadPanel.widthAnchor.constraint(equalToConstant: numPadPanelSize.width),
-            numPadPanel.heightAnchor.constraint(equalToConstant: numPadPanelSize.height),
-            numPadPanel.topAnchor.constraint(equalTo: target.topAnchor, constant: 20),
-            numPadPanel.trailingAnchor.constraint(equalTo: target.trailingAnchor, constant: panelTrailingAnchor)
-        ])
-
-        NSLayoutConstraint.activate([
-            numPadDeleteButton.widthAnchor.constraint(equalToConstant: numPadDeleteButtonSize.width),
-            numPadDeleteButton.heightAnchor.constraint(equalToConstant: numPadDeleteButtonSize.height),
-            numPadDeleteButton.bottomAnchor.constraint(equalTo: target.bottomAnchor, constant: buttonBelowPanel),
-            numPadDeleteButton.leadingAnchor.constraint(equalTo: numPadPanel.centerXAnchor, constant: -80)
-        ])
-
-        NSLayoutConstraint.activate([
-            numPadEnterButton.widthAnchor.constraint(equalToConstant: numPadEnterButtonSize.width),
-            numPadEnterButton.heightAnchor.constraint(equalToConstant: numPadEnterButtonSize.height),
-            numPadEnterButton.bottomAnchor.constraint(equalTo: target.bottomAnchor, constant: buttonBelowPanel),
-            numPadEnterButton.trailingAnchor.constraint(equalTo: target.trailingAnchor, constant: -20)
-        ])
-        
-        NSLayoutConstraint.activate([
-            displayLabel.widthAnchor.constraint(equalToConstant: numPadPanelSize.width),
-            displayLabel.heightAnchor.constraint(equalToConstant: numPadPanelSize.height),
-            displayLabel.centerXAnchor.constraint(equalTo: numPadPanel.centerXAnchor),
-            displayLabel.leadingAnchor.constraint(equalTo: numPadPanel.leadingAnchor, constant: displayLabelLeadingAnchor)
-        ])
 
         for i in 1...9 {
             numPadButton = UIImageView(image: UIImage(named: "buttonOff"))
@@ -367,10 +338,31 @@ public class CardSwipeViewController: BaseGameViewController {
                 numPadButton.widthAnchor.constraint(equalToConstant: numPadButtonSize.width),
                 numPadButton.heightAnchor.constraint(equalToConstant: numPadButtonSize.height),
                 numPadButton.leadingAnchor.constraint(equalTo: target.leadingAnchor, constant: 30 + CGFloat(col) * (numPadButtonSize.width + buttonSpacing)),
-                numPadButton.topAnchor.constraint(equalTo: numPadPanel.bottomAnchor, constant: numPadLeadingAnchor  + CGFloat(row) * (numPadButtonSize.height + buttonSpacing)),
+                numPadButton.topAnchor.constraint(equalTo: numPadPanel.centerYAnchor, constant: -CGFloat(numPadButtonSize.height) + CGFloat(row) * (numPadButtonSize.height + buttonSpacing)),
                     
                 label.centerXAnchor.constraint(equalTo: numPadButton.centerXAnchor, constant: labelXLevel),
-                label.topAnchor.constraint(equalTo: numPadButton.topAnchor, constant: -2)
+                label.topAnchor.constraint(equalTo: numPadButton.topAnchor, constant: -2),
+                
+                numPadPanel.widthAnchor.constraint(equalToConstant: numPadPanelSize.width),
+                numPadPanel.heightAnchor.constraint(equalToConstant: numPadPanelSize.height),
+                numPadPanel.topAnchor.constraint(equalTo: target.topAnchor, constant: 20),
+                numPadPanel.leadingAnchor.constraint(equalTo: numPadButton.leadingAnchor, constant: (CGFloat(numPadButtonSize.width) + buttonSpacing) * 3),
+                numPadPanel.trailingAnchor.constraint(equalTo: target.trailingAnchor, constant: -20),
+            
+                numPadDeleteButton.widthAnchor.constraint(equalToConstant: numPadDeleteButtonSize.width),
+                numPadDeleteButton.heightAnchor.constraint(equalToConstant: numPadDeleteButtonSize.height),
+                numPadDeleteButton.bottomAnchor.constraint(equalTo: numPadPanel.bottomAnchor, constant: CGFloat(numPadDeleteButtonSize.height) + 10),
+                numPadDeleteButton.trailingAnchor.constraint(equalTo: numPadEnterButton.leadingAnchor, constant: -10),
+            
+                numPadEnterButton.widthAnchor.constraint(equalToConstant: numPadEnterButtonSize.width),
+                numPadEnterButton.heightAnchor.constraint(equalToConstant: numPadEnterButtonSize.height),
+                numPadEnterButton.bottomAnchor.constraint(equalTo: numPadPanel.bottomAnchor, constant: CGFloat(numPadEnterButtonSize.height) + 10),
+                numPadEnterButton.trailingAnchor.constraint(equalTo: numPadPanel.trailingAnchor),
+            
+                displayLabel.widthAnchor.constraint(equalToConstant: numPadPanelSize.width),
+                displayLabel.heightAnchor.constraint(equalToConstant: numPadPanelSize.height),
+                displayLabel.centerXAnchor.constraint(equalTo: numPadPanel.centerXAnchor),
+                displayLabel.leadingAnchor.constraint(equalTo: numPadPanel.leadingAnchor, constant: 10)
             ])
         }
     }

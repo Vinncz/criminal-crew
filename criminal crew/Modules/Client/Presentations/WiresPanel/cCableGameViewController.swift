@@ -34,7 +34,6 @@ public class CableGameViewController: BaseGameViewController, UsesDependenciesIn
         }
         
         containerView.translatesAutoresizingMaskIntoConstraints = false
-        
         let portraitBackgroundImage = ViewFactory.addBackgroundImageView("client.panels.cables-panel.panel-background-left")
         portraitBackgroundImage.translatesAutoresizingMaskIntoConstraints = false
         containerView.addSubview(portraitBackgroundImage)
@@ -261,34 +260,42 @@ extension CableGameViewController {
             let startPoint = pair.start
             let cableHead = pair.head
             let endPoint = shuffledEndPoints[index]
-            
+            let startPointEndPointSize = CGSize(width: 50, height: 50)
+            let cableHeadSize = CGSize(width: 40, height: 40)
             let screenWidth = UIScreen.main.bounds.width
             let screenWidthInMm = screenWidth / UIScreen.main.scale
-
-            var startPointLeadingConstant: CGFloat = 0.0
+            var leadingSpacing = CGFloat()
+            var cableSpacing = CGFloat()
+            
             if screenWidthInMm >= 318 {
-                startPointLeadingConstant = screenWidth * 0.02
-            } else if screenWidthInMm >= 291{
-                startPointLeadingConstant = screenWidth * 0.005
-            } else if screenWidthInMm >= 284{
-                startPointLeadingConstant = screenWidth * 0.001
+                cableSpacing = 30
+                leadingSpacing = 20
+            } else if screenWidthInMm >= 291 {
+                cableSpacing = 20
+                leadingSpacing = 15
+            } else if screenWidthInMm >= 284 {
+                cableSpacing = 20
+                leadingSpacing = 15
+            } else {
+                cableSpacing = 20
+                leadingSpacing = 15
             }
 
             NSLayoutConstraint.activate([
-                startPoint.bottomAnchor.constraint(equalTo: target.safeAreaLayoutGuide.bottomAnchor, constant: -40),
-                startPoint.leadingAnchor.constraint(equalTo: target.leadingAnchor, constant: CGFloat(CGFloat(16 + (index * 70)) + startPointLeadingConstant)),
-                startPoint.widthAnchor.constraint(equalToConstant: 50 ),
-                startPoint.heightAnchor.constraint(equalToConstant: 50),
+                startPoint.bottomAnchor.constraint(equalTo: target.safeAreaLayoutGuide.bottomAnchor, constant: -cableSpacing),
+                startPoint.leadingAnchor.constraint(equalTo: target.leadingAnchor, constant: leadingSpacing + CGFloat(index) * (startPointEndPointSize.width + cableSpacing)),
+                startPoint.widthAnchor.constraint(equalToConstant: startPointEndPointSize.width),
+                startPoint.heightAnchor.constraint(equalToConstant: startPointEndPointSize.height),
 
                 endPoint.topAnchor.constraint(equalTo: target.safeAreaLayoutGuide.topAnchor),
-                endPoint.leadingAnchor.constraint(equalTo: target.leadingAnchor, constant: CGFloat(CGFloat(16 + (index * 70)) + startPointLeadingConstant)),
-                endPoint.widthAnchor.constraint(equalToConstant: 50),
-                endPoint.heightAnchor.constraint(equalToConstant: 50),
+                endPoint.leadingAnchor.constraint(equalTo: target.leadingAnchor, constant: leadingSpacing + CGFloat(index) * (startPointEndPointSize.width + cableSpacing)),
+                endPoint.widthAnchor.constraint(equalToConstant: startPointEndPointSize.width),
+                endPoint.heightAnchor.constraint(equalToConstant: startPointEndPointSize.height),
 
                 cableHead.centerXAnchor.constraint(equalTo: startPoint.centerXAnchor),
                 cableHead.centerYAnchor.constraint(equalTo: startPoint.centerYAnchor, constant: -25),
-                cableHead.widthAnchor.constraint(equalToConstant: 40),
-                cableHead.heightAnchor.constraint(equalToConstant: 40),
+                cableHead.widthAnchor.constraint(equalToConstant: cableHeadSize.width),
+                cableHead.heightAnchor.constraint(equalToConstant: cableHeadSize.height),
             ])
         }
     }
@@ -319,33 +326,32 @@ extension CableGameViewController {
 
             let screenWidth = UIScreen.main.bounds.width
             let screenWidthInMm = screenWidth / UIScreen.main.scale
-
-            var startPointLeadingConstant: CGFloat = 0.0
-            var endPointTrailingConstant: CGFloat = 0.0
-            var cableLeverLeadingConstant: CGFloat = 0.0
+            
+            var cableSpacing = CGFloat()
+            var leadingSpacing = CGFloat()
 
             if screenWidthInMm >= 318 {
-                startPointLeadingConstant = screenWidth * 0.1
-                endPointTrailingConstant = screenWidth * -0.2999
-                cableLeverLeadingConstant = screenWidth * 0.12
+                cableSpacing = 25
+                leadingSpacing = -65
             } else if screenWidthInMm >= 291{
-                startPointLeadingConstant = screenWidth * 0.1
-                endPointTrailingConstant = screenWidth * -0.31
-                cableLeverLeadingConstant = screenWidth * 0.12
+                cableSpacing = 15
+                leadingSpacing = -55
             } else if screenWidthInMm >= 284{
-                startPointLeadingConstant = screenWidth * 0.1
-                endPointTrailingConstant = screenWidth * -0.315
-                cableLeverLeadingConstant = screenWidth * 0.12
+                cableSpacing = 15
+                leadingSpacing = -55
+            } else {
+                cableSpacing = 5
+                leadingSpacing = -55
             }
 
             NSLayoutConstraint.activate([
-                startPoint.centerYAnchor.constraint(equalTo: target.centerYAnchor, constant: CGFloat(-70 + (index * 47))),
-                startPoint.leadingAnchor.constraint(equalTo: target.leadingAnchor, constant: startPointLeadingConstant - 50),
+                startPoint.topAnchor.constraint(equalTo: target.topAnchor, constant: CGFloat(cableSpacing + CGFloat((index * 50)))),
+                startPoint.leadingAnchor.constraint(equalTo: target.leadingAnchor, constant: 30),
                 startPoint.widthAnchor.constraint(equalToConstant: 40),
                 startPoint.heightAnchor.constraint(equalToConstant: 40),
 
                 endPoint.centerYAnchor.constraint(equalTo: startPoint.centerYAnchor),
-                endPoint.trailingAnchor.constraint(equalTo: target.trailingAnchor, constant: endPointTrailingConstant + 125),
+                endPoint.trailingAnchor.constraint(equalTo: cableLever.leadingAnchor, constant: leadingSpacing),
                 endPoint.widthAnchor.constraint(equalToConstant: 40),
                 endPoint.heightAnchor.constraint(equalToConstant: 40),
 
@@ -357,7 +363,7 @@ extension CableGameViewController {
                 cableLever.widthAnchor.constraint(equalToConstant: 70),
                 cableLever.heightAnchor.constraint(equalToConstant: 70),
                 cableLever.bottomAnchor.constraint(equalTo: target.safeAreaLayoutGuide.bottomAnchor, constant: -20),
-                cableLever.leadingAnchor.constraint(equalTo: endPoint.leadingAnchor, constant: cableLeverLeadingConstant)
+                cableLever.trailingAnchor.constraint(equalTo: target.trailingAnchor, constant: -15)
             ])
 
             startPoint.transform = CGAffineTransform(rotationAngle: .pi / 2)
@@ -1051,12 +1057,12 @@ extension CableGameViewController {
     }
 
     func updateCableTrail(from start: CGPoint, to end: CGPoint, cableHead: UIImageView, cableLayer: CAShapeLayer, borderLayer: CAShapeLayer, isConnected: Bool) {
- 
+        
         let adjustedStart = CGPoint(x: start.x + 0.5, y: start.y)
         let fixedAngle: CGFloat = -CGFloat.pi / 2
         let fixedLength: CGFloat = 10
         let yOffset: CGFloat = isConnected ? 30 : 0
-        
+
         let fixedEnd = CGPoint(x: adjustedStart.x + cos(fixedAngle) * fixedLength,
                                y: adjustedStart.y + sin(fixedAngle) * fixedLength)
 
@@ -1068,16 +1074,15 @@ extension CableGameViewController {
 
         if isConnected {
             path.addLine(to: cableHeadBottomCenter)
-
-            let midX = (cableHeadBottomCenter.x + end.x) / 2
-            let midY = (cableHeadBottomCenter.y + end.y) / 2
-
-            path.addQuadCurve(to: end, controlPoint: CGPoint(x: midX, y: midY))
+            path.addQuadCurve(to: end, controlPoint: CGPoint(x: (cableHeadBottomCenter.x + end.x) / 2, y: (cableHeadBottomCenter.y + end.y) / 2))
         } else {
-          
             path.addQuadCurve(to: end, controlPoint: CGPoint(x: (fixedEnd.x + end.x) / 2, y: (fixedEnd.y + end.y) / 2))
         }
+
+        cableLayer.path = nil
         cableLayer.path = path.cgPath
+        cableLayer.fillColor = nil
+        cableLayer.lineJoin = .round
 
         let borderPath = UIBezierPath()
         borderPath.move(to: adjustedStart)
@@ -1089,8 +1094,13 @@ extension CableGameViewController {
         } else {
             borderPath.addQuadCurve(to: end, controlPoint: CGPoint(x: (fixedEnd.x + end.x) / 2, y: (fixedEnd.y + end.y) / 2))
         }
+
+        borderLayer.path = nil
         borderLayer.path = borderPath.cgPath
+        borderLayer.fillColor = nil
+        borderLayer.lineJoin = .round
     }
+
     
     func updateCableTrailForSecond(from start: CGPoint, to end: CGPoint, cableHead: UIImageView, cableLayer: CAShapeLayer, borderLayer: CAShapeLayer, isConnected: Bool) {
         let adjustedStart = CGPoint(x: start.x, y: start.y)
@@ -1118,7 +1128,11 @@ extension CableGameViewController {
             
             path.addQuadCurve(to: end, controlPoint: CGPoint(x: (fixedEnd.x + end.x) / 2, y: (fixedEnd.y + end.y) / 2))
         }
+        
+        cableLayer.path = nil
         cableLayer.path = path.cgPath
+        cableLayer.fillColor = nil
+        cableLayer.lineJoin = .round
  
         let borderPath = UIBezierPath()
         borderPath.move(to: adjustedStart)
@@ -1130,7 +1144,11 @@ extension CableGameViewController {
         } else {
             borderPath.addQuadCurve(to: end, controlPoint: CGPoint(x: (fixedEnd.x + end.x) / 2, y: (fixedEnd.y + end.y) / 2))
         }
+        
+        borderLayer.path = nil
         borderLayer.path = borderPath.cgPath
+        borderLayer.fillColor = nil
+        borderLayer.lineJoin = .round
     }
 
     func resetCableLayer(_ cableHead: UIImageView) {
